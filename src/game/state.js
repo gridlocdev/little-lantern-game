@@ -1,47 +1,45 @@
-// The game mode and the save.
+// The game mode and the save. Each feature owns one slice of the save; nothing else writes it.
 import { SAVE_KEY, SETTING_KEYS, storage } from '../platform/storage.js';
 
-export const state = { mode: 'title' };    // title, play
-
-// ---------------------------------------------------------------- game progress
-export const save = {
-    fish: {},            // species id -> count caught
-    best: {},            // species id -> biggest size cm
-    aquarium: [],        // species ids kept
-    released: 0,
-    stardust: 0,
-    lanterns: 0,
-    sky: {},             // constellations found
-    outfit: 0,
-    bridge: false,
-    flower: 0,           // moonflower growth stage 0-4
-    flowerWatered: -1,   // visit count when last watered
-    visits: 0,
-    palette: 0,
-    swingHigh: false,
-    swingFlight: false,
-    bounceBest: 0,
-    sheep: 0,
-    cat: 0,
-    tea: 0,
-    books: {},
-    slept: 0,
-    moonlet: false,
-    whale: false,
-    hammock: false,
-    music: true,
+export const state = {
+    mode: 'title',          // title, play
+    // a feature's live part of the save, with missing fields filled from defaults; every call returns the same object.
+    // Slices are claimed when their modules load, before the save is read, and loading fills them in place.
+    slice(name, defaults = {})
+    {
+        const s = slices[name] ??= {};
+        for (const [k, v] of Object.entries(defaults)) if (!(k in s)) s[k] = structuredClone(v);
+        defaultsOf[name] = { ...defaultsOf[name], ...defaults };
+        return s;
+    },
 };
+const slices = {};
+const defaultsOf = {};
+const VERSION = 2;
+
 export function loadSave()
 {
-    try
-    {
-        const s = JSON.parse(storage.get(SAVE_KEY) || 'null');
-        if (s && typeof s === 'object') Object.assign(save, s);
-    }
-    catch (e) {}
+    let loaded;
+    try { loaded = JSON.parse(storage.get(SAVE_KEY) || 'null'); }
+    catch (e) { return; }
+    if (!loaded || typeof loaded !== 'object') return;
+    if (loaded.v !== VERSION) loaded = migrate(loaded);
+    for (const [name, values] of Object.entries(loaded))
+        if (values && typeof values === 'object' && !Array.isArray(values)) Object.assign(slices[name] ??= {}, values);
 }
-export const writeSave = ()=> storage.set(SAVE_KEY, JSON.stringify(save));
+export const writeSave = ()=> storage.set(SAVE_KEY, JSON.stringify({ v: VERSION, ...slices }));
 export const forgetSave = ()=> storage.remove(SAVE_KEY);
+
+// The first save format was one flat object. Field names did not change when it was split into slices,
+// so each slice takes the old top-level fields that match its defaults.
+function migrate(old)
+{
+    const out = {};
+    for (const [name, defaults] of Object.entries(defaultsOf))
+        for (const k of Object.keys(defaults))
+            if (k in old) (out[name] ??= {})[k] = old[k];
+    return out;
+}
 
 // ---------------------------------------------------------------- settings (kept apart from progress, so a new dream keeps them)
 export const loadSetting = (name)=> storage.get(SETTING_KEYS[name]);

@@ -2,7 +2,7 @@
 import { buildBox, buildCapsule, buildCone, buildCylinder, buildSphere, buildTorus } from '../platform/engine.js';
 
 export let SPH, SPH_LO, CAPS, TORUS, CYL, CONE, BOXM;
-export function buildPartMeshes()
+function buildPartMeshes()
 {
     SPH = buildSphere(1, 18, 12, true);
     SPH_LO = buildSphere(1, 10, 7, true);
@@ -12,3 +12,5 @@ export function buildPartMeshes()
     CONE = buildCone(1, 1, 10, true);
     BOXM = buildBox(1);
 }
+
+export const partMeshSystem = { build: buildPartMeshes };

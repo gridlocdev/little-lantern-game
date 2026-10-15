@@ -24,7 +24,7 @@ function terrainColor(x, z, h, slope, rd, r, Rr)
     if (rd < 2) c = mixColor(c, hsl(.74, .2, .2), .5);
     return c;
 }
-export function buildTerrain()
+function buildTerrain()
 {
     const pts = [], nrm = [], cols = [], uvs = [], idx = [];
     const vIndex = new Int32Array(GN * GN).fill(-1);
@@ -56,3 +56,5 @@ export function buildTerrain()
     terrainObj = new EngineObject3D(vec3(), mesh, texDetail);
     terrainObj.castShadow = true;
 }
+
+export const terrainSystem = { build: buildTerrain };

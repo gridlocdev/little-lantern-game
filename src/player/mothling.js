@@ -3,12 +3,10 @@ import {
     EngineObject3D, Light3D, PI, WHITE, abs, buildMatrix, clamp, hsl, max, min, rand, render3D, time, timeDelta,
     vec3,
 } from '../platform/engine.js';
-import { swingState } from '../activities.js';
-import { fishing } from '../fishing.js';
-import { save } from '../game/state.js';
+import { core } from '../game/progress.js';
 import { mix } from '../lib/math.js';
 import { mtx } from '../platform/mesh.js';
-import { OUTFITS } from './outfits-data.js';
+import { OUTFITS } from './outfits.js';
 import { BOXM, CAPS, CONE, CYL, SPH, SPH_LO, TORUS } from './part-meshes.js';
 import { player } from './player.js';
 
@@ -37,7 +35,7 @@ export class Mothling extends EngineObject3D
         this.light.glow = .9; this.light.glowFalloff = 1.8;
         this.outfitMix = 1;
     }
-    get outfit() { return OUTFITS[save.outfit % OUTFITS.length]; }
+    get outfit() { return OUTFITS[core.outfit % OUTFITS.length]; }
     target()
     {
         const t = { ...POSE }, sp = player.speed;
@@ -62,7 +60,7 @@ export class Mothling extends EngineObject3D
             }
         }
         else if (mode === 'sit') { t.legPitch = -1.4; t.drop = .27; t.armR = -.2; t.armL = .2; }
-        else if (mode === 'swing') { t.legPitch = -1.3 + Math.sin(time * 3) * .1; t.drop = .27; t.armR = -2.6; t.armL = -2.6; t.armRY = .2; t.armLY = -.2; t.wingOpen = clamp(abs(swingState?.vel || 0) * .6); t.flap = .2; t.flapSpeed = 8; }
+        else if (mode === 'swing') { t.legPitch = -1.3 + Math.sin(time * 3) * .1; t.drop = .27; t.armR = -2.6; t.armL = -2.6; t.armRY = .2; t.armLY = -.2; t.wingOpen = clamp(abs(player.swing?.vel || 0) * .6); t.flap = .2; t.flapSpeed = 8; }
         else if (mode === 'fish') { t.armR = -1.1; t.armL = -1.1; t.armRY = .35; t.armLY = -.45; t.lean = .05; }
         else if (mode === 'reel') { t.armR = -1.25 + Math.sin(time * 18) * .08; t.armL = -1.25; t.armRY = .35; t.armLY = -.45; t.lean = -.12; t.legPitch = .15; }
         else if (mode === 'cheer') { t.armR = -2.8; t.armL = -2.8; t.wingOpen = 1; t.flap = .4; t.flapSpeed = 10; t.drop = -.05 - abs(Math.sin(time * 8)) * .08; }
@@ -209,7 +207,7 @@ export class Mothling extends EngineObject3D
         {
             const base = this.handPos.lerp(this.handL, .5);
             const dir = vec3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
-            const tip = base.add(dir.scale(1.8)).add(vec3(0, 1.5 + (fishing?.rodBend || 0), 0));
+            const tip = base.add(dir.scale(1.8)).add(vec3(0, 1.5, 0));
             this.rodTip = tip;
             render3D.drawLine(base, base.lerp(tip, .5), .05, hsl(.08, .45, .35));
             render3D.drawLine(base.lerp(tip, .5), tip, .03, hsl(.08, .4, .45));

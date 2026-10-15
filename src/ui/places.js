@@ -7,7 +7,7 @@ import { showPlace } from './toast.js';
 // places you can arrive at
 export const PLACE_NAMES = [];
 let currentPlace = null;
-export function updatePlaces()
+function updatePlaces()
 {
     let here = null;
     for (const p of PLACE_NAMES)
@@ -18,3 +18,5 @@ export function updatePlaces()
         if (here && state.mode === 'play') showPlace(here.name, here.sub);
     }
 }
+
+export const placeSystem = { update: updatePlaces };

@@ -16,7 +16,7 @@ function signTexture(text)
         g.fillText(text, s / 2, s / 2, s - 20);
     }, false);
 }
-export function buildSignpost()
+function buildSignpost()
 {
     const sx = 8.6, sz = 20.5, sy = heightAt(sx, sz);
     obj3(vec3(sx, sy + 1.4, sz), buildBox(vec3(.16, 2.8, .16)), hsl(.75, .2, .3));
@@ -38,3 +38,5 @@ export function buildSignpost()
     });
     PLACE_NAMES.push({ name: 'Lantern Crossing', sub: 'all the roads meet here', x: 6, z: 22, r: 5, zone: 'island' });
 }
+
+export const signpostSystem = { build: buildSignpost };

@@ -4,7 +4,7 @@ import { TAU } from '../lib/math.js';
 import { canvasTexture } from '../platform/mesh.js';
 
 export let texDetail, texCobble, texPlank, texRoof, texStone, texRug, texWallpaper, texBook;
-export function makeTextures()
+function makeTextures()
 {
     texDetail = canvasTexture(256, (g, s)=>
     {
@@ -123,3 +123,5 @@ export function makeTextures()
         }
     });
 }
+
+export const textureSystem = { build: makeTextures };

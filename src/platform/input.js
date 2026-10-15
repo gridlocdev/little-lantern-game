@@ -26,3 +26,5 @@ export const input = {
     pause: ()=> keyWasPressed('Escape') || gamepadWasPressed(9),
 };
 export function clearTouchPresses() { touchState.jump = touchState.act = touchState.journal = false; }
+
+export const inputSystem = { update: clearTouchPresses };

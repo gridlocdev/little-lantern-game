@@ -1,14 +1,14 @@
-// The dream journal.
-import { CONSTELLATIONS } from '../activities.js';
-import { FISH } from '../fishing.js';
-import { save } from '../game/state.js';
-import { BOOKS } from '../house.js';
-import { OUTFITS } from '../player/outfits-data.js';
-import { PALETTES } from '../sky/palettes.js';
+// The dream journal. Its tabs list rows that features and systems add; the island tab lists their things to do.
+import { input } from '../platform/input.js';
 import { $ } from './dom.js';
-import { closeModal, openModal } from './modal.js';
+import { closeModal, openModal, registerModal } from './modal.js';
 
-// journal
+// a row: [dot color, name, description, count, missing, check] where check is true/false for a checkbox, undefined for a dot
+const sections = [];    // { tab, order, rows() }
+const todos = [];       // { order, label, done() }
+export const addJournalSection = (tab, order, rows)=> sections.push({ tab, order, rows });
+export const addTodo = (order, label, done)=> todos.push({ order, label, done });
+
 let journalTab = 'fish';
 export function openJournal(tab)
 {
@@ -18,28 +18,8 @@ export function openJournal(tab)
 }
 document.querySelectorAll('#journal [data-tab]').forEach((b)=> b.onclick = ()=> { journalTab = b.dataset.tab; renderJournal(); });
 $('jClose').onclick = closeModal;
-const TODO = [
-    ['Catch a fish in Starlight Pond', ()=> FISH.some((f)=> f.where === 'pond' && save.fish[f.id])],
-    ['Cast a line off the Void Pier into open space', ()=> FISH.some((f)=> f.where === 'void' && save.fish[f.id])],
-    ['Swing high enough to touch the moon', ()=> save.swingHigh],
-    ['Let go of the swing at the very top and glide', ()=> save.swingFlight],
-    ['Play the song carved on Amethyst Hill', ()=> save.bridge],
-    ['Cross the light bridge to the Moonlet', ()=> save.moonlet],
-    ['Rest in the Moonlet hammock', ()=> save.hammock],
-    ['Catch the Starwhale Calf', ()=> !!save.fish.calf],
-    ['Bounce five times in a row on the mushrooms', ()=> save.bounceBest >= 5],
-    ['Send a wish lantern into the sky', ()=> save.lanterns > 0],
-    ['Collect a fallen star', ()=> save.stardust > 0],
-    ['Pet a cloud sheep', ()=> save.sheep > 0],
-    ['Spot the star whale through the telescope', ()=> save.whale],
-    ['Find all four constellations', ()=> Object.keys(save.sky).length >= 4],
-    ['Brew a pot of tea at home', ()=> save.tea > 0],
-    ['Pet the star cat', ()=> save.cat > 0],
-    ['Read every book on the shelf', ()=> Object.keys(save.books).length >= BOOKS.length],
-    ['Grow the moonflower to full bloom', ()=> save.flower >= 4],
-    ['Sleep and wake under a different sky', ()=> save.slept > 0],
-    ['Try on every outfit in the wardrobe', ()=> (save.outfitsTried || []).length >= OUTFITS.length],
-];
+registerModal('journal', { update() { if (input.journal() || input.back()) closeModal(); } });
+
 function renderJournal()
 {
     document.querySelectorAll('#journal [data-tab]').forEach((b)=> b.setAttribute('aria-selected', b.dataset.tab === journalTab));
@@ -61,31 +41,14 @@ function renderJournal()
         el.append(dot, mid, c);
         body.appendChild(el);
     };
-    if (journalTab === 'fish')
+    if (journalTab === 'island')
     {
-        const got = FISH.filter((f)=> save.fish[f.id]).length;
-        row('transparent', `${got} of ${FISH.length} species found`, `${save.aquarium.length} swimming in your aquarium, ${save.released} released to the sky.`, '', false, got === FISH.length);
-        for (const f of FISH)
-        {
-            const n = save.fish[f.id];
-            row(n ? f.css : 'rgba(255,255,255,.08)', n ? f.name : 'Not yet caught', n ? f.desc : f.hint, n ? `×${n} · best ${save.best[f.id]} cm` : '★'.repeat(f.stars), !n);
-        }
+        const list = [...todos].sort((a, b)=> a.order - b.order);
+        const done = list.filter((t)=> t.done()).length;
+        row('transparent', `${done} of ${list.length} done`, 'Little things to try while you are here.', '', false, done === list.length);
+        for (const t of list) row('', t.label, '', '', false, !!t.done());
+        return;
     }
-    else if (journalTab === 'island')
-    {
-        const done = TODO.filter((t)=> t[1]()).length;
-        row('transparent', `${done} of ${TODO.length} done`, 'Little things to try while you are here.', '', false, done === TODO.length);
-        for (const [name, test] of TODO) row('', name, '', '', false, !!test());
-    }
-    else
-    {
-        row('transparent', `Sky: ${PALETTES[save.palette].name}`, 'Sleeping in the house changes which sky you wake under.', '', false, undefined);
-        for (const c of CONSTELLATIONS)
-        {
-            const f = save.sky[c.id];
-            row('', f ? c.name : 'An unnamed shape', f ? c.desc : 'Look through the telescope on Observatory Hill.', '', !f, !!f);
-        }
-        row('', save.whale ? 'The star whale' : 'Something large', save.whale ? 'It circles the island slowly and sings every minute or so.' : 'Something sings out in the dark beyond the island.', '', !save.whale, save.whale);
-        row('', `${save.lanterns} wish lanterns`, 'Sent up from the North Overlook.', '', false, save.lanterns > 0);
-    }
+    for (const s of sections.filter((s)=> s.tab === journalTab).sort((a, b)=> a.order - b.order))
+        for (const r of s.rows()) row(...r);
 }

@@ -1,8 +1,9 @@
 // Sound effects.
-import { Sound, getNoteFrequency, render3D } from '../platform/engine.js';
+import { Sound, getNoteFrequency, render3D, setSoundVolume } from '../platform/engine.js';
+import { loadSetting } from '../game/state.js';
 
 export let SFX = {};
-export function buildSounds()
+function buildSounds()
 {
     const S = (a, range = 60)=> new Sound(a, undefined, range);
     SFX = {
@@ -53,3 +54,12 @@ export function bell(semi, pos, vol = .8)
     try { pos ? render3D.playSound(SFX.bell, pos, vol, getNoteFrequency(semi, 1)) : SFX.bell.playNote(semi, undefined, vol); }
     catch (e) {}
 }
+
+export const soundSystem = {
+    build()
+    {
+        const v = parseFloat(loadSetting('volume'));
+        if (v >= 0 && v <= 1) setSoundVolume(v);
+        buildSounds();
+    },
+};

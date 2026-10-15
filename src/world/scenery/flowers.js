@@ -10,7 +10,7 @@ import { roadDist } from '../road-field.js';
 import { heightAt } from '../terrain.js';
 
 let flowerSet;
-export function buildFlowers()
+function buildFlowers()
 {
     const petal = new Mesh();
     for (let k = 0; k < 5; k++)
@@ -43,3 +43,5 @@ export function buildFlowers()
     }
     stemSet.count = flowerSet.count = n;
 }
+
+export const flowerSystem = { build: buildFlowers };

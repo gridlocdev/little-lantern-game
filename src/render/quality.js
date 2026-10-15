@@ -1,6 +1,6 @@
 // Graphics quality: the full/light setting and the frame-rate watchdog.
 import { MOBILE, lerp, max, render3D, setCanvasPixelRatio, timeDelta, timeReal } from '../platform/engine.js';
-import { state, writeSetting } from '../game/state.js';
+import { loadSetting, state, writeSetting } from '../game/state.js';
 import { $ } from '../ui/dom.js';
 import { toast } from '../ui/toast.js';
 
@@ -16,16 +16,22 @@ export function setGraphics(low, quiet)
 }
 // the engine keeps its average frame rate private to the module, so track it here the same way, once per drawn frame
 let averageFPS = 0, lastFrameMS = 0;
-export function trackFrameRate()
+function trackFrameRate()
 {
     const now = performance.now();
     if (lastFrameMS) averageFPS = lerp(averageFPS, 1e3 / ((now - lastFrameMS) || 1), .05);
     lastFrameMS = now;
 }
 // drop to lighter graphics once if the frame rate stays low for a while
-export function watchFrameRate()
+function watchFrameRate()
 {
     if (gfx.low || gfx.checked || state.mode !== 'play' || timeReal < 8) return;
     if (averageFPS > 0 && averageFPS < 28) gfx.slowT += timeDelta; else gfx.slowT = max(0, gfx.slowT - timeDelta);
     if (gfx.slowT > 4) { gfx.checked = true; setGraphics(true, true); toast('Switched to lighter graphics to keep things smooth. You can change this in the menu.', 5000); }
 }
+
+export const qualitySystem = {
+    buildLate() { const g = loadSetting('graphics'); setGraphics(g ? g === 'low' : MOBILE, true); },
+    update: watchFrameRate,
+    render: trackFrameRate,
+};

@@ -2,6 +2,12 @@
 
 // GLSL noise functions shared by several shaders.
 
+// GLSL noise functions shared by several shaders.
+
+// GLSL noise functions shared by several shaders.
+
+// GLSL noise functions shared by several shaders.
+
 export const GLSL_NOISE = `
 float vh1(vec3 p){ p = fract(p*.3183099+.1); p *= 17.; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
 float vn3(vec3 x){ vec3 i = floor(x), f = fract(x); f = f*f*(3.-2.*f);

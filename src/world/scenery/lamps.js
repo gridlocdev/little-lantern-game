@@ -26,7 +26,7 @@ class LampPool extends EngineObject3D
     }
     render3D() { if (camNear(this.pos3D, 80)) render3D.drawSoftDisc(this.pos3D, this.poolSize, this.poolColor, vec3(0, 1, 0), 24); }
 }
-export function buildLamps()
+function buildLamps()
 {
     const spots = [];
     ROADS.forEach((pts, ri)=>
@@ -76,3 +76,5 @@ export function buildLamps()
         addSolid({ kind: 'circle', x, z, r: .25, top: 3 });
     });
 }
+
+export const lampSystem = { build: buildLamps };

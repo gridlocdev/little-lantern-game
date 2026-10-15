@@ -15,7 +15,7 @@ import { heightAt, normalAt } from '../terrain.js';
 
 // grass tufts: a few meshes that sway, drawn as instances in chunks near the camera
 const grassMeshes = [], grassChunks = [];
-export function buildGrass()
+function buildGrass()
 {
     const VARIANTS = 4;
     for (let v = 0; v < VARIANTS; v++)
@@ -84,7 +84,7 @@ export function buildGrass()
         });
     }
 }
-export function updateGrass()
+function updateGrass()
 {
     const t = time, c = render3D.camera.pos, far = gfx.low ? 46 : MOBILE ? 58 : 78;
     for (const g of grassChunks)
@@ -106,3 +106,5 @@ export function updateGrass()
         m.dirty = true;
     }
 }
+
+export const grassSystem = { always: true, build: buildGrass, update: updateGrass };

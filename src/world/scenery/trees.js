@@ -12,7 +12,7 @@ import { roadDist } from '../road-field.js';
 import { heightAt, normalAt } from '../terrain.js';
 
 // trees, rocks and glowing flowers
-export function buildTrees()
+function buildTrees()
 {
     const trunkCol = hsl(.8, .22, .17);
     const puff = (h)=> new Mesh()
@@ -66,3 +66,5 @@ export function buildTrees()
     sets.forEach((s, i)=> s.count = counts[i]);
     fruitSet.count = max(1, fruits);
 }
+
+export const treeSystem = { build: buildTrees };

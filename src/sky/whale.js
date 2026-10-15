@@ -49,4 +49,6 @@ class StarWhale extends EngineObject3D
     }
 }
 export let whale;
-export const spawnWhale = ()=> { whale = new StarWhale; };
+const spawnWhale = ()=> { whale = new StarWhale; };
+
+export const whaleSystem = { build: spawnWhale };

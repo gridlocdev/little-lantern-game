@@ -2,11 +2,11 @@
 import { setSoundVolume, soundVolume } from '../platform/engine.js';
 import { music, setMusic } from '../audio/music.js';
 import { forgetSave, writeSetting } from '../game/state.js';
+import { input } from '../platform/input.js';
 import { gfx, setGraphics } from '../render/quality.js';
 import { $ } from './dom.js';
-import { closeModal, openModal } from './modal.js';
+import { closeModal, openModal, registerModal } from './modal.js';
 
-// menu
 export function openMenu()
 {
     $('volSlider').value = soundVolume;
@@ -17,6 +17,7 @@ export function openMenu()
     openModal('menu');
 }
 $('mClose').onclick = closeModal;
+registerModal('menu', { update() { if (input.back()) closeModal(); } });
 $('volSlider').oninput = (e)=> { setSoundVolume(+e.target.value); writeSetting('volume', soundVolume); };
 $('musicToggle').onclick = ()=> setMusic(!music.on);
 $('gfxToggle').onclick = ()=> setGraphics(!gfx.low);

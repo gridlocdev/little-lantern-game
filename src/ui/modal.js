@@ -1,9 +1,11 @@
-// Modal cards.
-import { inputClear, keyWasPressed } from '../platform/engine.js';
+// Modal cards. Each card registers how it handles input and what happens when it is closed.
+import { inputClear } from '../platform/engine.js';
 import { playSfx } from '../audio/sfx.js';
-import { pendingCatch, resolveCatch } from '../fishing.js';
-import { clearTouchPresses, input } from '../platform/input.js';
+import { clearTouchPresses } from '../platform/input.js';
 import { $, ui } from './dom.js';
+
+const modalHandlers = {};    // modal id -> { update(), onClose() }
+export const registerModal = (id, handler)=> { modalHandlers[id] = handler; };
 
 export function openModal(id)
 {
@@ -21,17 +23,9 @@ export function closeModal()
     ui.modal = null;
     inputClear();
     clearTouchPresses();
-    if (was === 'catch' && pendingCatch) resolveCatch(false);
+    modalHandlers[was]?.onClose?.();
 }
 export function updateModals()
 {
-    if (!ui.modal) return;
-    if (ui.modal === 'catch')
-    {
-        if (keyWasPressed('KeyK') || input.act()) return resolveCatch(true);
-        if (keyWasPressed('KeyR') || input.back()) return resolveCatch(false);
-        return;
-    }
-    if (ui.modal === 'journal' && (input.journal() || input.back())) return closeModal();
-    if (ui.modal === 'menu' && input.back()) return closeModal();
+    if (ui.modal) modalHandlers[ui.modal]?.update?.();
 }

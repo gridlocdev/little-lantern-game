@@ -1,13 +1,13 @@
 // The sky dome, moon, planet and halo.
 import { EngineObject3D, Shader, buildSphere, buildTorus, hsl, render3D, rgb, time, vec3 } from '../platform/engine.js';
-import { save } from '../game/state.js';
+import { core } from '../game/progress.js';
 import { mixColor } from '../platform/color.js';
 import { GLSL_NOISE } from '../render/glsl-noise.js';
+import { MOON_DIR, PLANET_DIR } from './directions.js';
 import { PALETTES } from './palettes.js';
 import { skyShader } from './sky-shader.js';
+import { addJournalSection } from '../ui/journal.js';
 
-export const MOON_DIR = vec3(-.5, .3, -.81).normalize();
-const PLANET_DIR = vec3(.72, .34, .6).normalize();
 const skyShaders = [];
 let skyDome, moonObj, planetObj, ringObj, haloObj;
 
@@ -22,17 +22,17 @@ class SkyHalo extends EngineObject3D
     render3D()
     {
         const cam = render3D.camera.pos;
-        const p = PALETTES[save.palette];
+        const p = PALETTES[core.palette];
         render3D.drawSoftDisc(cam.add(MOON_DIR.scale(700)), 300, p.glow.scale(.35, .35));
         render3D.drawSoftDisc(cam.add(MOON_DIR.scale(700)), 175, rgb(1, 1, 1, .18));
     }
 }
-export function buildSky()
+function buildSky()
 {
     for (const p of PALETTES) skyShaders.push(skyShader(p));
     const dome = buildSphere(1, 40, 20, true).flipNormals();
     skyDome = new EngineObject3D(vec3(), dome);
-    skyDome.shader = skyShaders[save.palette];
+    skyDome.shader = skyShaders[core.palette];
     skyDome.emissive = 1; skyDome.castShadow = false; skyDome.receiveShadow = false;
     skyDome.renderOrder = -1e6;
     skyDome.scale3D = vec3(2800); // diameter: a 1400 radius, so the moon (760), planet (820) and halo sit inside the sky
@@ -76,14 +76,14 @@ void mainImage(out vec4 c, vec2 uv){
 }
 export function setPalette(i)
 {
-    save.palette = i % PALETTES.length;
-    skyDome.shader = skyShaders[save.palette];
-    const p = PALETTES[save.palette];
+    core.palette = i % PALETTES.length;
+    skyDome.shader = skyShaders[core.palette];
+    const p = PALETTES[core.palette];
     render3D.ambientColor = mixColor(p.top, hsl(.71, .42, .36), .85);
     render3D.ambientGroundColor = mixColor(p.bottom, hsl(.78, .45, .14), .75);
     render3D.sunColor = mixColor(p.glow, hsl(.69, .3, .72), .65);
 }
-export function updateSky()
+function updateSky()
 {
     const cam = render3D.camera.pos;
     skyDome.pos3D = cam.copy();
@@ -93,3 +93,13 @@ export function updateSky()
     planetObj.rotation3D = vec3(0, time * .02, 0);
     ringObj.pos3D = planetObj.pos3D.copy();
 }
+
+export const skySystem = {
+    build()
+    {
+        buildSky();
+        setPalette(core.palette);
+        addJournalSection('sky', 10, ()=> [['transparent', `Sky: ${PALETTES[core.palette].name}`, 'Sleeping in the house changes which sky you wake under.', '', false, undefined]]);
+    },
+    updatePost: updateSky,
+};

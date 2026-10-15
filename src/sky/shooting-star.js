@@ -1,17 +1,17 @@
 // Shooting stars.
 import { EngineObject3D, PI, hsl, max, min, rand, render3D, timeDelta, vec3 } from '../platform/engine.js';
-import { landFallenStar } from '../activities.js';
 import { TAU } from '../lib/math.js';
 
 const skyEvents = [];
 export class ShootingStar extends EngineObject3D
 {
     // falling ones land on the island and leave a fallen star to collect
-    constructor(target)
+    constructor(target, onLand)
     {
         super(vec3());
         this.additive = true; this.castShadow = false;
         this.target = target;
+        this.onLand = onLand;
         this.life = 0;
         if (target)
         {
@@ -36,7 +36,7 @@ export class ShootingStar extends EngineObject3D
         this.life += timeDelta / this.duration;
         if (this.life >= 1)
         {
-            if (this.target) landFallenStar(this.target);
+            if (this.target) this.onLand?.(this.target);
             this.destroy();
         }
     }

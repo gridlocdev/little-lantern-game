@@ -5,7 +5,7 @@ import { rr } from '../../platform/random.js';
 
 // orbiting shards in the void
 let shardSet; const shards = [];
-export function buildShards()
+function buildShards()
 {
     const N = 70;
     shardSet = new InstancedMesh3D(buildSphere(1, 4, 2), N, undefined, hsl(.75, .6, .6));
@@ -13,7 +13,7 @@ export function buildShards()
     for (let i = 0; i < N; i++)
         shards.push({ r: rr(112, 260), h: rr(-120, 10), a: rr(0, TAU), sp: rr(.006, .02) * (rr(0, 1) < .5 ? 1 : -1), ph: rr(0, TAU), s: rr(.8, 4.5), spin: rr(.1, .5) });
 }
-export function updateShards()
+function updateShards()
 {
     for (let i = 0; i < shards.length; i++)
     {
@@ -25,3 +25,5 @@ export function updateShards()
         shardSet.setColorAt(i, hsl(.75, .6, .55 + blink * .4));
     }
 }
+
+export const shardSystem = { always: true, build: buildShards, update: updateShards };

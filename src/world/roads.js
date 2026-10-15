@@ -29,7 +29,7 @@ function liftRoadClear(P2, clearance = .04)
         if (!moved) break;
     }
 }
-export function buildRoads()
+function buildRoads()
 {
     const mesh = new Mesh;
     ROADS.forEach((pts, ri)=>
@@ -68,3 +68,5 @@ export function buildRoads()
     const o = new EngineObject3D(vec3(), mesh, texCobble);
     o.castShadow = false;
 }
+
+export const roadSystem = { build: buildRoads };

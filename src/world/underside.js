@@ -9,7 +9,7 @@ import { rr } from '../platform/random.js';
 import { EDGE_Y, edgeR } from './layout.js';
 
 // the jagged amethyst root under the island
-export function buildUnderside()
+function buildUnderside()
 {
     const ANG = 180, LV = 30, DEPTH = 80;
     const pts = [], cols = [], idx = [];
@@ -54,3 +54,5 @@ export function buildUnderside()
         set.setColorAt(i, hsl(rr(.72, .8), .7, rr(.5, .7)));
     }
 }
+
+export const undersideSystem = { build: buildUnderside };

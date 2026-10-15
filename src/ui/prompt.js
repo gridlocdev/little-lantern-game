@@ -6,7 +6,7 @@ import { state } from '../game/state.js';
 import { $, uiOpen } from './dom.js';
 
 let lastPrompt = '';
-export function updatePrompt()
+function updatePrompt()
 {
     let text = '';
     if (state.mode === 'play' && !uiOpen())
@@ -23,3 +23,5 @@ export function updatePrompt()
     $('promptText').textContent = parts.length > 1 ? parts[1] : text;
     $('promptKey').hidden = MOBILE && parts.length < 2;
 }
+
+export const promptSystem = { update: updatePrompt };

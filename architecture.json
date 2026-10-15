@@ -1,0 +1,5 @@
+{
+  "src": "src",
+  "layers": [["lib"], ["platform"], ["game"], ["world", "player", "render", "sky", "ui", "audio"], ["features"]],
+  "featuresDir": "features"
+}

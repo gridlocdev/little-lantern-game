@@ -1,7 +1,7 @@
 // The sky dome shader for one palette.
 import { Shader } from '../platform/engine.js';
 import { GLSL_NOISE } from '../render/glsl-noise.js';
-import { MOON_DIR } from './dome.js';
+import { MOON_DIR } from './directions.js';
 
 const g3 = (v)=> `vec3(${v.x.toFixed(4)},${v.y.toFixed(4)},${v.z.toFixed(4)})`;
 const gc = (c)=> `vec3(${c.r.toFixed(3)},${c.g.toFixed(3)},${c.b.toFixed(3)})`;

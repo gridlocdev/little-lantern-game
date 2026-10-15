@@ -1,4 +1,4 @@
-// Outfits in the wardrobe. Content only.
+// Outfits in the wardrobe.
 import { hsl } from '../platform/engine.js';
 
 // a small moth sprite in a scarf who carries its own lantern

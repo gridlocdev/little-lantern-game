@@ -8,7 +8,7 @@ import { P, insideIsland } from '../layout.js';
 import { roadDist } from '../road-field.js';
 import { heightAt } from '../terrain.js';
 
-export function buildRocks()
+function buildRocks()
 {
     const set = new InstancedMesh3D(buildSphere(1, 6, 4, false), 170, undefined, hsl(.74, .1, .42));
     let n = 0, tries = 0;
@@ -27,3 +27,5 @@ export function buildRocks()
     }
     set.count = n;
 }
+
+export const rockSystem = { build: buildRocks };

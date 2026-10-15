@@ -1,22 +1,21 @@
 // The orbit camera that follows the mothling, or whatever an activity points it at.
 import {
     PI, clamp, gamepadStick, keyIsDown, min, mouseDeltaScreen, mouseIsDown, mouseWheel, render3D, time, timeDelta,
-    vec3,
+    timeReal, vec3,
 } from '../platform/engine.js';
 import { activity } from '../game/activity.js';
 import { state } from '../game/state.js';
-import { HOUSE_IN } from '../house.js';
 import { mix, wrapAngle } from '../lib/math.js';
 import { pointerOnCanvas } from '../platform/input.js';
 import { player } from '../player/player.js';
 import { uiOpen } from '../ui/dom.js';
-import { insideIsland } from '../world/layout.js';
+import { HOUSE_IN, insideIsland } from '../world/layout.js';
 import { heightAt } from '../world/terrain.js';
 
 export const cam = { yaw: 0, pitch: .3, dist: 7, distT: 7, manualT: -99, look: vec3(), fov: PI / 3, house: false };
 
 // ---------------------------------------------------------------- camera
-export function updateCamera()
+function updateCamera()
 {
     const dt = timeDelta;
     // orbit by dragging on the world, the right stick, or the wheel
@@ -90,3 +89,8 @@ export function updateCamera()
     render3D.camera.fov = mix(render3D.camera.fov, fov, min(1, dt * 4));
 }
 export const camNear = (p, d)=> render3D.camera.pos.distanceSquared(p) < d * d;
+
+export const cameraSystem = {
+    // the title screen slowly circles the island
+    updatePost() { state.mode === 'title' ? render3D.camera.orbit(vec3(0, -6, 0), 175, timeReal * .03 + 2.2, .32) : updateCamera(); },
+};

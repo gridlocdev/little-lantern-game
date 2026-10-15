@@ -1,11 +1,11 @@
 // Walking, running, jumping, gliding and landing.
-import { hsl, max, min, timeDelta, vec2, vec3 } from '../platform/engine.js';
+import { hsl, max, min, render3D, timeDelta, vec2, vec3 } from '../platform/engine.js';
 import { playSfx } from '../audio/sfx.js';
 import { activity } from '../game/activity.js';
-import { save, state, writeSave } from '../game/state.js';
-import { HOUSE_IN } from '../house.js';
+import { state } from '../game/state.js';
 import { mix, wrapAngle } from '../lib/math.js';
 import { input } from '../platform/input.js';
+import { Mothling, setMoth } from './mothling.js';
 import { player } from './player.js';
 import { cam } from '../render/camera.js';
 import { burst } from '../render/particles.js';
@@ -13,11 +13,12 @@ import { uiOpen } from '../ui/dom.js';
 import { fadeTransition } from '../ui/fade.js';
 import { toast } from '../ui/toast.js';
 import { groundInfo, pushOutOfSolids, walkable } from '../world/ground.js';
-import { insideIsland } from '../world/layout.js';
+import { HOUSE_IN, P, insideIsland } from '../world/layout.js';
+import { heightAt } from '../world/terrain.js';
 
 const GRAV = 22;
 const JUMP_VEL = 8.6; // apex about 1.7 m, enough to land on the low mushroom caps
-export function updatePlayer()
+function updatePlayer()
 {
     const dt = timeDelta;
     const free = state.mode === 'play' && !activity.current && !uiOpen();
@@ -92,7 +93,7 @@ function landed(on)
         on.squash = 1;
         playSfx('boing', player.pos, 1, 1 + min(player.bounceChain, 8) * .09);
         burst(player.pos.add(vec3(0, .1, 0)), hsl(on.hue || .85, .8, .7), 14, .08, .25);
-        if (player.bounceChain > save.bounceBest) { save.bounceBest = player.bounceChain; writeSave(); }
+        on.onBounce?.(player.bounceChain);
         if (player.bounceChain >= 3) toast(`Bounce ×${player.bounceChain}`);
         return true;
     }
@@ -112,3 +113,17 @@ function driftBack()
     player.vel = vec3(0, 0, 0);
     player.pos = vec3(player.pos.x, player.zone === 'house' ? HOUSE_IN.y - 19 : -29, player.pos.z);
 }
+
+export const playerSystem = {
+    // the mothling appears at the crossing, facing the pond
+    buildLate()
+    {
+        player.pos = vec3(P.spawn.x, heightAt(P.spawn.x, P.spawn.z), P.spawn.z);
+        player.lastSafe = player.pos.copy();
+        player.yaw = Math.atan2(-(P.pond.x - P.spawn.x), -(P.pond.z - P.spawn.z));
+        cam.yaw = player.yaw; cam.pitch = .28;
+        setMoth(new Mothling);
+    },
+    update: updatePlayer,
+    updatePost() { render3D.shadowCenter = player.pos.add(vec3(0, 1, 0)); },
+};

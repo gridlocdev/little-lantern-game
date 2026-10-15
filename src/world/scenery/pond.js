@@ -5,13 +5,16 @@ import {
 import { TAU } from '../../lib/math.js';
 import { obj3 } from '../../platform/mesh.js';
 import { rr } from '../../platform/random.js';
+import { player } from '../../player/player.js';
 import { discMesh, waterShader } from '../../render/water.js';
 import { PLACE_NAMES } from '../../ui/places.js';
 import { addClearing } from '../clearings.js';
+import { addSolid } from '../collision.js';
 import { P } from '../layout.js';
 import { WATER_Y, heightAt } from '../terrain.js';
+import { addWater } from '../waters.js';
 
-export function buildPond()
+function buildPond()
 {
     const w = obj3(vec3(P.pond.x, WATER_Y, P.pond.z), discMesh(P.pond.r + .6), WHITE, { emissive: 1, castShadow: false });
     w.shader = waterShader(P.pond.x, P.pond.z, P.pond.r);
@@ -40,3 +43,17 @@ export function buildPond()
     PLACE_NAMES.push({ name: 'Starlight Pond', sub: 'cosmic fish swim here', x: P.pond.x, z: P.pond.z, r: P.pond.r + 3, zone: 'island' });
     addClearing(P.pond.x, P.pond.z, P.pond.r + 1);
 }
+
+// the pond's edge is a wall you fish over
+function addPondWater()
+{
+    const c = P.pond, edge = c.r - 1.1;
+    addSolid({ kind: 'circle', x: c.x, z: c.z, r: edge - .35, top: 99 });
+    addWater({
+        kind: 'pond', reach: 4.5, r: 1.9,
+        pos: ()=> { const d = vec3(player.pos.x - c.x, 0, player.pos.z - c.z); const l = d.length() || 1; return vec3(c.x + d.x / l * (edge + .1), WATER_Y + .3, c.z + d.z / l * (edge + .1)); },
+        center: ()=> vec3(c.x, WATER_Y, c.z),
+        clamp: (p)=> { const d = vec3(p.x - c.x, 0, p.z - c.z); const l = d.length(); const k = l > edge - 1.2 ? (edge - 1.2) / l : 1; return vec3(c.x + d.x * k, WATER_Y, c.z + d.z * k); },
+    });
+}
+export const pondSystem = { build() { buildPond(); addPondWater(); } };

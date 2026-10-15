@@ -1,5 +1,8 @@
 // Where things are on the island. Data and pure shape functions only.
-import { PI } from '../platform/engine.js';
+import { PI, vec3 } from '../platform/engine.js';
+
+// the room floats in the dark far below the island; you get there through the front door
+export const HOUSE_IN = vec3(0, -260, 420);
 
 export const EDGE_Y = -1.5;
 export const edgeR = (th)=> 104 + 7 * Math.sin(3 * th + 1) + 4 * Math.sin(7 * th + 2) + 2.5 * Math.sin(13 * th + .5);
@@ -54,3 +57,6 @@ export const ROAD_DEFS = [
     [[5, 18], [-8, 29], [-24, 41], [-40, 50]],
     [[-40, 50], [-62, 36], [-82, 20], [P.bridgeStart.x, P.bridgeStart.z]],
 ];
+
+// where the aquarium stands in the house, relative to HOUSE_IN
+export const HOUSE_AQUARIUM = { x: 1.2, z: -3.9 };

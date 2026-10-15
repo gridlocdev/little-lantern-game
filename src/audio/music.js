@@ -1,7 +1,8 @@
 // Generative night music.
 import { audioContext, audioMasterGain, rand, randInt, timeReal } from '../platform/engine.js';
 import { SFX } from './sfx.js';
-import { save, writeSave } from '../game/state.js';
+import { core } from '../game/progress.js';
+import { writeSave } from '../game/state.js';
 
 export const music = { on: true, nodes: null, nextChord: 0, nextNote: 0, chord: 0, house: false };
 const CHORDS = [[0, 4, 7, 11], [-3, 0, 4, 7], [5, 9, 12, 16], [2, 5, 9, 12], [-5, -1, 2, 7]];
@@ -50,7 +51,7 @@ function musicSetChord(i)
         v.o2.frequency.setTargetAtTime(f * 2, t, 1.5);
     });
 }
-export function musicUpdate()
+function musicUpdate()
 {
     if (!music.nodes) return;
     const t = audioContext.currentTime;
@@ -72,8 +73,14 @@ export function musicUpdate()
 }
 export function setMusic(on)
 {
-    music.on = save.music = on;
+    music.on = core.music = on;
     writeSave();
     const b = document.getElementById('musicToggle');
     if (b) b.textContent = on ? 'On' : 'Off';
 }
+
+export const musicSystem = {
+    always: true,
+    build() { music.on = core.music !== false; },
+    update: musicUpdate,
+};
