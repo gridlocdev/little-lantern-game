@@ -1,39 +1,17 @@
+// The mothling's body and animation.
 import {
-    EngineObject3D, Light3D, PI, WHITE, abs, buildBox, buildCapsule, buildCone, buildCylinder, buildMatrix,
-    buildSphere, buildTorus, clamp, hsl, max, min, rand, render3D, time, timeDelta, vec3,
-} from './platform/engine.js';
-import { swingState } from './activities.js';
-import { mix, mtx } from './core.js';
-import { fishing } from './fishing.js';
-import { save } from './save.js';
+    EngineObject3D, Light3D, PI, WHITE, abs, buildMatrix, clamp, hsl, max, min, rand, render3D, time, timeDelta,
+    vec3,
+} from '../platform/engine.js';
+import { swingState } from '../activities.js';
+import { fishing } from '../fishing.js';
+import { save } from '../game/state.js';
+import { mix } from '../lib/math.js';
+import { mtx } from '../platform/mesh.js';
+import { OUTFITS } from './outfits-data.js';
+import { BOXM, CAPS, CONE, CYL, SPH, SPH_LO, TORUS } from './part-meshes.js';
+import { player } from './player.js';
 
-// ================================================================ THE MOTHLING
-// a small moth sprite in a scarf who carries its own lantern
-export const OUTFITS = [
-    { name: 'Dusk Lilac', body: hsl(.74, .32, .7), fluff: hsl(.11, .45, .9), wing: hsl(.72, .32, .76), spot: hsl(.55, .8, .66), scarf: hsl(.64, .55, .42), ant: hsl(.12, .55, .78) },
-    { name: 'Moon Pearl', body: hsl(.65, .14, .86), fluff: hsl(.6, .2, .96), wing: hsl(.62, .22, .88), spot: hsl(.8, .6, .7), scarf: hsl(.95, .5, .58), ant: hsl(.6, .3, .9) },
-    { name: 'Ember Rose', body: hsl(.97, .38, .7), fluff: hsl(.08, .6, .88), wing: hsl(.93, .42, .74), spot: hsl(.12, .9, .62), scarf: hsl(.75, .5, .4), ant: hsl(.1, .7, .75) },
-    { name: 'Teal Tide', body: hsl(.5, .32, .62), fluff: hsl(.14, .4, .9), wing: hsl(.47, .38, .7), spot: hsl(.85, .7, .7), scarf: hsl(.08, .6, .52), ant: hsl(.45, .5, .8) },
-    { name: 'Starless', body: hsl(.72, .25, .3), fluff: hsl(.72, .2, .78), wing: hsl(.7, .3, .32), spot: hsl(.13, .95, .62), scarf: hsl(.13, .8, .55), ant: hsl(.13, .8, .7) },
-    { name: 'Honeyglow', body: hsl(.11, .5, .68), fluff: hsl(.12, .3, .95), wing: hsl(.1, .55, .72), spot: hsl(.6, .8, .62), scarf: hsl(.6, .5, .42), ant: hsl(.1, .6, .6) },
-];
-export let SPH, SPH_LO, CAPS, TORUS, CYL, CONE, BOXM;
-export function buildPartMeshes()
-{
-    SPH = buildSphere(1, 18, 12, true);
-    SPH_LO = buildSphere(1, 10, 7, true);
-    CAPS = buildCapsule(.5, 1, 10, 4, true); // scale by (2*diameter, length, 2*diameter)
-    TORUS = buildTorus(1, .34, 22, 10, true);
-    CYL = buildCylinder(1, 1, 10, true);
-    CONE = buildCone(1, 1, 10, true);
-    BOXM = buildBox(1);
-}
-
-export const player = {
-    pos: vec3(), vel: vec3(), yaw: 0, onGround: true, zone: 'island',
-    glide: false, groundY: 0, lastSafe: vec3(), standing: undefined, airTime: 0, bounceChain: 0,
-    hold: 'lantern', pose: 'free', poseT: 0, lockMove: false, speed: 0, fallTimer: 0,
-};
 // a pose the mothling eases toward
 const POSE = { legAmp: 0, legPitch: 0, armR: 0, armL: 0, armRY: 0, armLY: 0, wingOpen: 0, flap: 0, flapSpeed: 0, lean: 0, drop: 0, lie: 0, headTilt: 0, tuck: 0 };
 

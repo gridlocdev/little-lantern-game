@@ -1,93 +1,21 @@
 import {
-    EngineObject3D, InstancedMesh3D, Light3D, Mesh, PI, ParticleEmitter3D, Shader, WHITE, buildBox, buildCone,
-    buildCylinder, buildMatrix, buildSphere, buildTorus, hsl, max, render3D, time, vec2, vec3,
+    EngineObject3D, Light3D, Mesh, PI, ParticleEmitter3D, WHITE, buildBox, buildCone, buildCylinder, buildMatrix,
+    buildSphere, buildTorus, hsl, render3D, time, vec2, vec3,
 } from './platform/engine.js';
-import { startSit } from './activities.js';
-import { addInteract } from './controls.js';
-import { TAU, canvasTexture, mtx, obj3, rr, triMesh } from './core.js';
+import { addInteract } from './game/interact.js';
 import { enterHouse } from './house.js';
-import { camNear } from './main.js';
-import { CAPS, CYL, SPH, SPH_LO, TORUS, player } from './player.js';
-import { GLSL_NOISE } from './sky.js';
-import { PLACE_NAMES, say } from './ui.js';
-import { P, WATER_Y, addClearing, addSolid, heightAt, texPlank, texRoof, texStone } from './world.js';
-
-// ================================================================ VILLAGE: POND, HOUSE, BENCH, SIGNPOST, SNAIL
-export function waterShader(cx, cz, radius, tint = 0)
-{
-    return new Shader(GLSL_NOISE + `
-float wStars(vec2 q, float density, float s){
-  vec2 id = floor(q); vec2 f = fract(q) - .5;
-  float h = vh2(id + s);
-  vec2 off = (vec2(vh2(id + s + 3.1), vh2(id + s + 7.7)) - .5) * .6;
-  float tw = .55 + .45*sin(iTime*(1. + h*2.) + h*40.);
-  return smoothstep(.1, 0., length(f - off)) * step(density, h) * tw;
-}
-void mainImage(out vec4 c, vec2 uv){
-  vec2 p = (worldPos.xz - vec2(${cx.toFixed(3)}, ${cz.toFixed(3)})) / ${radius.toFixed(3)};
-  float r = length(p);
-  vec3 V = normalize(cameraPos - worldPos);
-  float ring = 0.;
-  for (int i = 0; i < 2; i++){
-    float t = iTime*.13 + float(i)*.5;
-    float cyc = floor(t), ph = fract(t);
-    vec2 cc = vec2(vh2(vec2(cyc, float(i))), vh2(vec2(float(i), cyc + 3.)))*.8 - .4;
-    float d = length(p - cc);
-    ring += exp(-pow((d - ph*1.3)*16., 2.)) * (1. - ph) * smoothstep(0., .1, ph);
-  }
-  vec2 par = V.xz / max(V.y, .12);
-  vec3 sapph = vec3(.05, .2, .8), vio = vec3(.42, .12, .8), deep = vec3(.03, .02, .12);
-  ${tint ? 'sapph = vec3(.55,.5,.95); vio = vec3(.95,.8,.45);' : ''}
-  vec3 col = mix(vio, sapph, smoothstep(.05, .95, r + .06*sin(iTime*.4 + atan(p.y, p.x)*2.)));
-  col *= .45 + .12*sin(iTime*.5 + r*6.);
-  vec2 q1 = p - par*.25, q2 = p - par*.7;
-  col = mix(col, deep + vec3(.25, .08, .35)*fb3(vec3(q2*1.6, iTime*.03)), .35);
-  col += vec3(.9, .92, 1.) * wStars(q1*14., .8, 1.) * 1.7;
-  col += vec3(.75, .7, 1.) * wStars(q2*26., .72, 9.) * .9;
-  vec3 n = normalize(vec3(ring*.25*p.x, 1., ring*.25*p.y));
-  float m = max(dot(reflect(-V, n), normalize(sunDirection)), 0.);
-  col += vec3(.85, .82, 1.) * (pow(m, 900.)*1.1 + pow(m, 80.)*.12);
-  col += vec3(.55, .68, 1.) * ring * .5;
-  col += mix(sapph, vec3(.5, .6, 1.), .5) * smoothstep(.75, 1., r) * .35;
-  c = vec4(col, 1.);
-}`);
-}
-export function discMesh(radius, segs = 64)
-{
-    const pts = [vec3()], idx = [];
-    for (let i = 0; i <= segs; i++) { const a = i / segs * TAU; pts.push(vec3(Math.cos(a) * radius, 0, Math.sin(a) * radius)); }
-    for (let i = 1; i <= segs; i++) idx.push(0, i + 1, i);
-    return triMesh(pts, idx, vec3(0, 1, 0), WHITE);
-}
-export function buildPond()
-{
-    const w = obj3(vec3(P.pond.x, WATER_Y, P.pond.z), discMesh(P.pond.r + .6), WHITE, { emissive: 1, castShadow: false });
-    w.shader = waterShader(P.pond.x, P.pond.z, P.pond.r);
-    const L = new Light3D(vec3(P.pond.x, WATER_Y + .7, P.pond.z), 16, hsl(.66, .8, .62), 1.5);
-    // stones around the shore and glowing lily pads
-    const stones = new InstancedMesh3D(buildSphere(1, 6, 4, false), 70, undefined, hsl(.74, .1, .4));
-    for (let i = 0; i < 70; i++)
-    {
-        const a = i / 70 * TAU + rr(-.04, .04), r = P.pond.r - .9 + rr(-.2, .5);
-        const x = P.pond.x + Math.cos(a) * r, z = P.pond.z + Math.sin(a) * r, s = rr(.25, .5);
-        stones.setMatrixAt(i, buildMatrix(vec3(x, max(heightAt(x, z), WATER_Y - .05), z), vec3(rr(0, 3), rr(0, 3), 0), vec3(s * 1.3, s * .55, s)));
-        stones.setColorAt(i, hsl(rr(.72, .78), .12, rr(.3, .46)));
-    }
-    const pads = new InstancedMesh3D(buildCylinder(1, .04, 14), 14, undefined, hsl(.48, .45, .3));
-    const buds = new InstancedMesh3D(buildSphere(.22, 8, 6), 14, undefined, WHITE);
-    buds.emissive = 1.2;
-    for (let i = 0; i < 14; i++)
-    {
-        const a = rr(0, TAU), r = rr(1.5, P.pond.r - 2.4);
-        const x = P.pond.x + Math.cos(a) * r, z = P.pond.z + Math.sin(a) * r, s = rr(.5, .9);
-        pads.setMatrixAt(i, buildMatrix(vec3(x, WATER_Y + .02, z), vec3(0, rr(0, 3), 0), vec3(s, 1, s)));
-        buds.setMatrixAt(i, buildMatrix(vec3(x + .1, WATER_Y + .12, z)));
-        buds.setColorAt(i, hsl([.9, .55, .12][i % 3], .8, .75));
-    }
-    addClearing(2, -1, 21);
-    PLACE_NAMES.push({ name: 'Starlight Pond', sub: 'cosmic fish swim here', x: P.pond.x, z: P.pond.z, r: P.pond.r + 3, zone: 'island' });
-    addClearing(P.pond.x, P.pond.z, P.pond.r + 1);
-}
+import { mtx, obj3, triMesh } from './platform/mesh.js';
+import { CAPS, CYL, SPH, SPH_LO, TORUS } from './player/part-meshes.js';
+import { player } from './player/player.js';
+import { startSit } from './player/sit.js';
+import { camNear } from './render/camera.js';
+import { texPlank, texRoof, texStone } from './render/textures.js';
+import { say } from './ui/dialog.js';
+import { PLACE_NAMES } from './ui/places.js';
+import { addClearing } from './world/clearings.js';
+import { addSolid } from './world/collision.js';
+import { P } from './world/layout.js';
+import { heightAt } from './world/terrain.js';
 
 // ---------------------------------------------------------------- the crooked house
 export const HOUSE = { W: 8, D: 7, H: 4 };
@@ -217,40 +145,6 @@ export function buildBenchArea()
     const L = new Light3D(vec3(lx + .75, ly + 2.4, lz), 9, hsl(.58, .8, .66), 1.5);
     L.glow = 1.4;
     addSolid({ kind: 'circle', x: lx, z: lz, r: .2, top: 3 });
-}
-
-// ---------------------------------------------------------------- signpost at the crossing
-function signTexture(text)
-{
-    return canvasTexture(256, (g, s)=>
-    {
-        g.fillStyle = '#6c5f86'; g.fillRect(0, 0, s, s);
-        g.fillStyle = '#efe6ff';
-        g.font = '600 30px Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-        g.fillText(text, s / 2, s / 2, s - 20);
-    }, false);
-}
-export function buildSignpost()
-{
-    const sx = 8.6, sz = 20.5, sy = heightAt(sx, sz);
-    obj3(vec3(sx, sy + 1.4, sz), buildBox(vec3(.16, 2.8, .16)), hsl(.75, .2, .3));
-    addSolid({ kind: 'circle', x: sx, z: sz, r: .2, top: 3 });
-    const signs = [['The Crooked House', P.house], ['Void Pier', P.pierBase], ['Moonwillow Swing', P.swing], ['Mushroom Hollow', P.mushrooms], ['Cloudsheep Meadow', P.pasture]];
-    signs.forEach(([name, to], i)=>
-    {
-        const yaw = Math.atan2(-(to.x - sx), -(to.z - sz));
-        const board = new Mesh();
-        board.combine(buildBox(vec3(1.5, .3, .06)), vec3(.62, 0, 0), hsl(.75, .2, .38));
-        const face = triMesh([vec3(-.72, -.14, .035), vec3(.72, -.14, .035), vec3(.72, .14, .035), vec3(-.72, .14, .035)], [0, 1, 2, 0, 2, 3], vec3(0, 0, 1), WHITE,
-            [vec2(0, .58), vec2(1, .58), vec2(1, .42), vec2(0, .42)]);
-        const back = triMesh([vec3(.72, -.14, -.035), vec3(-.72, -.14, -.035), vec3(-.72, .14, -.035), vec3(.72, .14, -.035)], [0, 1, 2, 0, 2, 3], vec3(0, 0, -1), WHITE,
-            [vec2(0, .58), vec2(1, .58), vec2(1, .42), vec2(0, .42)]);
-        const tex = signTexture(name);
-        const holder = mtx(undefined, vec3(sx, sy + 2.45 - i * .38, sz), vec3(0, yaw + PI / 2, 0));
-        const b = new EngineObject3D(vec3(), board); b.localMatrix = holder;
-        const f = new EngineObject3D(vec3(), face.combine(back), tex); f.localMatrix = mtx(holder, vec3(.62, 0, 0));
-    });
-    PLACE_NAMES.push({ name: 'Lantern Crossing', sub: 'all the roads meet here', x: 6, z: 22, r: 5, zone: 'island' });
 }
 
 // ---------------------------------------------------------------- Oswin the lantern snail

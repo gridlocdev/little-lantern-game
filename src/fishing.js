@@ -1,15 +1,22 @@
 import {
-    EngineObject3D, Mesh, PI, Trail3D, WHITE, abs, buildMatrix, clamp, gamepadWasPressed, hsl, inputClear,
+    EngineObject3D, MOBILE, Mesh, PI, Trail3D, WHITE, abs, buildMatrix, clamp, gamepadWasPressed, hsl, inputClear,
     keyWasPressed, max, min, rand, render3D, time, timeDelta, usingGamepadInput, vec3,
 } from './platform/engine.js';
-import { bell, playSfx } from './audio.js';
-import { addInteract, clearTouchPresses, input, setActivity, touchState } from './controls.js';
-import { MOBILE, TAU, mtx } from './core.js';
-import { burst } from './fx.js';
+import { bell, playSfx } from './audio/sfx.js';
+import { activity } from './game/activity.js';
+import { addInteract } from './game/interact.js';
+import { save, writeSave } from './game/state.js';
 import { refreshAquarium } from './house.js';
-import { SPH, SPH_LO, TORUS, moth, player } from './player.js';
-import { save, writeSave } from './save.js';
-import { $, openModal, toast, ui } from './ui.js';
+import { TAU } from './lib/math.js';
+import { clearTouchPresses, input, touchState } from './platform/input.js';
+import { mtx } from './platform/mesh.js';
+import { moth } from './player/mothling.js';
+import { SPH, SPH_LO, TORUS } from './player/part-meshes.js';
+import { player } from './player/player.js';
+import { burst } from './render/particles.js';
+import { $, ui } from './ui/dom.js';
+import { openModal } from './ui/modal.js';
+import { toast } from './ui/toast.js';
 
 // ================================================================ COSMIC FISH
 export const FISH = [
@@ -241,7 +248,7 @@ function startFishing(spot)
     player.pose = 'fish';
     player.hold = 'rod';
     fishing = { spot, state: 'aim', power: 0, powerDir: 1, t: 0, bob: player.pos.copy(), progress: .3, zone: .3, zoneV: 0, fishX: .5, fishV: 0, tilt: 0 };
-    setActivity({
+    activity.start({
         name: 'fishing', lockCamera: false, mouseHold: true,
         update: updateFishing,
         cancel: stopFishing,
@@ -254,7 +261,7 @@ function startFishing(spot)
 function stopFishing()
 {
     fishing = null;
-    setActivity(null);
+    activity.end();
     player.pose = 'free';
     player.hold = 'lantern';
     $('meter').hidden = true;
@@ -285,7 +292,7 @@ function updateFishing()
 {
     const F = fishing, dt = timeDelta, spot = F.spot;
     F.t += dt;
-    const held = input.actHeld();
+    const held = input.actHeld(activity.current?.mouseHold);
     if (F.state !== 'reel' && F.state !== 'caught' && (keyWasPressed('KeyQ') || keyWasPressed('Escape') || gamepadWasPressed(1) || (MOBILE && touchState.jump && F.state === 'aim')))
     {
         clearTouchPresses();

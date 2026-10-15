@@ -1,57 +1,36 @@
 import {
-    EngineObject3D, InstancedMesh3D, Light3D, Matrix4, Mesh, PI, WHITE, abs, buildBox, buildCylinder, buildLathe,
-    buildMatrix, buildSphere, clamp, gamepadStick, hsl, max, min, mouseDeltaScreen, mouseIsDown, mouseWheel,
-    noise2D, rand, randInt, render3D, time, timeDelta, vec2, vec3,
+    EngineObject3D, InstancedMesh3D, Light3D, MOBILE, Matrix4, Mesh, PI, WHITE, abs, buildBox, buildCylinder,
+    buildLathe, buildMatrix, buildSphere, clamp, gamepadStick, hsl, max, min, mouseDeltaScreen, mouseIsDown,
+    mouseWheel, noise2D, rand, randInt, render3D, time, timeDelta, vec2, vec3,
 } from './platform/engine.js';
-import { PENTA, bell, playSfx } from './audio.js';
-import {
-    addInteract, clearTouchPresses, gameMode, groundInfo, input, pointerOnCanvas, setActivity, touchState,
-} from './controls.js';
-import { MOBILE, TAU, canvasTexture, dist2, fbm, mix, mtx, obj3, rr, sstep, triMesh, wrapAngle } from './core.js';
+import { PENTA, bell, playSfx } from './audio/sfx.js';
 import { addFishingSpot } from './fishing.js';
-import { burst, sparkleColumn } from './fx.js';
-import { camNear, whale } from './main.js';
-import { BOXM, CAPS, CONE, CYL, SPH, SPH_LO, TORUS, moth, player } from './player.js';
-import { save, writeSave } from './save.js';
-import { ShootingStar } from './sky.js';
-import { $, PLACE_NAMES, say, toast } from './ui.js';
-import { discMesh, waterShader } from './village.js';
-import {
-    P, WATER_Y, addClearing, addSolid, heightAt, insideIsland, isClear, solidContains, solidsAt, texStone,
-} from './world.js';
-
-// ================================================================ SITTING
-export function startSit(seat, faceYaw, opts = {})
-{
-    player.yaw = faceYaw;
-    player.pos = vec3(seat.x, seat.y + (opts.height ?? .45), seat.z);
-    player.vel = vec3();
-    player.pose = opts.pose || 'sit';
-    const fromPos = player.pos.copy();
-    setActivity({
-        name: 'sit', ownsPhysics: true,
-        update()
-        {
-            player.pos = fromPos.copy(); player.vel = vec3();
-            if (opts.update) opts.update();
-            if (input.move().length() > .4 || input.act() || input.jump() || input.back())
-            {
-                clearTouchPresses();
-                setActivity(null);
-                player.pose = 'free';
-                const fwd = vec3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
-                const out = seat.add(fwd.scale(opts.out ?? .9));
-                const g = groundInfo(out.x, out.z, out.y + 1);
-                player.pos = vec3(out.x, max(g.y, out.y), out.z);
-                if (opts.onStand) opts.onStand();
-            }
-        },
-        cancel() { setActivity(null); player.pose = 'free'; },
-        hint: ()=> opts.hint || `${MOBILE ? 'Use' : 'E'}|Get up`,
-        cam: opts.cam,
-    });
-    if (opts.onSit) opts.onSit();
-}
+import { activity } from './game/activity.js';
+import { addInteract } from './game/interact.js';
+import { save, state, writeSave } from './game/state.js';
+import { TAU, dist2, mix, sstep, wrapAngle } from './lib/math.js';
+import { clearTouchPresses, input, pointerOnCanvas, touchState } from './platform/input.js';
+import { canvasTexture, mtx, obj3, triMesh } from './platform/mesh.js';
+import { fbm } from './platform/noise.js';
+import { rr } from './platform/random.js';
+import { moth } from './player/mothling.js';
+import { BOXM, CAPS, CONE, CYL, SPH, SPH_LO, TORUS } from './player/part-meshes.js';
+import { player } from './player/player.js';
+import { startSit } from './player/sit.js';
+import { camNear } from './render/camera.js';
+import { burst, sparkleColumn } from './render/particles.js';
+import { texStone } from './render/textures.js';
+import { discMesh, waterShader } from './render/water.js';
+import { ShootingStar } from './sky/shooting-star.js';
+import { whale } from './sky/whale.js';
+import { say } from './ui/dialog.js';
+import { $ } from './ui/dom.js';
+import { PLACE_NAMES } from './ui/places.js';
+import { toast } from './ui/toast.js';
+import { addClearing, isClear } from './world/clearings.js';
+import { addSolid, solidContains, solidsAt } from './world/collision.js';
+import { P, insideIsland } from './world/layout.js';
+import { WATER_Y, heightAt } from './world/terrain.js';
 
 // ================================================================ MOONWILLOW SWING
 export let swingState = null;
@@ -150,12 +129,12 @@ function startSwing()
     swingState = { angle: 0, vel: 0, lastSign: 0, window: 0, peak: 0, high: false };
     player.pose = 'swing';
     player.yaw = SWING.dirYaw;
-    setActivity({
+    activity.start({
         name: 'swing', ownsPhysics: true,
         update: updateSwing,
         cancel()
         {
-            swingState = null; setActivity(null); player.pose = 'free'; player.extraPitch = 0;
+            swingState = null; activity.end(); player.pose = 'free'; player.extraPitch = 0;
         },
         hint: ()=> swingState.window > 0 ? `${MOBILE ? 'Use' : 'E'}|Lean in now!` : `${MOBILE ? 'Use' : 'E'}|Lean in at the top · ${MOBILE ? 'Jump' : 'Space'} lets go · ${MOBILE ? '' : 'Q gets off'}`,
         cam: ()=> ({ target: SWING.pivot.add(vec3(0, -3.2, 0)), dist: 13, yaw: Math.atan2(SWING.side.x, SWING.side.z), pitch: .12 }),
@@ -234,7 +213,7 @@ function updateSwing()
 }
 function endSwing(fly)
 {
-    swingState = null; setActivity(null);
+    swingState = null; activity.end();
     player.pose = 'free'; player.extraPitch = 0;
     player.onGround = false;
     if (!fly) player.vel = vec3();
@@ -644,7 +623,7 @@ class FallenStar extends EngineObject3D
     {
         this.t += timeDelta;
         if (this.t > 150) return this.vanish();
-        if (gameMode === 'play' && player.zone === 'island' && dist2(player.pos.x, player.pos.z, this.pos3D.x, this.pos3D.z) < 1.6 && abs(player.pos.y - this.pos3D.y) < 2.5)
+        if (state.mode === 'play' && player.zone === 'island' && dist2(player.pos.x, player.pos.z, this.pos3D.x, this.pos3D.z) < 1.6 && abs(player.pos.y - this.pos3D.y) < 2.5)
         {
             const n = randInt(3, 8);
             save.stardust += n; writeSave();
@@ -696,7 +675,7 @@ function compassWord(dx, dz)
 }
 export function updateStarFall()
 {
-    if (gameMode !== 'play') return;
+    if (state.mode !== 'play') return;
     nextStarFall -= timeDelta;
     if (rand() < timeDelta / 9) new ShootingStar();
     if (nextStarFall > 0 || fallenStars.length >= 3 || player.zone !== 'island') return;
@@ -874,7 +853,7 @@ function startTelescope()
     player.yaw = Math.atan2(-(t.x - player.pos.x), -(t.z - player.pos.z));
     $('scope').hidden = false;
     $('scopeHint').textContent = MOBILE ? 'Drag to look around. Tap Jump to step back.' : 'Drag, or use the arrow keys, to look around. Scroll to zoom. Q to step back.';
-    setActivity({
+    activity.start({
         name: 'telescope', ownsPhysics: false, lockCamera: true,
         update: updateTelescope,
         cancel: endTelescope,
@@ -889,7 +868,7 @@ function startTelescope()
 }
 function endTelescope()
 {
-    scope = null; setActivity(null); player.pose = 'free';
+    scope = null; activity.end(); player.pose = 'free';
     $('scope').hidden = true;
 }
 function updateTelescope()

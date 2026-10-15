@@ -1,35 +1,54 @@
 import {
-    Render3DPlugin, audioContext, engineInit, gamepadWasPressed, inputClear, keyWasPressed, postProcessBloom,
-    render3D, setSoundVolume, timeReal, vec3,
+    MOBILE, Render3DPlugin, audioContext, engineInit, gamepadWasPressed, inputClear, keyWasPressed,
+    postProcessBloom, render3D, setSoundVolume, timeReal, vec3,
 } from './platform/engine.js';
 import {
     StarPillars, buildChimes, buildMoonlet, buildMushrooms, buildOverlook, buildPier, buildPondFishing, buildSheep,
     buildSwing, buildTelescope, checkMoonletVisit, updateStarFall,
 } from './activities.js';
-import { buildSounds, music, musicStart, musicUpdate } from './audio.js';
-import {
-    activity, cam, clearTouchPresses, gameMode, input, setGameMode, updateCamera, updateInteract, updatePlayer,
-} from './controls.js';
-import { MOBILE } from './core.js';
+import { music, musicStart, musicUpdate } from './audio/music.js';
+import { buildSounds } from './audio/sfx.js';
 import { RippleDrawer } from './fishing.js';
-import { buildAmbientFx, updateAmbientFx } from './fx.js';
+import { activity } from './game/activity.js';
+import { updateInteract } from './game/interact.js';
+import { loadSave, loadSetting, save, state, writeSave } from './game/state.js';
 import { buildHouseInterior, updateHouse } from './house.js';
-import { Mothling, buildPartMeshes, player, setMoth } from './player.js';
-import { loadSave, loadSetting, save, storage, writeSave } from './save.js';
-import { MOON_DIR, StarWhale, buildSky, setPalette, updateSky } from './sky.js';
-import {
-    $, openJournal, openMenu, say, setGraphics, showPlace, trackFrameRate, ui, updateDialog, updateHud,
-    updateModals, updatePlaces, updatePrompt, watchFrameRate,
-} from './ui.js';
-import { buildBenchArea, buildHouseExterior, buildPond, buildSignpost, buildSnail } from './village.js';
-import {
-    P, buildFlowers, buildGrass, buildLamps, buildRoads, buildRocks, buildShards, buildTerrain, buildTrees,
-    buildUnderside, heightAt, makeTextures, updateGrass, updateShards,
-} from './world.js';
+import { clearTouchPresses, input } from './platform/input.js';
+import { storage } from './platform/storage.js';
+import { Mothling, setMoth } from './player/mothling.js';
+import { updatePlayer } from './player/movement.js';
+import { buildPartMeshes } from './player/part-meshes.js';
+import { player } from './player/player.js';
+import { buildAmbientFx, updateAmbientFx } from './render/ambient.js';
+import { cam, updateCamera } from './render/camera.js';
+import { setGraphics, trackFrameRate, watchFrameRate } from './render/quality.js';
+import { makeTextures } from './render/textures.js';
+import { MOON_DIR, buildSky, setPalette, updateSky } from './sky/dome.js';
+import { spawnWhale } from './sky/whale.js';
+import { say, updateDialog } from './ui/dialog.js';
+import { $, ui, uiOpen } from './ui/dom.js';
+import { updateHud } from './ui/hud.js';
+import { openJournal } from './ui/journal.js';
+import { openMenu } from './ui/menu.js';
+import { updateModals } from './ui/modal.js';
+import { updatePlaces } from './ui/places.js';
+import { updatePrompt } from './ui/prompt.js';
+import { showPlace } from './ui/toast.js';
+import { buildBenchArea, buildHouseExterior, buildSnail } from './village.js';
+import { P } from './world/layout.js';
+import { buildRoads } from './world/roads.js';
+import { buildFlowers } from './world/scenery/flowers.js';
+import { buildGrass, updateGrass } from './world/scenery/grass.js';
+import { buildLamps } from './world/scenery/lamps.js';
+import { buildPond } from './world/scenery/pond.js';
+import { buildRocks } from './world/scenery/rocks.js';
+import { buildShards, updateShards } from './world/scenery/shards.js';
+import { buildSignpost } from './world/scenery/signpost.js';
+import { buildTrees } from './world/scenery/trees.js';
+import { buildTerrain } from './world/terrain-mesh.js';
+import { heightAt } from './world/terrain.js';
+import { buildUnderside } from './world/underside.js';
 
-// ================================================================ MAIN
-export let whale;
-export const camNear = (p, d)=> render3D.camera.pos.distanceSquared(p) < d * d;
 function gameInit()
 {
     loadSave();
@@ -50,7 +69,7 @@ function gameInit()
     buildSwing(); buildChimes(); buildMoonlet(); buildMushrooms(); buildOverlook(); buildTelescope(); buildPier(); buildSheep();
     buildLamps(); buildGrass(); buildTrees(); buildRocks(); buildFlowers(); buildShards(); buildAmbientFx();
     buildHouseInterior();
-    whale = new StarWhale;
+    spawnWhale();
     new StarPillars; new RippleDrawer;
     postProcessBloom(.6, 1.05, 10);
     const g = loadSetting('graphics');
@@ -64,8 +83,8 @@ function gameInit()
 }
 function startGame()
 {
-    if (gameMode !== 'title') return;
-    setGameMode('play');
+    if (state.mode !== 'title') return;
+    state.mode = 'play';
     $('title').hidden = true;
     $('hud').hidden = false;
     $('touch').hidden = !MOBILE;
@@ -91,7 +110,7 @@ function gameUpdate()
     updateGrass();
     updateShards();
     musicUpdate();
-    if (gameMode === 'title')
+    if (state.mode === 'title')
     {
         if (keyWasPressed('Enter') || gamepadWasPressed(0) || gamepadWasPressed(9)) startGame();
         return;
@@ -100,14 +119,14 @@ function gameUpdate()
     else if (ui.modal) updateModals();
     else
     {
-        if (!activity && (keyWasPressed('Escape') || gamepadWasPressed(9))) openMenu();
-        else if (activity && gamepadWasPressed(9)) openMenu();
-        else if (!activity && input.journal()) openJournal();
-        else if (activity) activity.update();
+        if (!activity.current && (keyWasPressed('Escape') || gamepadWasPressed(9))) openMenu();
+        else if (activity.current && gamepadWasPressed(9)) openMenu();
+        else if (!activity.current && input.journal()) openJournal();
+        else if (activity.current) activity.current.update();
     }
     updatePlayer();
     updateHouse();
-    updateInteract();
+    updateInteract(player, state.mode === 'play' && !activity.current && !uiOpen());
     updateStarFall();
     checkMoonletVisit();
     updatePlaces();
@@ -119,7 +138,7 @@ function gameUpdate()
 }
 function gameUpdatePost()
 {
-    if (gameMode === 'title')
+    if (state.mode === 'title')
     {
         const a = timeReal * .03 + 2.2;
         render3D.camera.orbit(vec3(0, -6, 0), 175, a, .32);

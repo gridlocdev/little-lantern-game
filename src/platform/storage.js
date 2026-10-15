@@ -1,4 +1,7 @@
-// ================================================================ SAVING
+// Everything the game remembers goes through this file.
+
+// Everything the game remembers goes through this file.
+
 // Everything the game remembers goes through this file. The game reads and writes a small in-memory table of
 // string values; a storage backend fills that table once before the engine starts and is told about every change.
 //
@@ -14,8 +17,8 @@
 // A file backend can ignore `key` and write `JSON.stringify(all)` to one file. Writes are fire and forget, and a
 // failing backend never stops the game.
 
-const SAVE_KEY = 'violet-isle-dream-v1';
-const SETTING_KEYS = { volume: SAVE_KEY + '-vol', graphics: SAVE_KEY + '-gfx' };
+export const SAVE_KEY = 'violet-isle-dream-v1';
+export const SETTING_KEYS = { volume: SAVE_KEY + '-vol', graphics: SAVE_KEY + '-gfx' };
 
 const localStorageBackend = {
     load()
@@ -54,47 +57,3 @@ export const storage = {
         catch (e) { console.warn('could not save', e); }
     },
 };
-
-// ---------------------------------------------------------------- game progress
-export const save = {
-    fish: {},            // species id -> count caught
-    best: {},            // species id -> biggest size cm
-    aquarium: [],        // species ids kept
-    released: 0,
-    stardust: 0,
-    lanterns: 0,
-    sky: {},             // constellations found
-    outfit: 0,
-    bridge: false,
-    flower: 0,           // moonflower growth stage 0-4
-    flowerWatered: -1,   // visit count when last watered
-    visits: 0,
-    palette: 0,
-    swingHigh: false,
-    swingFlight: false,
-    bounceBest: 0,
-    sheep: 0,
-    cat: 0,
-    tea: 0,
-    books: {},
-    slept: 0,
-    moonlet: false,
-    whale: false,
-    hammock: false,
-    music: true,
-};
-export function loadSave()
-{
-    try
-    {
-        const s = JSON.parse(storage.get(SAVE_KEY) || 'null');
-        if (s && typeof s === 'object') Object.assign(save, s);
-    }
-    catch (e) {}
-}
-export const writeSave = ()=> storage.set(SAVE_KEY, JSON.stringify(save));
-export const forgetSave = ()=> storage.remove(SAVE_KEY);
-
-// ---------------------------------------------------------------- settings (kept apart from progress, so a new dream keeps them)
-export const loadSetting = (name)=> storage.get(SETTING_KEYS[name]);
-export const writeSetting = (name, value)=> storage.set(SETTING_KEYS[name], value);

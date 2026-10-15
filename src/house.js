@@ -1,19 +1,35 @@
 import {
-    EngineObject3D, Light3D, Mesh, PI, Shader, WHITE, buildBox, buildCone, buildCylinder, buildMatrix, buildSphere,
-    clamp, hsl, max, min, rand, randInt, render3D, time, timeDelta, vec2, vec3,
+    EngineObject3D, Light3D, MOBILE, Mesh, PI, Shader, WHITE, buildBox, buildCone, buildCylinder, buildMatrix,
+    buildSphere, clamp, hsl, max, min, rand, randInt, render3D, time, timeDelta, vec2, vec3,
 } from './platform/engine.js';
-import { startSit } from './activities.js';
-import { music, playSfx, setMusic } from './audio.js';
-import { activity, addInteract, cam, focusItem, input } from './controls.js';
-import { MOBILE, TAU, mtx, obj3 } from './core.js';
+import { music, setMusic } from './audio/music.js';
+import { playSfx } from './audio/sfx.js';
 import { drawFish, fishById } from './fishing.js';
-import { burst, sparkleColumn } from './fx.js';
-import { CONE, CYL, OUTFITS, SPH, SPH_LO, TORUS, moth, player } from './player.js';
-import { save, writeSave } from './save.js';
-import { GLSL_NOISE, PALETTES, setPalette } from './sky.js';
-import { fadeTransition, openJournal, say, showPlace, toast, uiOpen } from './ui.js';
+import { activity } from './game/activity.js';
+import { addInteract, focusItem } from './game/interact.js';
+import { save, writeSave } from './game/state.js';
+import { TAU } from './lib/math.js';
+import { input } from './platform/input.js';
+import { mtx, obj3 } from './platform/mesh.js';
+import { moth } from './player/mothling.js';
+import { OUTFITS } from './player/outfits-data.js';
+import { CONE, CYL, SPH, SPH_LO, TORUS } from './player/part-meshes.js';
+import { player } from './player/player.js';
+import { startSit } from './player/sit.js';
+import { cam } from './render/camera.js';
+import { GLSL_NOISE } from './render/glsl-noise.js';
+import { burst, sparkleColumn } from './render/particles.js';
+import { texPlank, texRug, texStone, texWallpaper } from './render/textures.js';
+import { setPalette } from './sky/dome.js';
+import { PALETTES } from './sky/palettes.js';
+import { say } from './ui/dialog.js';
+import { uiOpen } from './ui/dom.js';
+import { fadeTransition } from './ui/fade.js';
+import { openJournal } from './ui/journal.js';
+import { showPlace, toast } from './ui/toast.js';
 import { HOUSE } from './village.js';
-import { addSolid, heightAt, texPlank, texRug, texStone, texWallpaper } from './world.js';
+import { addSolid } from './world/collision.js';
+import { heightAt } from './world/terrain.js';
 
 // ================================================================ INSIDE THE CROOKED HOUSE
 // the room floats in the dark far below the island; you get there through the front door
@@ -500,5 +516,5 @@ export function updateHouse()
 {
     if (player.zone !== 'house') return;
     if (recordObj) recordObj.rotation3D = vec3(0, music.on ? time * 3 : recordObj.rotation3D.y, 0);
-    if (player.hold === 'cup' && houseState.cupFull && !activity && !uiOpen() && !focusItem && input.act()) drinkTea();
+    if (player.hold === 'cup' && houseState.cupFull && !activity.current && !uiOpen() && !focusItem && input.act()) drinkTea();
 }
