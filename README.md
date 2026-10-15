@@ -19,6 +19,9 @@ Other recipes:
 | `just check` | syntax-check every module in `src/`, then check the layer rules |
 | `just test` | run the unit tests for `src/lib/` and the content files |
 | `just types` | type-check the game against the engine's types |
+| `just app` | run the game as a desktop app (Electron) |
+| `just package` | build the desktop app for this computer's OS into `release/` |
+| `just package-for mac` | build one platform: `mac`, `win` or `linux` |
 
 Without just: `npm install && npm start`, then open http://localhost:8000.
 
@@ -50,8 +53,36 @@ Without just: `npm install && npm start`, then open http://localhost:8000.
   - `features/` one folder per thing to do: house, bench, snail, swing, chimes, moonlet, mushrooms, overlook, telescope, fishing, sheep, fallen stars
   - `main.js` lists the shared systems around the features and starts the engine
 - `test/` unit tests for `src/lib/` and the content files
+- `electron/` the desktop app: `main.js` opens the window and keeps the save in a file, `preload.cjs` hands the game that file save
+- `.github/workflows/release.yml` builds the desktop app for macOS, Windows and Linux when a `v*` tag is pushed
 - `tools/coupling-report.mjs` checks the layer rules (`just check`); `architecture.json` declares the layers
 - The engine is pinned to `littlejsengine@1.21.0` in `package.json`
+
+## Desktop app
+
+The game also runs as a desktop app through Electron, with no changes to the game itself. `electron/main.js` serves the game's files over an `app://` address (ES modules and the import map don't load from `file://`) and opens one window with Node.js kept out of the page. F11 toggles fullscreen. Links open in your browser, never in the game window.
+
+The desktop app saves to a file instead of `localStorage`, through the storage hook described under Saving:
+
+| OS | Save file |
+| --- | --- |
+| macOS | `~/Library/Application Support/Violet Isle/save.json` |
+| Windows | `%APPDATA%\Violet Isle\save.json` |
+| Linux | `~/.config/Violet Isle/save.json` |
+
+`just package` builds for the computer you're on, into `release/`:
+
+| Platform | Output |
+| --- | --- |
+| macOS | `Violet Isle-<version>-universal.dmg` and `-universal-mac.zip`, for Apple Silicon and Intel |
+| Windows | `Violet Isle Setup <version>.exe`, an installer that lets you pick the folder |
+| Linux | `Violet Isle-<version>.AppImage` |
+
+The packager's Windows and Linux tools are Intel programs, so building those on an Apple Silicon Mac needs Rosetta (`softwareupdate --install-rosetta`). Without it, push a tag instead: the release workflow builds each platform on its own OS and attaches all of them to a GitHub release. Set `version` in `package.json` to match the tag first; `npm version 1.1.0` does both.
+
+The builds aren't signed. On macOS, the first time, right-click the app and choose Open (or run `xattr -cr "/Applications/Violet Isle.app"` after copying it); Windows shows a SmartScreen warning with a "Run anyway" option. Signing needs an Apple Developer ID or a Windows code signing certificate, which electron-builder picks up from the environment when you have them.
+
+The fonts come from Google Fonts, so offline the title and HUD fall back to the system's serif and UI fonts.
 
 ## Saving
 

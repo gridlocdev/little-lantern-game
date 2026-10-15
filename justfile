@@ -4,7 +4,7 @@ port := "8000"
 default:
     @just --list
 
-# install the pinned LittleJS engine into node_modules
+# install the pinned engine, Electron and the packager into node_modules
 install:
     npm install
 
@@ -35,5 +35,17 @@ test:
 types:
     npx -y -p typescript@5.6.3 tsc -p jsconfig.json
 
+# run the game as a desktop app (Electron); the save goes to a file in the app's data folder
+app: _deps
+    npx electron .
+
+# package the desktop app for this computer's OS into release/
+package: _deps
+    npx electron-builder
+
+# package for one platform: mac (universal .dmg and .zip), win (installer), linux (AppImage); win and linux need Rosetta on Apple Silicon
+package-for platform: _deps
+    npx electron-builder --{{platform}}
+
 _deps:
-    @[ -d node_modules/littlejsengine ] || npm install
+    @[ -d node_modules/littlejsengine ] && [ -d node_modules/electron ] || npm install

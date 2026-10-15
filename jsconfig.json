@@ -4,8 +4,14 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "target": "ES2022",
-    "lib": ["ES2022", "DOM"],
-    "noEmit": true
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "noEmit": true,
+    "types": []
   },
-  "include": ["src/**/*.js"]
+  "include": [
+    "src/**/*.js"
+  ]
 }

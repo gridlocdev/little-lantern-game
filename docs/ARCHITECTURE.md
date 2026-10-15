@@ -14,6 +14,8 @@ Violet Isle is native ES modules served as static files, with no bundler. `src/m
 
 `architecture.json` declares these layers for `tools/coupling-report.mjs`.
 
+`electron/` wraps the game as a desktop app. It sits outside `src/` and the layers: the game knows nothing about it except the storage hook in `platform/storage.js`, which the desktop app fills with a file-backed save.
+
 The features are `house`, `bench`, `snail`, `swing`, `chimes`, `moonlet`, `mushrooms`, `overlook`, `telescope`, `fishing`, `sheep` and `fallen-stars`.
 
 ## The loop

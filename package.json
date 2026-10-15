@@ -1,17 +1,81 @@
 {
   "name": "violet-isle",
+  "productName": "Violet Isle",
   "version": "1.0.0",
   "description": "LittleJS 3D cozy game: a moth with a lantern on a floating island, fishing for things that swim between stars",
   "type": "module",
+  "main": "electron/main.js",
   "scripts": {
     "start": "python3 -m http.server 8000",
+    "app": "electron .",
+    "package": "electron-builder",
     "test": "node --test",
     "check": "node tools/coupling-report.mjs --strict"
   },
   "author": "",
   "license": "MIT",
+  "private": true,
   "dependencies": {
     "littlejsengine": "1.21.0"
   },
-  "private": true
+  "devDependencies": {
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.gridlocdev.violetisle",
+    "productName": "Violet Isle",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "index.html",
+      "style.css",
+      "src/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.games",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "universal"
+          ]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "linux": {
+      "category": "Game",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  }
 }
