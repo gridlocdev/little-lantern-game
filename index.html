@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Violet Isle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="ui" id="hud" hidden>
+  <div class="chips">
+    <div class="chip" title="Stardust">✦ <b id="dust">0</b></div>
+    <div class="chip" title="Fish caught">Fish <b id="fishCount">0</b></div>
+  </div>
+  <div class="hud-btns">
+    <button class="btn" id="btnJournal" type="button">Journal <kbd class="desk-only">J</kbd></button>
+    <button class="btn" id="btnMenu" type="button">Menu <kbd class="desk-only">Esc</kbd></button>
+  </div>
+</div>
+<div class="ui" id="place"></div>
+<div class="ui" id="toasts"></div>
+<div class="ui" id="prompt" hidden><div><kbd id="promptKey">E</kbd><span id="promptText"></span></div></div>
+<div class="ui" id="meter" hidden><div class="box" id="meterBox"></div></div>
+<div class="ui" id="dialog" hidden><div class="sheet"><div class="who" id="dlgWho"></div><div class="text" id="dlgText"></div><div class="opts" id="dlgOpts"></div><div class="hint" id="dlgHint"></div></div></div>
+<div class="ui" id="scope" hidden><div class="hint" id="scopeHint"></div></div>
+<div class="ui" id="touch" hidden>
+  <button class="tap" id="tJournal" type="button">Journal</button>
+  <span></span>
+  <button class="tap" id="tAct" type="button">Use</button>
+  <button class="tap big" id="tJump" type="button">Jump</button>
+</div>
+
+<div class="ui modal" id="catch" hidden>
+  <div class="card" role="dialog" aria-labelledby="catchName">
+    <div class="catch-art"><canvas id="catchCanvas" width="520" height="150"></canvas></div>
+    <h2 id="catchName"></h2>
+    <div class="meta"><span class="stars" id="catchStars"></span><span id="catchSize"></span><span id="catchWhere"></span></div>
+    <p id="catchText"></p>
+    <div class="row">
+      <button class="btn" id="catchRelease" type="button">Release to the sky <kbd class="desk-only">R</kbd></button>
+      <button class="btn primary" id="catchKeep" type="button">Keep in the aquarium <kbd class="desk-only">K</kbd></button>
+    </div>
+  </div>
+</div>
+
+<div class="ui modal" id="journal" hidden>
+  <div class="card" role="dialog" aria-labelledby="jTitle">
+    <h2 id="jTitle">Dream Journal</h2>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab="fish" aria-selected="true">Cosmic fish</button>
+      <button type="button" role="tab" data-tab="island" aria-selected="false">Things to do</button>
+      <button type="button" role="tab" data-tab="sky" aria-selected="false">Night sky</button>
+    </div>
+    <div id="jBody" class="list"></div>
+    <div class="row"><button class="btn" id="jClose" type="button">Close <kbd class="desk-only">J</kbd></button></div>
+  </div>
+</div>
+
+<div class="ui modal" id="menu" hidden>
+  <div class="card" role="dialog" aria-labelledby="mTitle">
+    <h2 id="mTitle">Resting between dreams</h2>
+    <div class="menu-grid">
+      <label for="volSlider">Sound volume <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.5"></label>
+      <label for="musicToggle">Music <button class="btn" id="musicToggle" type="button">On</button></label>
+      <label for="gfxToggle">Graphics <button class="btn" id="gfxToggle" type="button">Full</button></label>
+      <div class="keys-small desk-only">
+        <kbd>W A S D</kbd><span>Walk, hold Shift to run</span>
+        <kbd>Space</kbd><span>Jump, hold in the air to glide</span>
+        <kbd>E</kbd><span>Use, talk, fish, sit</span>
+        <kbd>Drag</kbd><span>Turn the camera, scroll to zoom, Z and C also turn it</span>
+        <kbd>J</kbd><span>Journal</span>
+        <kbd>Q</kbd><span>Leave an activity</span>
+      </div>
+      <p class="touch-only">Left thumb walks. Drag anywhere else to look around. Use the round buttons to jump and use things.</p>
+      <div id="resetRow" class="row" style="justify-content:flex-start">
+        <button class="btn" id="resetBtn" type="button">Start a new dream</button>
+      </div>
+    </div>
+    <div class="row"><button class="btn primary" id="mClose" type="button">Back to the island</button></div>
+  </div>
+</div>
+
+<div class="ui" id="fade"></div>
+
+<div class="ui" id="title">
+  <div class="card">
+    <h1>Violet Isle</h1>
+    <p class="tag">You are a small moth with a lantern on an island that floats through the night. Fish for things that swim between stars, swing until you touch the moon, and find what the crystals are humming about.</p>
+    <div class="keys desk-only">
+      <span><kbd>W A S D</kbd></span><span>Walk, hold <kbd>Shift</kbd> to run</span>
+      <span><kbd>Space</kbd></span><span>Jump, hold it in the air to glide</span>
+      <span><kbd>E</kbd></span><span>Use, talk, fish, sit</span>
+      <span><kbd>Drag</kbd></span><span>Turn the camera, scroll to zoom</span>
+      <span><kbd>J</kbd></span><span>Dream journal</span>
+    </div>
+    <div class="keys touch-only"><span>Left thumb</span><span>Walk</span><span>Drag</span><span>Look around</span><span>Buttons</span><span>Jump and use things</span></div>
+    <div class="row"><button class="btn primary" id="startBtn" type="button">Enter the dream</button></div>
+    <p class="note" id="titleNote">A gamepad works too.</p>
+  </div>
+</div>
+
+<script src="node_modules/littlejsengine/dist/littlejs.min.js"></script>
+<script src="src/core.js"></script>
+<script src="src/save.js"></script>
+<script src="src/world.js"></script>
+<script src="src/sky.js"></script>
+<script src="src/player.js"></script>
+<script src="src/controls.js"></script>
+<script src="src/fx.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/village.js"></script>
+<script src="src/fishing.js"></script>
+<script src="src/activities.js"></script>
+<script src="src/house.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>
