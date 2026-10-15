@@ -32,8 +32,11 @@ ipcMain.handle('save:load', async ()=>
     catch (e) { return {}; }    // a first run, or a save that could not be read
 });
 ipcMain.handle('save:write', (event, all)=> writeSave(all));
-// "Save and exit": the save just sent is already queued, so wait for the queue, then quit (on macOS too)
-ipcMain.handle('app:quit', async ()=> { await writing; app.quit(); });
+// "Save and exit": the save just sent is already queued, so wait for the queue, then exit (on macOS too).
+// The save is on disk by then, so exit at once instead of a graceful quit: a graceful quit tears the window down step
+// by step and can start a sandboxed helper process mid-shutdown, which macOS refuses with
+// "sandbox_extension_issue_file failed ... Operation not permitted".
+ipcMain.handle('app:quit', async ()=> { await writing; app.exit(0); });
 
 // ---------------------------------------------------------------- window
 function createWindow()

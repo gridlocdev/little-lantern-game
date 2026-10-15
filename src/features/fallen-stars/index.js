@@ -42,7 +42,7 @@ class FallenStar extends EngineObject3D
         {
             const n = randInt(3, 8);
             addStardust(n);
-            playSfx('collect', this.pos3D, 1);
+            playSfx('collect', this.pos3D, .7);
             kickCamera(.04);
             focusCamera(this.pos3D.add(vec3(0, 2, 0)), { pull: .3, zoom: .9, dur: .8 });
             sparkleColumn(this.pos3D, hsl(.13, .9, .75), 36, 2);
@@ -81,7 +81,7 @@ class StarPillars extends EngineObject3D
 }
 function landFallenStar(pos)
 {
-    playSfx('collect', pos, .6, .5);
+    playSfx('starfall', pos, .6);
     burst(pos.add(vec3(0, .5, 0)), hsl(.13, .9, .75), 30, .12, .3);
     new FallenStar(pos);
 }

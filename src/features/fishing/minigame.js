@@ -171,20 +171,23 @@ function updateFishing()
     else if (F.state === 'reel')
     {
         const f = F.fish, d = f.diff;
-        // the fish darts about the track
+        // the fish darts about the track: it pauses long enough to react to, jumps a bounded
+        // distance, and has a top speed the band can keep up with
         F.fishT = (F.fishT || 0) - dt;
-        if (F.fishT <= 0) { F.fishT = rand(.25, 1.1) * (1.2 - d); F.fishGoal = rand(.05, .95); }
-        F.fishV += (F.fishGoal - F.fishX) * dt * (6 + d * 14) - F.fishV * dt * 3;
+        if (F.fishT <= 0) { F.fishT = rand(.5, 1.3) * (1.2 - d * .5); F.fishGoal = clamp(F.fishX + rand(-1, 1) * (.25 + d * .45), .05, .95); }
+        const k = 5 + d * 9, vMax = .4 + d * .8;
+        F.fishV += (F.fishGoal - F.fishX) * dt * k - F.fishV * dt * 1.4 * Math.sqrt(k);
+        F.fishV = clamp(F.fishV, -vMax, vMax);
         F.fishX = clamp(F.fishX + F.fishV * dt, 0, 1);
         // your band rises while you hold and sinks when you let go
-        F.zoneV += (held ? 2.6 : -2.2) * dt;
-        F.zoneV *= .985;
+        F.zoneV += (held ? 3 : -2.6) * dt;
+        F.zoneV *= Math.exp(-dt * 1.4);
         F.zone += F.zoneV * dt;
-        const zw = .3 - d * .1;
+        const zw = .32 - d * .08;
         if (F.zone < 0) { F.zone = 0; F.zoneV = abs(F.zoneV) * .3; }
         if (F.zone > 1 - zw) { F.zone = 1 - zw; F.zoneV = -abs(F.zoneV) * .3; }
         const inside = F.fishX > F.zone && F.fishX < F.zone + zw;
-        F.progress += inside ? dt * .3 : -dt * (.14 + d * .2);
+        F.progress += inside ? dt * .32 : -dt * (.1 + d * .14);
         if (inside && rand() < dt * 8) playSfx('tick', undefined, .4, 1 + F.progress);
         $('mZone').style.left = (F.zone * 100) + '%';
         $('mZone').style.width = (zw * 100) + '%';

@@ -137,8 +137,13 @@ function buildMoonlet()
     obj3(vec3(hx, hy + .6, hz), hammock, WHITE, { rotation3D: vec3(0, Math.atan2(side.x, side.z) - PI / 2, 0) });
     addInteract({ pos: vec3(hx, hy, hz), r: 2.2, label: 'Lie in the hammock', when: ()=> true, act: ()=>
     {
-        startSit(vec3(hx, hy + .05, hz), hyaw, { pose: 'lie', height: .15, out: 1.2, hint: `${MOBILE ? 'Use' : 'E'}|Get up`,
+        // lying on its back stretches the body out behind the way it faces, so face along the hammock (post to
+        // post) and put the feet half a body ahead of the middle; the bed hangs .6 above the ground
+        const along = hyaw - PI / 2, fwd = vec3(-Math.sin(along), 0, -Math.cos(along));
+        startSit(vec3(hx, hy, hz).add(fwd.scale(.62)), along, { pose: 'lieBack', height: .64, out: 0, hint: `${MOBILE ? 'Use' : 'E'}|Get up`,
             onSit: ()=> { if (!save.hammock) { save.hammock = true; writeSave(); } toast('The whole sky turns slowly around you.'); },
+            // climb out over the side, not into a post
+            onStand: ()=> { const out = vec3(hx, 0, hz).add(vec3(-Math.sin(hyaw), 0, -Math.cos(hyaw)).scale(1.4)); player.pos = vec3(out.x, moonletHeight(out.x, out.z), out.z); player.yaw = hyaw; },
             cam: ()=> ({ target: vec3(hx, hy + 1, hz), dist: 9, yaw: time * .08, pitch: .5 }) });
     } });
     // moonflowers

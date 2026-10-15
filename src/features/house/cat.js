@@ -29,13 +29,13 @@ export class StarCat extends EngineObject3D
     {
         this.purr = 3;
         moth.reach = 1.5;
-        playSfx('meow', this.pos3D, .9, rand(.92, 1.12));
+        playSfx('meow', this.pos3D, .6, rand(.92, 1.12));
         focusCamera(this.pos3D.add(vec3(0, .4, 0)), { pull: .5, zoom: .78, dur: 2.2 });
         setTimeout(()=> playSfx('purr', this.pos3D, 1), 450);
         burst(this.pos3D.add(vec3(0, .5, 0)), hsl(.13, .9, .75), 10, .03, .12);
         save.cat++; writeSave();
         if (save.cat === 1) toast('The star cat purrs. Little stars drift off its back.');
-        else if (rand() < .25) setTimeout(()=> { toast('The cat stretches, wanders off, and curls up somewhere else.'); this.moveTo(this.spot + 1 + randInt(2)); playSfx('meow', this.pos3D, .5, 1.25); }, 3200);
+        else if (rand() < .25) setTimeout(()=> { toast('The cat stretches, wanders off, and curls up somewhere else.'); this.moveTo(this.spot + 1 + randInt(2)); playSfx('meow', this.pos3D, .4, 1.2); }, 3200);
     }
     update() { this.purr = max(0, this.purr - timeDelta); }
     render3D()

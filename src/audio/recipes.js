@@ -2,6 +2,7 @@
 // Most island sounds are pitched and shaped (knocks, bubbles, voices, bells) rather than raw noise; noise only ever
 // comes through a filter, as wind, water or a mouth. Imports only lib/, so tests can build every sound in node.
 import { arch, noise, normalize, osc, pluck, ramp, render, saw, sine, square, svf, tri } from '../lib/synth.js';
+import { mix } from '../lib/math.js';
 
 const R = (seconds, fn, peak)=> normalize(render(seconds, fn), peak);
 const exp = Math.exp;
@@ -13,6 +14,12 @@ function chime(f, t, decayScale = 1)
     let s = 0;
     for (const [r, a, d] of BELL) s += sine(f * r * t) * a * pluck(t, .002, d * decayScale);
     return s;
+}
+// a pure tone that fades in (no struck click) with a whisper of the octave, then dies away gently
+function glow(f, t, decay, attack = .02)
+{
+    if (t < 0) return 0;
+    return (sine(f * t) + sine(f * 2 * t) * .12) * pluck(t, attack, decay) * (1 + .15 * sine(5 * t));
 }
 // a vowel: a buzzy source through two formant band-passes that follow F1 and F2 over time
 function vowel(f0, f1, f2, q = 6)
@@ -102,13 +109,19 @@ export const RECIPES = {
         const o = osc((t)=> 150 + 750 * exp(-t * 14), saw), f = svf(), c = osc(2600);
         return R(.32, (t)=> f(o(t), 2800, .8).lp * pluck(t, .001, 12) + c(t) * pluck(t, 0, 120) * .6, .4);
     },
-    // stardust: a quick sparkling arpeggio
-    collect: ()=> R(.8, (t)=>
+    // stardust: a soft, airy rise of pure tones, each fading in rather than struck, over a faint breath of air
+    collect()
     {
-        let s = 0;
-        [1046.5, 1318.5, 1568, 2093].forEach((f, i)=> { const at = i * .055; if (t > at) s += chime(f, t - at, 2.6) * (1 - i * .12); });
-        return s;
-    }, .4),
+        const notes = [[783.99, 0], [1046.5, .07], [1318.5, .14], [1567.98, .21]], n = noise(19), f = svf();
+        return R(1.3, (t)=>
+        {
+            let s = 0;
+            notes.forEach(([hz, at], i)=> { if (t > at) s += glow(hz, t - at, 3.2) * (1 - i * .18); });
+            return s + f(n(), 2600, 2.5).bp * arch(t, .5) * .06;
+        }, .16);
+    },
+    // a star coming down to land: a low warm tone swelling in, with a higher one hovering above it
+    starfall: ()=> R(1.6, (t)=> glow(392, t, 2.2, .05) + glow(587.33, t - .12, 2.6, .08) * .45, .14),
     // air rushing past: filtered noise whose band sweeps up and back down
     whoosh()
     {
@@ -144,17 +157,28 @@ export const RECIPES = {
             return (f(o(t), 380, .8).lp + g(n(), 260, .7).lp * 1.2) * beat * breath(t);
         }, .5);
     },
-    // a cat meowing: m-e-o-w, the pitch rising and falling while the mouth opens and rounds
+    // a cat meowing, from measurements of domestic cat meows (Nicastro 2004: about .8 s long, pitch arching from about
+    // 500 to a peak near 880 Hz, formants at mid-call near 1450 and 3050 Hz, gliding like a diphthong). A buzzy
+    // voice is shaped by three moving resonances: a closed-mouth nasal "m", opening wide and bright into "eee-a",
+    // then rounding into "ow" as the formants fall and the pitch drops away.
     meow()
     {
-        const len = .62;
-        const v = vowel(
-            (t)=> ramp([[0, 560], [.12, 720], [.3, 780], [len, 480]])(t) * (1 + .012 * sine(6 * t)),
-            ramp([[0, 300], [.1, 520], [.25, 880], [.45, 680], [len, 340]]),
-            ramp([[0, 1700], [.1, 2300], [.25, 1500], [.45, 1050], [len, 720]]), 5);
-        const amp = ramp([[0, 0], [.05, .5], [.12, 1], [.42, .9], [len, 0]]);
-        const n = noise(33), f = svf();
-        return R(len, (t)=> v(t) * amp(t) + f(n(), 1800, .8).bp * amp(t) * .05, .5);
+        const len = .78;
+        const pitch = ramp([[0, 520], [.08, 600], [.28, 880], [.5, 760], [len, 440]]);
+        const src = osc((t)=> pitch(t) * (1 + .015 * sine(7 * t)), (p)=> saw(p) * .65 + square(p, .3) * .35);
+        const f1 = ramp([[0, 600], [.1, 900], [.3, 1450], [.42, 1400], [.62, 900], [len, 700]]);
+        const f2 = ramp([[0, 1700], [.1, 2500], [.22, 3050], [.4, 3000], [.6, 1900], [len, 1300]]);
+        const f3 = ramp([[0, 3800], [.25, 4300], [len, 3600]]);
+        const nasal = ramp([[0, 1], [.07, 1], [.13, 0], [len, 0]]);          // the "m" before the mouth opens
+        const amp = ramp([[0, 0], [.03, .35], [.1, .8], [.18, 1], [.5, .85], [.7, .35], [len, 0]]);
+        const a = svf(), b = svf(), c = svf(), m = svf(), tilt = svf(), n = noise(33);
+        return R(len, (t)=>
+        {
+            const v = src(t), x = v + n() * .05;                              // a little breath in the voice
+            const open = a(x, f1(t), 5).bp + b(x, f2(t), 6).bp * .8 + c(x, f3(t), 7).bp * .3;
+            const hum = m(v, 330, 2).bp;
+            return tilt(mix(open, hum * 1.6, nasal(t)) * amp(t), 6000, .7).lp;
+        }, .2);
     },
     // a wooden door: a creaking hinge, then the latch
     door()
@@ -215,8 +239,8 @@ export const RECIPES = {
         const o = osc(1700, (p)=> square(p, .25)), b = osc(320);
         return R(.09, (t)=> { const e = pluck(t, 0, 260) + (t > .045 ? pluck(t - .045, 0, 300) * .7 : 0); return (o(t) * .4 + b(t)) * e; }, .25);
     },
-    // a card opening: two rising glass notes
-    open: ()=> R(.6, (t)=> chime(783.99, t, 2) * .8 + (t > .07 ? chime(1046.5, t - .07, 2) : 0), .3),
+    // a card or the journal opening: two soft rising tones, like a breath
+    open: ()=> R(.55, (t)=> glow(523.25, t, 7, .012) * .8 + glow(783.99, t - .06, 6, .012) * .6, .12),
     // a sip of tea: a slurp, then a gulp
     sip()
     {

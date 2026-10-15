@@ -11,7 +11,7 @@ import { BOXM, CAPS, CONE, CYL, SPH, SPH_LO, TORUS } from './part-meshes.js';
 import { player } from './player.js';
 
 // a pose the mothling eases toward
-const POSE = { legAmp: 0, legPitch: 0, armR: 0, armL: 0, armRY: 0, armLY: 0, wingOpen: 0, flap: 0, flapSpeed: 0, lean: 0, drop: 0, lie: 0, headTilt: 0, tuck: 0 };
+const POSE = { legAmp: 0, legPitch: 0, armR: 0, armL: 0, armRY: 0, armLY: 0, wingOpen: 0, flap: 0, flapSpeed: 0, lean: 0, drop: 0, lie: 0, lieBack: 0, lieSide: 0, headTilt: 0, tuck: 0 };
 
 export class Mothling extends EngineObject3D
 {
@@ -65,7 +65,10 @@ export class Mothling extends EngineObject3D
         else if (mode === 'reel') { t.armR = -1.25 + Math.sin(time * 18) * .08; t.armL = -1.25; t.armRY = .35; t.armLY = -.45; t.lean = -.12; t.legPitch = .15; }
         else if (mode === 'cheer') { t.armR = -2.8; t.armL = -2.8; t.wingOpen = 1; t.flap = .4; t.flapSpeed = 10; t.drop = -.05 - abs(Math.sin(time * 8)) * .08; }
         else if (mode === 'lie') { t.lie = 1; t.legPitch = -.2; t.armR = -.3; t.armL = -.3; }
+        else if (mode === 'sleep') { t.lieSide = 1; t.wingOpen = -.45; t.tuck = .9; t.legPitch = -1; t.armR = -.7; t.armL = -.7; t.armRY = .5; t.armLY = -.5; t.headTilt = .35; }
+        else if (mode === 'lieBack') { t.lieBack = 1; t.legPitch = -.35; t.armR = -.5; t.armL = -.5; t.headTilt = -.2; }
         else if (mode === 'cup') { t.armR = -1.7; t.armRY = .7; t.headTilt = -.15; }
+        else if (mode === 'read') { t.legPitch = -1.4; t.drop = .27; t.armR = -1.45; t.armL = -1.45; t.armRY = .5; t.armLY = -.5; t.headTilt = .42; }
         else if (mode === 'book') { t.armR = -1.2; t.armL = -1.2; t.armRY = .55; t.armLY = -.55; t.headTilt = .25; }
         else if (mode === 'look') { t.headTilt = -.55; t.armR = -1.5; t.armL = -1.3; t.armRY = .3; t.armLY = -.3; }
         else if (mode === 'chime') { t.armR = -1.4 + Math.sin(time * 9) * .25; t.armRY = .2; }
@@ -83,7 +86,7 @@ export class Mothling extends EngineObject3D
         this.walkPhase += dt * (player.onGround ? player.speed * 2.4 : 0);
         this.blinkTimer -= dt;
         if (this.blinkTimer < 0) { this.blink = 1; this.blinkTimer = rand(2.5, 5.5); }
-        this.blink = max(0, this.blink - dt * 7);
+        this.blink = player.pose === 'sleep' ? 1 : max(0, this.blink - dt * 7);     // asleep, the eyes stay shut
         this.stretchTimer -= dt;
         if (player.speed < .2 && this.stretchTimer < 0) { this.stretchTimer = rand(6, 12); this.stretchAnim = 1.4; }
         if (this.stretchAnim > 0) { this.stretchAnim -= dt; this.stretch = Math.sin(clamp(this.stretchAnim / 1.4) * PI); }
@@ -103,12 +106,16 @@ export class Mothling extends EngineObject3D
         const p = this.p;
         const bob = player.onGround && player.pose === 'free' ? abs(Math.sin(this.walkPhase)) * .05 * p.legAmp + Math.sin(time * 2.2) * .01 : Math.sin(time * 2) * .01;
         const m = mtx(undefined, player.pos.add(vec3(0, bob - p.drop, 0)), vec3(0, player.yaw, 0));
+        // lying: face down (lie), curled on its side asleep and breathing (lieSide), or on its back (lieBack)
         if (p.lie > .01) m.multiply(buildMatrix(vec3(0, .25 * p.lie, 0), vec3(-PI / 2 * p.lie, 0, 0)));
+        if (p.lieSide > .01) m.multiply(buildMatrix(vec3(0, .3 * p.lieSide + Math.sin(time * 1.6) * .008, 0), vec3(0, 0, PI / 2 * p.lieSide)));
+        if (p.lieBack > .01) m.multiply(buildMatrix(vec3(0, .25 * p.lieBack, 0), vec3(PI / 2 * p.lieBack, 0, 0)));
         m.multiply(buildMatrix(undefined, vec3(-p.lean + (player.extraPitch || 0), 0, Math.sin(this.walkPhase) * .04 * p.legAmp)));
         return m;
     }
     render3D()
     {
+        if (player.hidden) return;
         const o = this.outfit, p = this.p;
         const R0 = this.rootMatrix();
         const draw = (mesh, m, c)=> render3D.drawMesh(mesh, m, undefined, c);
@@ -152,7 +159,7 @@ export class Mothling extends EngineObject3D
         {
             const pitch = s > 0 ? p.armR : p.armL, yaw = s > 0 ? p.armRY : p.armLY;
             const swing = player.pose === 'free' && player.onGround ? -Math.sin(this.walkPhase + (s > 0 ? 0 : PI)) * p.legAmp * .6 : 0;
-            const sh = mtx(R0, vec3(s * .27, .66, -.04), vec3(pitch + swing, yaw, s * .25));
+            const sh = mtx(R0, vec3(s * .27, .66, -.04), vec3(-(pitch + swing), yaw, s * .25));     // -pitch: raised arms go forward
             draw(CAPS, mtx(sh, vec3(0, -.12, 0), vec3(), vec3(.22, .26, .22)), o.body.scale(.9, 1));
             draw(SPH_LO, mtx(sh, vec3(0, -.26, 0), vec3(), vec3(.11)), o.fluff);
             hand.push(sh.transformPoint(vec3(0, -.28, 0)));
@@ -161,7 +168,8 @@ export class Mothling extends EngineObject3D
         this.handL = hand[0];
         this.hipPos = R0.transformPoint(vec3(.3, .45, .05));
 
-        // wings: folded back at rest, spread and beating in the air
+        // wings: folded back at rest, spread and beating in the air. A wing reaches along its +x, and yawing it by a
+        // negative sweep turns that toward +z, behind the mothling (it faces -z)
         const flap = Math.sin(time * p.flapSpeed) * p.flap;
         for (const s of [-1, 1])
         for (const lower of [0, 1])
@@ -169,7 +177,7 @@ export class Mothling extends EngineObject3D
             const sweep = mix(1.15, .2, p.wingOpen) + lower * .25;
             const raise = mix(.15, .45, p.wingOpen) + flap * (lower ? .7 : 1) - lower * .55;
             const hinge = mtx(R0, vec3(s * .1, lower ? .58 : .78, .22), undefined, vec3(s, 1, 1));
-            const W = mtx(hinge, vec3(), vec3(0, sweep, raise));
+            const W = mtx(hinge, vec3(), vec3(0, -sweep, raise));
             const span = lower ? .5 : .68, tall = lower ? .38 : .52;
             draw(SPH, mtx(W, vec3(span * .48, lower ? -.05 : .06, 0), vec3(), vec3(span, tall, .035)), o.wing);
             draw(SPH_LO, mtx(W, vec3(span * .78, lower ? -.08 : .1, 0), vec3(), vec3(span * .35, tall * .45, .04)), o.wing.lerp(o.body, .35));
@@ -180,8 +188,7 @@ export class Mothling extends EngineObject3D
             });
         }
 
-        // held things
-        this.drawHeld(R0, draw, glow);
+        this.drawHeld(R0, draw, glow);      // held things
 
         // antennae and scarf are ribbons, drawn after the solid parts
         this.drawAntennae(H, o);
@@ -200,7 +207,7 @@ export class Mothling extends EngineObject3D
         const flame = L.transformPoint(vec3(0, -.2, 0));
         glow(()=> draw(SPH_LO, mtx(L, vec3(0, -.2, 0), vec3(), vec3(.1, .14 + Math.sin(time * 13) * .01, .1)), hsl(.11, 1, .7)));
         this.light.pos3D = flame;
-        this.light.intensity = (player.zone === 'house' ? 1.1 : 1.7) * (1 + Math.sin(time * 7) * .04 + Math.sin(time * 17) * .02) * (this.warm > 0 ? 1.5 : 1);
+        this.light.intensity = (player.zone === 'house' ? 1.1 : 1.7) * (1 + Math.sin(time * 7) * .04 + Math.sin(time * 17) * .02) * (this.warm > 0 ? 1.5 : 1) * (hold === 'lantern' ? 1 : .4);     // dim at the hip, against the body
         this.light.radius = this.warm > 0 ? 11 : 8.5;
 
         if (hold === 'rod')

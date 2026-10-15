@@ -6,4 +6,5 @@ export const player = {
     glide: false, groundY: 0, lastSafe: vec3(), standing: undefined, airTime: 0, bounceChain: 0,
     hold: 'lantern', pose: 'free', poseT: 0, lockMove: false, speed: 0, fallTimer: 0,
     swing: null,     // the swing's state while swinging
+    hidden: false,   // not drawn, while the camera is where the mothling stands
 };

@@ -1,8 +1,9 @@
 // The dialog sheet. Lines type themselves out in the speaker's voice (see kinetic.js for the markup).
-import { MOBILE, inputClear, keyWasPressed, mouseWasPressed, timeReal } from '../platform/engine.js';
+import { MOBILE, inputClear, max, keyWasPressed, mouseWasPressed, timeReal } from '../platform/engine.js';
 import { playSfx } from '../audio/sfx.js';
 import { clearTouchPresses, input } from '../platform/input.js';
 import { $, ui } from './dom.js';
+import { focusDefault, keyNav } from './keynav.js';
 import { typeLine } from './kinetic.js';
 
 // who speaks in what voice: a pitch for their syllables, 0 for none (the narrator)
@@ -47,6 +48,7 @@ function renderEnd()
             b.onclick = ()=> closeDialog(o);
             opts.appendChild(b);
         });
+        if (!MOBILE) focusDefault(opts);
     }
     else $('dlgHint').textContent = MOBILE ? 'Tap to continue' : last ? 'E to close' : 'E to continue';
 }
@@ -62,6 +64,7 @@ function closeDialog(option)
 {
     const d = ui.dialog;
     if (!d) return;
+    if ($('dialog').contains(document.activeElement)) /** @type {HTMLElement} */ (document.activeElement).blur();
     ui.dialog = null;
     renderDialog();
     inputClear();
@@ -69,6 +72,7 @@ function closeDialog(option)
     if (option && option.fn) option.fn();
     d.resolve(option);
 }
+keyNav($('dlgOpts'));
 $('dialog').addEventListener('pointerdown', (e)=> { if (/** @type {HTMLElement} */ (e.target).tagName !== 'BUTTON') advanceDialog(); });
 export function updateDialog()
 {
@@ -83,7 +87,11 @@ export function updateDialog()
         for (let k = 0; k < d.options.length; k++)
             if (keyWasPressed('Digit' + (k + 1))) return closeDialog(d.options[k]);
         if (input.back()) return closeDialog(d.options.find((o)=> o.cancel) || d.options[d.options.length - 1]);
-        if (input.act() || input.jump()) return closeDialog(d.options[0]);
+        if (input.act() || input.jump())
+        {
+            const k = Array.prototype.indexOf.call($('dlgOpts').children, /** @type {Element} */ (document.activeElement));   // the choice the arrows are on
+            return closeDialog(d.options[max(0, k)]);
+        }
         return;
     }
     if (input.act() || input.jump() || mouseWasPressed(0) || input.back()) advanceDialog();

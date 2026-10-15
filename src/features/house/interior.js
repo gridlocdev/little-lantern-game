@@ -12,7 +12,7 @@ import { exitHouse } from './doors.js';
 import { HearthFire } from './hearth.js';
 import { Kettle } from './kettle.js';
 import { Moonflower, waterFlower } from './moonflower.js';
-import { ROOM, hin } from './plan.js';
+import { BED, CHAIR, ROOM, SHELF, hin } from './plan.js';
 import { furniture, houseState } from './room-state.js';
 import { save } from './save.js';
 import { StardustJar } from './stardust-jar.js';
@@ -96,7 +96,7 @@ export function buildHouseInterior()
         .combine(buildBox(vec3(1.3, 1, .3), .12, 2), vec3(0, .9, .5), hsl(.92, .4, .36))
         .combine(buildBox(vec3(.25, .7, 1.2), .1, 2), vec3(-.7, .6, 0), hsl(.92, .4, .36))
         .combine(buildBox(vec3(.25, .7, 1.2), .1, 2), vec3(.7, .6, 0), hsl(.92, .4, .36));
-    const chairPos = vec3(-2.6, 0, -1.2);
+    const chairPos = vec3(CHAIR.x, 0, CHAIR.z);
     obj3(hin(chairPos.x, 0, chairPos.z), chair);
     addSolid({ kind: 'box', x: HOUSE_IN.x + chairPos.x, z: HOUSE_IN.z + chairPos.z, hx: .8, hz: .65, top: HOUSE_IN.y + .62, zone: 'house' });
     addInteract({ pos: hin(chairPos.x, 0, chairPos.z + .3), r: 1.6, zone: 'house', label: 'Sit by the fire', act: ()=>
@@ -120,7 +120,7 @@ export function buildHouseInterior()
     } });
 
     // bed with a quilt
-    const bx = 4.1, bz = -2.6;
+    const bx = BED.x, bz = BED.z;
     const bed = new Mesh()
         .combine(buildBox(vec3(2.4, .5, 3.4)), vec3(0, .25, 0), hsl(.75, .25, .3))
         .combine(buildBox(vec3(2.25, .3, 3.2), .1, 2), vec3(0, .62, 0), hsl(.6, .2, .88))
@@ -150,7 +150,7 @@ export function buildHouseInterior()
     furniture.flower = new Moonflower(hin(ax - 1.8, 0, az + .4));
     addInteract({ pos: hin(ax - 1.8, 0, az + 1.1), r: 1.4, zone: 'house', label: ()=> save.flower >= 4 ? 'Admire the moonflower' : save.flowerWatered === core.visits ? 'The soil is still damp' : 'Water the moonflower', act: waterFlower });
     // bookshelf
-    const shx = -5.6, shz = -1.4;
+    const shx = SHELF.x, shz = SHELF.z;
     roomBox(shx, 1.6, shz, .6, 3.2, 2.2, hsl(.75, .25, .25));
     const books = new Mesh();
     for (let s = 0; s < 4; s++)

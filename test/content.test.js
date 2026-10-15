@@ -9,6 +9,7 @@ import { SNAIL_LINES, SNAIL_MEETING } from '../src/features/snail/lines-data.js'
 import { INTRO_CAPTION, INTRO_LINES } from '../src/features/intro/lines-data.js';
 import { BRIDGE_LINES } from '../src/features/moonlet/lines-data.js';
 import { WISHES } from '../src/features/overlook/wishes-data.js';
+import { END_CARD, ENDING_LINES } from '../src/features/ending/lines-data.js';
 
 const text = (s)=> typeof s === 'string' && s.trim().length > 0;
 
@@ -53,4 +54,9 @@ test('cutscene lines are text, and their kinetic markers come in pairs', ()=>
                 if ('*~_'.includes(m)) assert.equal(word[word.length - 1], m, `${k}: ${word}`);
             }
         }
+});
+test('the ending has its lines and its card', ()=>
+{
+    assert.ok(Object.values(ENDING_LINES).length >= 4 && Object.values(ENDING_LINES).every(text));
+    assert.ok(Object.values(END_CARD).every(text));
 });

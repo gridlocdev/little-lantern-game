@@ -21,6 +21,8 @@ const JUMP_VEL = 8.6; // apex about 1.7 m, enough to land on the low mushroom ca
 function updatePlayer()
 {
     const dt = timeDelta;
+    // an activity that places the mothling itself, frame by frame (sitting down into a chair), is left to it
+    if (activity.current?.pinned) return;
     const free = state.mode === 'play' && !activity.current && !uiOpen();
     let mv = free ? input.move() : vec2();
     const run = input.run();

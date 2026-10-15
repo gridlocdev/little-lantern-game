@@ -4,10 +4,12 @@ import { music } from '../../audio/music.js';
 import { BOOKS } from './books-data.js';
 import { buildHouseExterior } from './exterior.js';
 import { buildHouseInterior } from './interior.js';
+import { playNapScene } from './nap-scene.js';
 import { drinkTea } from './kettle.js';
 import { furniture, houseState } from './room-state.js';
 import { save } from './save.js';
 import { activity } from '../../game/activity.js';
+import { events } from '../../game/events.js';
 import { focusItem } from '../../game/interact.js';
 import { input } from '../../platform/input.js';
 import { OUTFITS } from '../../player/outfits.js';
@@ -32,6 +34,8 @@ export const houseFeature = {
         addTodo(180, 'Grow the moonflower to full bloom', ()=> save.flower >= 4);
         addTodo(190, 'Sleep and wake under a different sky', ()=> save.slept > 0);
         addTodo(200, 'Try on every outfit in the wardrobe', ()=> (save.outfitsTried || []).length >= OUTFITS.length);
+        // the ending sends the mothling home to bed
+        events.on('ending-go-home', (ending)=> { ending.taken = true; playNapScene(ending); });
     },
     buildLate: buildHouseInterior,
     update: updateHouse,

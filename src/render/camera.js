@@ -18,21 +18,26 @@ export const cam = { yaw: 0, pitch: .3, dist: 7, distT: 7, manualT: -99, look: v
 
 // what the camera shows, before focus and kicks
 const view = { pos: vec3(0, 40, 175), look: vec3(), fov: PI / 3, roll: 0 };
-let source = '', blend = null, blendOut = 1.2, focus = null, kick = 0;
+let source = '', blend = null, blendOut = 1.8, focus = null, kick = 0, kickTarget = 0;
 
-const ease = (x)=> x < .5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
+// a sine ease: it starts and settles gently and never rushes in the middle (a cubic ease moves three times faster
+// than average halfway through, which reads as a lurch)
+const ease = (x)=> (1 - Math.cos(PI * x)) / 2;
+// every glide between views takes at least this long; anything quicker feels like a cut that went wrong
+const MIN_BLEND = 1.6;
 const orbitPos = (look, d, yaw, pitch)=> look.add(vec3(Math.sin(yaw) * Math.cos(pitch) * d, Math.sin(pitch) * d, Math.cos(yaw) * Math.cos(pitch) * d));
 
 // Draws the camera's eye toward a point for a while: pull is how far the view turns to it (0..1), zoom narrows the
 // view (1 is none). Returns a handle whose release() lets go early; without dur it holds until released.
 export function focusCamera(point, { pull = .45, zoom = .82, dur = Infinity, rise = .5, fall = .7 } = {})
 {
-    const f = { point, pull, zoom, dur, rise, fall, t: 0, out: -1 };
+    // eased in and out slowly, and never zoomed hard, so a glance never snaps
+    const f = { point, pull, zoom: mix(1, zoom, .7), dur, rise: Math.max(.9, rise * 1.8), fall: Math.max(1.2, fall * 1.7), t: 0, out: -1 };
     focus = f;
     return { release() { if (f.out < 0) f.out = f.t; } };
 }
 // a quick punch in that settles, for impacts; amount is a fraction of the field of view
-export const kickCamera = (amount = .08)=> { kick = Math.max(kick, amount); };
+export const kickCamera = (amount = .08)=> { kickTarget = Math.max(kickTarget, amount * .45); };
 
 // ---------------------------------------------------------------- where each mode wants the camera
 function orbitInput(dt)
@@ -116,14 +121,15 @@ function updateCamera()
         {
             // a new place behind a fade: start a little further out and settle in
             const back = w.pos.subtract(w.look).scale(.45);
-            blend = { from: { pos: w.pos.add(back).add(vec3(0, 1.5, 0)), look: w.look.copy(), fov: w.fov, roll: 0 }, t: 0, dur: 1.8, arc: 0 };
+            blend = { from: { pos: w.pos.add(back).add(vec3(0, 1.5, 0)), look: w.look.copy(), fov: w.fov, roll: 0 }, t: 0, dur: 2.4, arc: 0 };
         }
         else
         {
-            const dur = was === 'title' ? w.blendIn ?? 2.4 : was.startsWith('act:') && !w.key.startsWith('act:') ? blendOut : w.blendIn ?? 1;
+            const asked = was === 'title' ? w.blendIn ?? 2.6 : was.startsWith('act:') && !w.key.startsWith('act:') ? blendOut : w.blendIn ?? 1.8;
+            const dur = Math.max(MIN_BLEND, asked * 1.3);
             blend = dur > 0 && was ? { from: { pos: view.pos.copy(), look: view.look.copy(), fov: view.fov, roll: view.roll }, t: 0, dur, arc: .12 } : null;
         }
-        blendOut = activity.current?.camBlendOut ?? 1.2;
+        blendOut = activity.current?.camBlendOut ?? 1.8;
     }
 
     let pos = w.pos, look = w.look, fov = w.fov, roll = w.roll || 0;
@@ -158,7 +164,9 @@ function updateCamera()
         fFov = fov * mix(1, f.zoom, k);
         if (f.out >= 0 && f.t - f.out >= f.fall) focus = null;
     }
-    kick *= Math.exp(-dt * 5);
+    // a kick swells in over a few frames and eases away, rather than jumping the zoom
+    kick = mix(kick, kickTarget, min(1, dt * 14));
+    kickTarget *= Math.exp(-dt * 3.5);
     const R = render3D.camera;
     R.pos = pos;
     R.lookAt(fLook);

@@ -8,6 +8,8 @@ const sections = [];    // { tab, order, rows() }
 const todos = [];       // { order, label, done() }
 export const addJournalSection = (tab, order, rows)=> sections.push({ tab, order, rows });
 export const addTodo = (order, label, done)=> todos.push({ order, label, done });
+// how many of the things to do are done, out of how many
+export const todoProgress = ()=> ({ done: todos.filter((t)=> t.done()).length, total: todos.length });
 
 let journalTab = 'fish';
 export function openJournal(tab)
@@ -29,6 +31,7 @@ function renderJournal()
     {
         const el = document.createElement('div');
         el.className = 'item' + (missing ? ' missing' : '');
+        el.tabIndex = 0;     // so the arrow keys can step down the list, scrolling it
         const dot = document.createElement('div');
         if (check !== undefined) { dot.className = 'check' + (check ? ' done' : ''); dot.textContent = check ? '✓' : ''; }
         else { dot.className = 'dot'; dot.style.background = dotStyle; }
@@ -43,7 +46,8 @@ function renderJournal()
     };
     if (journalTab === 'island')
     {
-        const list = [...todos].sort((a, b)=> a.order - b.order);
+        // what is left to do comes first, so it is never below the fold
+        const list = [...todos].sort((a, b)=> (+!!a.done() - +!!b.done()) || a.order - b.order);
         const done = list.filter((t)=> t.done()).length;
         row('transparent', `${done} of ${list.length} done`, 'Little things to try while you are here.', '', false, done === list.length);
         for (const t of list) row('', t.label, '', '', false, !!t.done());

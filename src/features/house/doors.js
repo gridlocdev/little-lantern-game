@@ -17,18 +17,23 @@ export function enterHouse()
     playSfx('door', player.pos, .9);
     fadeTransition(()=>
     {
-        player.zone = 'house';
-        player.pos = hin(-3.5, 0, 3.2);
-        player.vel = vec3();
-        player.yaw = 0;
-        cam.look = player.pos.add(vec3(0, .9, 0));
-        countVisit();
+        moveInside();
         render3D.camera.pos = cam.look.add(vec3(0, 8, 8));
-        events.emit('house-entered');
-        furniture.flower && furniture.flower.sync();
         showPlace('Home', 'the kettle is still warm');
         if (rand() < .5 && furniture.cat) furniture.cat.moveTo(randInt(CAT_SPOTS.length));
     });
+}
+// the mothling steps in through the front door; the room catches up with the time away
+export function moveInside()
+{
+    player.zone = 'house';
+    player.pos = hin(-3.5, 0, 3.2);
+    player.vel = vec3();
+    player.yaw = 0;
+    cam.look = player.pos.add(vec3(0, .9, 0));
+    countVisit();
+    events.emit('house-entered');
+    furniture.flower && furniture.flower.sync();
 }
 export function exitHouse()
 {

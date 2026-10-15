@@ -1,4 +1,5 @@
-// The activity that has taken over the mothling, if any: { name, update(), cancel(), cam(), hint(), mouseHold, lockCamera, ownsPhysics }.
+// The activity that has taken over the mothling, if any: { name, update(), cancel(), cam(), hint(), mouseHold, lockCamera, ownsPhysics,
+// pinned (the activity sets the mothling's position itself and movement leaves it alone) }.
 // Activities start and end only through here; code reads activity.current.
 const listeners = new Set();
 let current = null;

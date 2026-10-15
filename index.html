@@ -25,7 +25,11 @@
 <div class="ui" id="prompt" hidden><div><kbd id="promptKey">E</kbd><span id="promptText"></span></div></div>
 <div class="ui" id="meter" hidden><div class="box" id="meterBox"></div></div>
 <div class="ui" id="dialog" hidden><div class="sheet"><div class="who" id="dlgWho"></div><div class="text" id="dlgText"></div><div class="opts" id="dlgOpts"></div><div class="hint" id="dlgHint"></div></div></div>
-<div class="ui" id="scope" hidden><div class="hint" id="scopeHint"></div></div>
+<div class="ui" id="scope" hidden>
+  <div class="scope-ring" id="scopeRing"></div>
+  <div class="scope-cap" id="scopeCap"><div class="cap-kicker">A constellation</div><div class="cap-name" id="scopeCapName"></div><div class="cap-desc" id="scopeCapDesc"></div></div>
+  <div class="hint" id="scopeHint"></div>
+</div>
 <div class="ui" id="touch" hidden>
   <button class="tap" id="tJournal" type="button">Journal</button>
   <span></span>
@@ -59,6 +63,20 @@
   </div>
 </div>
 
+<div class="ui modal" id="endcard" hidden>
+  <div class="card end-card" role="dialog" aria-labelledby="endTitle">
+    <div class="end-kicker">Violet Isle</div>
+    <h2 id="endTitle">The End</h2>
+    <p id="endThanks"></p>
+    <div class="end-stats" id="endStats"></div>
+    <p id="endStay"></p>
+    <div class="row">
+      <button class="btn" id="endToTitle" type="button">Back to the title</button>
+      <button class="btn primary" id="endKeep" type="button">Keep dreaming</button>
+    </div>
+  </div>
+</div>
+
 <div class="ui modal" id="menu" hidden>
   <div class="card" role="dialog" aria-labelledby="mTitle">
     <h2 id="mTitle">Resting between dreams</h2>
@@ -83,6 +101,15 @@
       <button class="btn" id="mSaveExit" type="button">Save and exit</button>
       <button class="btn primary" id="mClose" type="button">Back to the island</button>
     </div>
+  </div>
+</div>
+
+<div class="ui" id="storybook" hidden>
+  <div class="sb-page">
+    <div class="sb-title" id="sbTitle"></div>
+    <div class="sb-text" id="sbText"></div>
+    <div class="sb-foot"><span class="sb-motif" id="sbMotif"></span><span class="sb-num" id="sbPage"></span></div>
+    <div class="sb-keys"><span><kbd class="desk-only">E</kbd> <span id="sbNext">Turn the page</span></span><span class="desk-only"><kbd>A</kbd> Back · <kbd>Q</kbd> Stop reading</span></div>
   </div>
 </div>
 

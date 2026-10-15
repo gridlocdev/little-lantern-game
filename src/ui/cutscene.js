@@ -11,6 +11,7 @@
 //     at           [[t, fn], ...] things that happen once at t
 //     caption      { title, sub } a title card typed in the corner
 //     big          kinetic markup set large across the middle
+// pinned: the beats place the mothling themselves (walking it somewhere), and movement leaves it alone.
 // Skipping (hold E or Space, or press Esc) jumps to the end; onEnd always runs, so anything a scene changes for
 // good belongs there, not in a beat.
 import { PI, timeDelta, vec3 } from '../platform/engine.js';
@@ -29,7 +30,7 @@ export const inOut = (x)=> ease(Math.min(1, Math.max(0, x)));
 let scene = null;
 export const inCutscene = ()=> !!scene;
 
-export function playCutscene({ name = 'cutscene', beats, onEnd, blendIn = 1.4, blendOut = 1.6 })
+export function playCutscene({ name = 'cutscene', beats, onEnd, blendIn = 1.4, blendOut = 1.6, pinned = false })
 {
     if (scene) return Promise.resolve();
     activity.current?.cancel?.();
@@ -40,7 +41,7 @@ export function playCutscene({ name = 'cutscene', beats, onEnd, blendIn = 1.4, b
         $('cine').hidden = false;
         requestAnimationFrame(()=> $('cine').classList.add('on'));
         activity.start({
-            name, lockCamera: true, camBlend: blendIn, camBlendOut: blendOut,
+            name, lockCamera: true, camBlend: blendIn, camBlendOut: blendOut, pinned,
             update: step,
             cancel: ()=> finish(),
             cam: ()=> scene?.pose ?? { pos: vec3(), look: vec3(0, 0, -1), exact: true },
@@ -107,7 +108,7 @@ function step(dtIn)
     let pose = { pos: shot.pos, look: shot.look, fov: (shot.fov ?? 60) * DEG, roll: (shot.roll ?? 0) * DEG, exact: true };
     if (b.blend && s.from && lt < b.blend)
     {
-        const k = ease(lt / b.blend), f = s.from;
+        const k = (1 - Math.cos(PI * lt / b.blend)) / 2, f = s.from;     // a sine glide between shots, never a lurch
         pose = { pos: f.pos.lerp(pose.pos, k), look: f.look.lerp(pose.look, k), fov: f.fov + (pose.fov - f.fov) * k, roll: f.roll + (pose.roll - f.roll) * k, exact: true };
     }
     s.pose = pose;
