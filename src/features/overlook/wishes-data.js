@@ -1,9 +1,5 @@
 // Wishes for the lanterns. Content only.
 
-// Wishes for the lanterns. Content only.
-
-// Wishes for the lanterns. Content only.
-
 export const WISHES = [
     'that the fish I let go find their way home', 'for one more night exactly like this one', 'that the snail gets where he is going',
     'to remember this dream when I wake', 'for warm tea and a window seat', 'that the whale finds another whale',

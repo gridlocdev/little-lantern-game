@@ -6,7 +6,7 @@ import {
 
 export const touchState = { jump: false, act: false, jumpHeld: false, actHeld: false, journal: false };
 export let pointerOnCanvas = false;
-document.addEventListener('pointerdown', (e)=> { pointerOnCanvas = e.target && e.target.tagName === 'CANVAS'; });
+document.addEventListener('pointerdown', (e)=> { pointerOnCanvas = e.target && /** @type {HTMLElement} */ (e.target).tagName === 'CANVAS'; });
 
 export const input = {
     move()

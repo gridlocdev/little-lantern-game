@@ -1,9 +1,5 @@
 // The books on the shelf. Content only.
 
-// The books on the shelf. Content only.
-
-// The books on the shelf. Content only.
-
 export const BOOKS = [
     { title: 'A Field Guide to Falling Stars', pages: [
         'Chapter One. Stars do not fall so much as they wander off. They get distracted by something shiny below them and simply forget to stay up.',

@@ -4,7 +4,9 @@
   "description": "LittleJS 3D cozy game: a moth with a lantern on a floating island, fishing for things that swim between stars",
   "type": "module",
   "scripts": {
-    "start": "python3 -m http.server 8000"
+    "start": "python3 -m http.server 8000",
+    "test": "node --test",
+    "check": "node tools/coupling-report.mjs --strict"
   },
   "author": "",
   "license": "MIT",

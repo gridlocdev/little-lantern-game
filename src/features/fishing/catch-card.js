@@ -15,7 +15,7 @@ import { toast } from '../../ui/toast.js';
 // a picture of the fish for the catch card
 function paintFishCard(f, size)
 {
-    const cv = $('catchCanvas'), g = cv.getContext('2d');
+    const cv = /** @type {HTMLCanvasElement} */ ($('catchCanvas')), g = cv.getContext('2d');
     const W = cv.width, H = cv.height;
     g.clearRect(0, 0, W, H);
     const css = (c, a = 1)=> `rgba(${c.r * 255 | 0},${c.g * 255 | 0},${c.b * 255 | 0},${a})`;

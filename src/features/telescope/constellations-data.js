@@ -1,9 +1,5 @@
 // The constellations you can find through the telescope. Content only.
 
-// The constellations you can find through the telescope. Content only.
-
-// The constellations you can find through the telescope. Content only.
-
 export const CONSTELLATIONS = [
     { id: 'kettle', name: 'The Kettle', desc: 'A kettle that has been about to boil for ten thousand years.', az: .4, el: .55,
         pts: [[-1, -.6], [1, -.6], [1.1, .4], [.5, .8], [-.5, .8], [-1.1, .4], [-1.8, .9], [.1, 1.2]], lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0], [5, 6], [3, 7], [4, 7]] },

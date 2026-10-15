@@ -9,7 +9,7 @@ import { closeModal, openModal, registerModal } from './modal.js';
 
 export function openMenu()
 {
-    $('volSlider').value = soundVolume;
+    /** @type {HTMLInputElement} */ ($('volSlider')).value = String(soundVolume);
     $('musicToggle').textContent = music.on ? 'On' : 'Off';
     $('gfxToggle').textContent = gfx.low ? 'Light' : 'Full';
     $('resetBtn').textContent = 'Start a new dream';
@@ -18,12 +18,12 @@ export function openMenu()
 }
 $('mClose').onclick = closeModal;
 registerModal('menu', { update() { if (input.back()) closeModal(); } });
-$('volSlider').oninput = (e)=> { setSoundVolume(+e.target.value); writeSetting('volume', soundVolume); };
+$('volSlider').oninput = (e)=> { setSoundVolume(+/** @type {HTMLInputElement} */ (e.target).value); writeSetting('volume', soundVolume); };
 $('musicToggle').onclick = ()=> setMusic(!music.on);
 $('gfxToggle').onclick = ()=> setGraphics(!gfx.low);
 $('resetBtn').onclick = (e)=>
 {
-    const b = e.currentTarget;
+    const b = /** @type {HTMLElement} */ (e.currentTarget);
     if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Tap again to forget everything'; return; }
     Promise.resolve(forgetSave()).finally(()=> location.reload());
 };

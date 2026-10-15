@@ -16,7 +16,9 @@ Other recipes:
 | --- | --- |
 | `just serve` | serve the game on http://localhost:8000 (`just port=9000 serve` for another port) |
 | `just install` | `npm install` the pinned engine |
-| `just check` | syntax-check every script in `src/` |
+| `just check` | syntax-check every module in `src/`, then check the layer rules |
+| `just test` | run the unit tests for `src/lib/` and the content files |
+| `just types` | type-check the game against the engine's types |
 
 Without just: `npm install && npm start`, then open http://localhost:8000.
 
@@ -33,28 +35,27 @@ Without just: `npm install && npm start`, then open http://localhost:8000.
 
 ## Files
 
-- `index.html` holds the HUD and menu markup and loads the engine and the scripts in order
+- `index.html` holds the HUD and menu markup, maps `littlejsengine` to the engine's module build, and loads `src/main.js`
 - `style.css` styles the HTML layer over the canvas
-- `src/` holds the game, one script per area, all sharing globals:
-  - `core.js` engine settings and helpers
-  - `save.js` everything the game remembers, and the storage backend it goes through (see Saving)
-  - `world.js` island layout, terrain, collision solids, scenery
-  - `sky.js` stars, moon and the night sky
-  - `player.js` the mothling's meshes and animation
-  - `controls.js` input, player physics, camera, interaction prompts
-  - `fx.js` particles and ambient effects
-  - `audio.js` sound effects and music
-  - `ui.js` HUD, dialog, journal and menu
-  - `village.js` pond, house exterior, bench, signpost, snail
-  - `fishing.js` fish list and the fishing minigame
-  - `activities.js` swing, chimes, light bridge and Moonlet, mushrooms, overlook, telescope, pier, sheep
-  - `house.js` the house interior
-  - `main.js` init, update loop, `engineInit`
+- `src/` holds the game as ES modules, in layers that only import downward (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)):
+  - `lib/` pure helpers: math and curves
+  - `platform/` the engine and its settings, storage, input, the seeded world random, mesh and texture builders
+  - `game/` the loop, the game mode and save, shared progress, the current activity, interactables, events
+  - `world/` the island's layout, terrain, roads, collision and scenery
+  - `player/` the mothling: its state, body and animation, movement, sitting
+  - `render/` the camera, renderer setup, textures, particles, water, graphics quality
+  - `sky/` the sky dome, palettes, moon, shooting stars and the star whale
+  - `ui/` the title screen, HUD, prompt, dialog, journal, menu and places
+  - `audio/` sound effects and music
+  - `features/` one folder per thing to do: house, bench, snail, swing, chimes, moonlet, mushrooms, overlook, telescope, fishing, sheep, fallen stars
+  - `main.js` lists the shared systems around the features and starts the engine
+- `test/` unit tests for `src/lib/` and the content files
+- `tools/coupling-report.mjs` checks the layer rules (`just check`); `architecture.json` declares the layers
 - The engine is pinned to `littlejsengine@1.21.0` in `package.json`
 
 ## Saving
 
-All persistence lives in `src/save.js`. The game keeps its progress in the `save` object and calls `writeSave()` after each change. Volume and graphics settings live under their own keys, so starting a new dream keeps them.
+Storage lives in `src/platform/storage.js` and the save format in `src/game/state.js`. Each feature keeps its progress in its own slice of the save and calls `writeSave()` after each change; progress several features share lives in `src/game/progress.js`. The save is written as `{ "v": 2, "core": {…}, "fishing": {…}, … }`, and a save from before the slices is migrated when it loads. Volume and graphics settings live under their own keys, so starting a new dream keeps them.
 
 Those values sit in a small in-memory table of string keys. A storage backend fills that table once before the engine starts, and is told about every change. The default backend is the browser's `localStorage`, under the keys `violet-isle-dream-v1`, `violet-isle-dream-v1-vol` and `violet-isle-dream-v1-gfx`.
 

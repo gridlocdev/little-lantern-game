@@ -1,9 +1,5 @@
 // What Oswin the snail says. Content only.
 
-// What Oswin the snail says. Content only.
-
-// What Oswin the snail says. Content only.
-
 export const SNAIL_LINES = [
     ['Oh, hello, little lantern. I am Oswin. I carry my house on my back, so I never have to walk home.',
         'The pond by the crooked house is full of fish that fell out of the sky. Stand at the edge and you can fish for them.'],

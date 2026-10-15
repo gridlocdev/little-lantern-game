@@ -1,13 +1,3 @@
-// Everything the game remembers goes through this file.
-
-// Everything the game remembers goes through this file.
-
-// Everything the game remembers goes through this file.
-
-// Everything the game remembers goes through this file.
-
-// Everything the game remembers goes through this file.
-
 // Everything the game remembers goes through this file. The game reads and writes a small in-memory table of
 // string values; a storage backend fills that table once before the engine starts and is told about every change.
 //
@@ -42,7 +32,7 @@ const localStorageBackend = {
 };
 
 export const storage = {
-    backend: window.violetIsleStorage || localStorageBackend,
+    backend: /** @type {any} */ (window).violetIsleStorage || localStorageBackend,
     table: {},
     async init()
     {

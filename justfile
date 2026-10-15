@@ -22,9 +22,18 @@ play: _deps
     open http://localhost:{{port}}/index.html
     wait $server
 
-# syntax-check every game module
+# syntax-check every module, then check the layer rules in docs/ARCHITECTURE.md
 check:
     @for f in $(find src -name '*.js'); do node --check "$f" || exit 1; done
+    node tools/coupling-report.mjs --strict
+
+# run the unit tests for lib/ and the content files
+test:
+    node --test
+
+# type-check the game against the engine's types (jsconfig.json)
+types:
+    npx -y -p typescript@5.6.3 tsc -p jsconfig.json
 
 _deps:
     @[ -d node_modules/littlejsengine ] || npm install

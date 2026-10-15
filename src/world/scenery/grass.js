@@ -41,7 +41,7 @@ function buildGrass()
             pts.push(vec3(ox + Math.cos(a) * lean, h, oz + Math.sin(a) * lean)); base.push(1); cols.push(hsl(.73, .38, .5)); nrm.push(n);
             idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2, k + 2, k + 3, k + 4);
         }
-        const mesh = triMesh(pts, idx, nrm, cols);
+        const mesh = /** @type {any} */ (triMesh(pts, idx, nrm, cols));
         mesh.doubleSided = true;
         mesh.dynamicDraw = true;
         mesh.basePoints = pts.map((p)=> p.copy());
@@ -75,7 +75,7 @@ function buildGrass()
         lists.forEach((list, v)=>
         {
             if (!list.length) return;
-            const set = new InstancedMesh3D(grassMeshes[v], list.length);
+            const set = /** @type {any} */ (new InstancedMesh3D(grassMeshes[v], list.length));
             list.forEach(([m, c], i)=> { set.setMatrixAt(i, m); set.setColorAt(i, c); });
             set.castShadow = false;
             set.center = vec3(x0 + CH / 2, 0, z0 + CH / 2);

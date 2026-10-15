@@ -1,0 +1,65 @@
+# Architecture
+
+Violet Isle is native ES modules served as static files, with no bundler. `src/main.js` lists the shared systems around the features and hands the list to `src/game/loop.js`, which builds and runs them in that order. The engine is imported only by `src/platform/engine.js`, under the bare name `littlejsengine` that `index.html`'s import map points at the engine's module build.
+
+## Layout
+
+| Folder | Holds | May import |
+|---|---|---|
+| `src/lib/` | pure helpers: math, curves | nothing |
+| `src/platform/` | engine setup and re-exports, storage, input, seeded random, mesh and texture builders | lib |
+| `src/game/` | the loop, game mode and save slices, shared progress, the current activity, interactables, events | lib, platform |
+| `src/world/` `player/` `render/` `sky/` `ui/` `audio/` | shared systems: the island, the mothling, camera and effects, the sky, the HTML layer, sound | the layers above, and each other without cycles |
+| `src/features/<name>/` | one thing to do on the island: its code, its content, its part of the save | everything above, **never another feature** |
+
+`architecture.json` declares these layers for `tools/coupling-report.mjs`.
+
+The features are `house`, `bench`, `snail`, `swing`, `chimes`, `moonlet`, `mushrooms`, `overlook`, `telescope`, `fishing`, `sheep` and `fallen-stars`.
+
+## The loop
+
+Every shared system and feature is an object with any of these hooks:
+
+| Hook | When |
+|---|---|
+| `build()` | once at start |
+| `buildLate()` | once, after every `build()` (the house interior, the aquarium, the bloom pass, spawning the mothling) |
+| `update()` | every frame while playing; `always: true` also updates on the title screen |
+| `updatePost()` | every frame after physics: the camera, then the sky that follows it |
+| `render()` | every drawn frame |
+
+The order in `main.js` (with `features/index.js` spliced in) is both the build order and the update order. Two things depend on it:
+
+- **The island's scenery.** Trees, rocks, grass, flowers, lamps, the swing tree, the mushrooms, the pier and the sheep are placed with the seeded random in `platform/random.js`. Each draw depends on every draw before it, so moving an entry that draws, or adding one that draws before it, rearranges the island. Add new things that draw at the end.
+- **Who gets input first.** `ui/router.js` gives the frame's input to an open dialog or card, the menu and journal keys, or the current activity, before the mothling moves. The house updates before `player/interaction.js` picks what the mothling would use, so one press of E never does two things.
+
+## A feature
+
+A feature is a folder with an `index.js` that exports `<name>Feature`, listed in `src/features/index.js`. Adding one means adding the folder and one entry in that list; `main.js` does not change. Inside the folder, files are named for what they do (`rig.js`, `catch-card.js`, `doors.js`), and content that is only text and numbers lives in `*-data.js` files that import nothing.
+
+Features never import each other. They reach the rest of the game through:
+
+| To | Use |
+|---|---|
+| tell another feature something happened | `game/events.js`: `moon-song-played` (chimes, answered by the moonlet), `house-entered` (house, answered by the aquarium) |
+| offer something to use | `addInteract` in `game/interact.js` |
+| take over the mothling (swinging, fishing, the telescope, sitting) | `activity.start()` / `activity.end()` in `game/activity.js` |
+| offer water to fish in | `addWater` in `world/waters.js` (the pond and the moon pool do; fishing makes spots of them) |
+| name a place | `PLACE_NAMES` in `ui/places.js` |
+| add journal rows, things to do, HUD counters | `addJournalSection`, `addTodo` in `ui/journal.js`; `addHudCounter` in `ui/hud.js` |
+| tell the title screen the player has been here before | `addReturnCheck` in `ui/title.js` |
+| own a modal card | `registerModal` in `ui/modal.js` (fishing's catch card) |
+
+## The save
+
+Each feature owns one slice of the save, claimed with `state.slice('<name>', defaults)` in `game/state.js`, and nothing else writes it. Progress several features share (visits, palette, stardust, outfit, music) is the `core` slice in `game/progress.js`; features read it and change it through `addStardust`, `countVisit` and `setOutfit`, while the sky owns the palette (`setPalette`) and the music owns music (`setMusic`).
+
+The save is stored as `{ v: 2, core: {…}, fishing: {…}, … }` under the key `violet-isle-dream-v1`. The first format was one flat object with the same field names, so `loadSave` migrates it by giving each slice the old fields that match its defaults. Settings (volume, graphics) are kept under their own keys, apart from progress.
+
+## Checking
+
+```sh
+just check    # syntax, then tools/coupling-report.mjs --strict: layers, feature cross-imports, private imports, cycles
+just test     # node --test: lib/ and the content files
+just types    # tsc against jsconfig.json and the engine's types
+```

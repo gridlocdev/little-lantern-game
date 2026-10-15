@@ -59,7 +59,7 @@ function closeDialog(option)
     if (option && option.fn) option.fn();
     d.resolve(option);
 }
-$('dialog').addEventListener('pointerdown', (e)=> { if (e.target.tagName !== 'BUTTON') advanceDialog(); });
+$('dialog').addEventListener('pointerdown', (e)=> { if (/** @type {HTMLElement} */ (e.target).tagName !== 'BUTTON') advanceDialog(); });
 export function updateDialog()
 {
     const d = ui.dialog;

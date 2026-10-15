@@ -15,5 +15,5 @@ export function chooseBook()
             save.books[i] = true; writeSave();
             say(b.title, b.pages).then(()=> { player.pose = 'free'; player.hold = 'lantern'; });
         },
-    })).concat([{ label: 'Never mind', cancel: true }]));
+    })).concat([/** @type {any} */ ({ label: 'Never mind', cancel: true })]));
 }

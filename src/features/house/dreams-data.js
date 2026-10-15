@@ -1,9 +1,5 @@
 // What you dream when you sleep. Content only.
 
-// What you dream when you sleep. Content only.
-
-// What you dream when you sleep. Content only.
-
 export const DREAMS = [
     'You dream you are a fish swimming between the stars, and the whale swims beside you without saying anything.',
     'You dream the house drifts off on its own, and you steer it with the kettle handle.',

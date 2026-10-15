@@ -16,13 +16,13 @@ export function openJournal(tab)
     renderJournal();
     openModal('journal');
 }
-document.querySelectorAll('#journal [data-tab]').forEach((b)=> b.onclick = ()=> { journalTab = b.dataset.tab; renderJournal(); });
+/** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('#journal [data-tab]')).forEach((b)=> b.onclick = ()=> { journalTab = b.dataset.tab; renderJournal(); });
 $('jClose').onclick = closeModal;
 registerModal('journal', { update() { if (input.journal() || input.back()) closeModal(); } });
 
 function renderJournal()
 {
-    document.querySelectorAll('#journal [data-tab]').forEach((b)=> b.setAttribute('aria-selected', b.dataset.tab === journalTab));
+    /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('#journal [data-tab]')).forEach((b)=> b.setAttribute('aria-selected', String(b.dataset.tab === journalTab)));
     const body = $('jBody');
     body.innerHTML = '';
     const row = (dotStyle, name, desc, count, missing, check)=>
