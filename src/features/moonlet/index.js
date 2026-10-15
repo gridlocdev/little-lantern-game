@@ -15,7 +15,7 @@ import { BOXM } from '../../player/part-meshes.js';
 import { player } from '../../player/player.js';
 import { startSit } from '../../player/sit.js';
 import { discMesh, waterShader } from '../../render/water.js';
-import { say } from '../../ui/dialog.js';
+import { playBridgeScene } from './scene.js';
 import { addTodo } from '../../ui/journal.js';
 import { PLACE_NAMES } from '../../ui/places.js';
 import { toast } from '../../ui/toast.js';
@@ -168,14 +168,18 @@ function checkMoonletVisit()
     }
 }
 
+// every slab at once, when the cutscene is skipped or ends
+function bridgeAll()
+{
+    for (const s of bridgeSlabs) { s.show = max(s.show, .01); s.solid.disabled = false; }
+}
 // the song from Amethyst Hill unfolds the bridge the first time it is played
 function answerMoonSong()
 {
     if (!save.bridge)
     {
         save.bridge = true; writeSave();
-        say('', ['The moon hums the song back to you.', 'Far to the west, past Cloudsheep Meadow, a bridge of light unfolds from the edge of the island.']);
-        bridgeAppear(0);
+        playBridgeScene({ unfold: ()=> bridgeAppear(0), finish: bridgeAll, moonletY });
     }
     else toast('The moon hums along.');
 }

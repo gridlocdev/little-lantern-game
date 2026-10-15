@@ -1,17 +1,21 @@
-// Oswin the lantern snail.
-import { EngineObject3D, Light3D, PI, WHITE, hsl, render3D, time, vec3 } from '../../platform/engine.js';
+// Oswin the lantern snail. The first time you talk to him there is a cutscene; after that, a line at a time.
+import { EngineObject3D, Light3D, PI, WHITE, hsl, max, render3D, time, timeDelta, vec3 } from '../../platform/engine.js';
 import { SNAIL_LINES } from './lines-data.js';
+import { OSWIN_VOICE, playMeeting } from './scene.js';
 import { addInteract } from '../../game/interact.js';
+import { state, writeSave } from '../../game/state.js';
 import { mtx } from '../../platform/mesh.js';
 import { CAPS, CYL, SPH, SPH_LO, TORUS } from '../../player/part-meshes.js';
 import { player } from '../../player/player.js';
-import { camNear } from '../../render/camera.js';
-import { say } from '../../ui/dialog.js';
+import { camNear, focusCamera } from '../../render/camera.js';
+import { say, setVoice } from '../../ui/dialog.js';
 import { addSolid } from '../../world/collision.js';
 import { P } from '../../world/layout.js';
 import { heightAt } from '../../world/terrain.js';
 
-let snailLine = 0;
+const save = state.slice('snail', { met: false });
+const NAME = 'Oswin the lantern snail';
+let snailLine = 1;
 class Snail extends EngineObject3D
 {
     constructor(pos)
@@ -21,6 +25,12 @@ class Snail extends EngineObject3D
         this.yaw = -2.4;
         this.light = new Light3D(pos.add(vec3(0, 1.1, 0)), 6, hsl(.5, .8, .6), 1.3);
         this.light.glow = 1;
+        this.glow = 0;      // the shell flares when he says something that matters
+    }
+    update()
+    {
+        this.glow = max(0, this.glow - timeDelta * .8);
+        this.light.intensity = 1.3 + this.glow * 1.6;
     }
     render3D()
     {
@@ -37,8 +47,8 @@ class Snail extends EngineObject3D
         }
         for (let i = 0; i < 4; i++)
             render3D.drawMesh(TORUS, mtx(m, vec3(0, .78 + i * .05, .25), vec3(PI / 2, 0, 0), vec3(1.1 - i * .25, .9 - i * .2, 1.1 - i * .25)), undefined, shell.lerp(WHITE, i * .08));
-        const e = render3D.emissive; render3D.emissive = 1.3;
-        render3D.drawMesh(SPH_LO, mtx(m, vec3(0, .8, .25), vec3(), vec3(.32 + Math.sin(t * 2) * .02)), undefined, hsl(.5, .8, .7));
+        const e = render3D.emissive; render3D.emissive = 1.3 + this.glow;
+        render3D.drawMesh(SPH_LO, mtx(m, vec3(0, .8, .25), vec3(), vec3(.32 + Math.sin(t * 2) * .02 + this.glow * .05)), undefined, hsl(.5, .8, .7));
         render3D.emissive = e;
     }
 }
@@ -47,10 +57,15 @@ function buildSnail()
     const x = P.snail.x, z = P.snail.z;
     const s = new Snail(vec3(x, heightAt(x, z), z));
     addSolid({ kind: 'circle', x, z, r: .7, top: 1.2 });
+    setVoice(NAME, OSWIN_VOICE);
     addInteract({ pos: vec3(x, heightAt(x, z), z), r: 2.6, label: 'Talk to Oswin', act: ()=>
     {
         player.yaw = Math.atan2(-(x - player.pos.x), -(z - player.pos.z));
-        say('Oswin the lantern snail', SNAIL_LINES[snailLine % SNAIL_LINES.length]);
+        if (!save.met) return playMeeting(s, ()=> { save.met = true; writeSave(); });
+        // the camera leans toward him while he talks
+        const look = focusCamera(s.pos3D.add(vec3(0, 1, 0)), { pull: .4, zoom: .84 });
+        s.glow = .6;
+        say(NAME, SNAIL_LINES[snailLine % SNAIL_LINES.length]).then(()=> look.release());
         snailLine++;
     } });
 }

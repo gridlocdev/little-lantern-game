@@ -4,11 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Violet Isle</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="preload" href="fonts/fraunces-italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/nunito.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css">
-<link rel="icon" href="data:,">
+<link rel="icon" type="image/png" href="build/icon.png">
 </head>
 <body>
 <div class="ui" id="hud" hidden>
@@ -80,15 +79,26 @@
         <button class="btn" id="resetBtn" type="button">Start a new dream</button>
       </div>
     </div>
-    <div class="row"><button class="btn primary" id="mClose" type="button">Back to the island</button></div>
+    <div class="row">
+      <button class="btn" id="mSaveExit" type="button">Save and exit</button>
+      <button class="btn primary" id="mClose" type="button">Back to the island</button>
+    </div>
   </div>
+</div>
+
+<div class="ui" id="cine" hidden>
+  <div class="bar top"></div><div class="bar bottom"></div>
+  <div class="cine-cap" id="cineCap"><div class="cap-title" id="capTitle"></div><div class="cap-rule"></div><div class="cap-sub" id="capSub"></div></div>
+  <div class="cine-big" id="cineBig"></div>
+  <div class="cine-sub" id="cineSub"><div class="cine-who" id="cineWho"></div><div class="cine-line" id="cineLine"></div></div>
+  <button class="cine-skip" id="cineSkip" type="button"><i></i><span class="desk-only">Hold E to skip</span><span class="touch-only">Skip</span></button>
 </div>
 
 <div class="ui" id="fade"></div>
 
 <div class="ui" id="title">
   <div class="card">
-    <h1>Violet Isle</h1>
+    <h1 id="titleName">Violet Isle</h1>
     <p class="tag">You are a small moth with a lantern on an island that floats through the night. Fish for things that swim between stars, swing until you touch the moon, and find what the crystals are humming about.</p>
     <div class="keys desk-only">
       <span><kbd>W A S D</kbd></span><span>Walk, hold <kbd>Shift</kbd> to run</span>

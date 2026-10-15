@@ -11,7 +11,7 @@ import { TAU } from '../../lib/math.js';
 import { canvasTexture, mtx, obj3, triMesh } from '../../platform/mesh.js';
 import { rr } from '../../platform/random.js';
 import { moth } from '../../player/mothling.js';
-import { camNear } from '../../render/camera.js';
+import { camNear, focusCamera } from '../../render/camera.js';
 import { burst } from '../../render/particles.js';
 import { say } from '../../ui/dialog.js';
 import { PLACE_NAMES } from '../../ui/places.js';
@@ -95,6 +95,7 @@ function ringChime(c)
 {
     c.hit = 1;
     bell(c.semi, c.pos, 1);
+    focusCamera(c.pos.add(vec3(0, 2, 0)), { pull: .2, zoom: .94, dur: .5, rise: .15 });
     burst(c.pos.add(vec3(0, 2, 0)), c.color, 12, .05, .2);
     moth.reach = 1;
     chimeLast.push(c.i);

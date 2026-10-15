@@ -96,7 +96,8 @@ function releaseLantern()
             {
                 const out = Math.atan2(P.overlook.x, P.overlook.z);
                 new WishLantern(player.pos.add(vec3(Math.sin(out) * .6, 1.6, Math.cos(out) * .6)));
-                playSfx('whoosh', player.pos, .6, .8);
+                playSfx('whoosh', player.pos, .5, .8);
+                playSfx('shimmer', player.pos, .5);
                 player.pose = 'free';
                 toast(save.lanterns === 1 ? 'Your lantern drifts up toward the moon.' : `${save.lanterns} lanterns now float above the island.`);
             }, 500);

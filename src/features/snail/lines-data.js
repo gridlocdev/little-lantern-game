@@ -1,4 +1,15 @@
-// What Oswin the snail says. Content only.
+// What Oswin the snail says. Content only. Lines may use the kinetic markup in ui/kinetic.js.
+
+// the first time you talk to him, one line per shot of the meeting cutscene
+export const SNAIL_MEETING = {
+    hello: 'Oh! Hello, little *lantern.*',
+    name: 'I am ~Oswin.~',
+    house: 'I carry my house on my *back...*',
+    home: '...so I _never_ have to walk home.',
+    pond: 'The pond by the crooked house is full of fish that *fell* out of the sky.',
+    fish: 'Stand at the edge, and you can !fish! for them.',
+};
+// after that, one of these each time, in order; the first is what the meeting already said
 
 export const SNAIL_LINES = [
     ['Oh, hello, little lantern. I am Oswin. I carry my house on my back, so I never have to walk home.',

@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SAVE_FILE = ()=> path.join(app.getPath('userData'), 'save.json');
+const ICON = path.join(ROOT, 'build', 'icon.png');      // packaged builds use the .icns/.ico made from it
 
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true } }]);
 
@@ -31,6 +32,8 @@ ipcMain.handle('save:load', async ()=>
     catch (e) { return {}; }    // a first run, or a save that could not be read
 });
 ipcMain.handle('save:write', (event, all)=> writeSave(all));
+// "Save and exit": the save just sent is already queued, so wait for the queue, then quit (on macOS too)
+ipcMain.handle('app:quit', async ()=> { await writing; app.quit(); });
 
 // ---------------------------------------------------------------- window
 function createWindow()
@@ -39,6 +42,7 @@ function createWindow()
         width: 1280, height: 800, minWidth: 800, minHeight: 500,
         title: 'Violet Isle',
         backgroundColor: '#07051a',
+        icon: ICON,
         autoHideMenuBar: true,
         show: false,
         webPreferences: { preload: path.join(ROOT, 'electron', 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false },
@@ -69,6 +73,7 @@ app.whenReady().then(()=>
         if (!file.startsWith(ROOT + path.sep)) return new Response('not found', { status: 404 });
         return net.fetch(pathToFileURL(file).toString());
     });
+    app.dock?.setIcon(ICON);    // macOS while running unpackaged (just app)
     createWindow();
     app.on('activate', ()=> { if (!BrowserWindow.getAllWindows().length) createWindow(); });
 });

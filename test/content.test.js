@@ -5,7 +5,9 @@ import { BOOKS } from '../src/features/house/books-data.js';
 import { DREAMS } from '../src/features/house/dreams-data.js';
 import { CHIME_NAMES, MOON_SONG } from '../src/features/chimes/song-data.js';
 import { CONSTELLATIONS } from '../src/features/telescope/constellations-data.js';
-import { SNAIL_LINES } from '../src/features/snail/lines-data.js';
+import { SNAIL_LINES, SNAIL_MEETING } from '../src/features/snail/lines-data.js';
+import { INTRO_CAPTION, INTRO_LINES } from '../src/features/intro/lines-data.js';
+import { BRIDGE_LINES } from '../src/features/moonlet/lines-data.js';
 import { WISHES } from '../src/features/overlook/wishes-data.js';
 
 const text = (s)=> typeof s === 'string' && s.trim().length > 0;
@@ -36,4 +38,19 @@ test('constellations: four of them, as the journal promises, each drawable', ()=
         assert.ok(c.pts.length > 1 && c.pts.every((p)=> p.length === 2 && p.every(Number.isFinite)), c.id);
         for (const [a, b] of c.lines) assert.ok(a < c.pts.length && b < c.pts.length, `${c.id} line ${a}-${b}`);
     }
+});
+
+test('cutscene lines are text, and their kinetic markers come in pairs', ()=>
+{
+    assert.ok(text(INTRO_CAPTION.title) && text(INTRO_CAPTION.sub));
+    for (const set of [INTRO_LINES, SNAIL_MEETING, BRIDGE_LINES])
+        for (const [k, line] of Object.entries(set))
+        {
+            assert.ok(text(line), k);
+            for (const word of line.split(/\s+/))
+            {
+                const m = word[0];
+                if ('*~_'.includes(m)) assert.equal(word[word.length - 1], m, `${k}: ${word}`);
+            }
+        }
 });

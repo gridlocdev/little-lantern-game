@@ -13,6 +13,7 @@ import { addInteract } from '../../game/interact.js';
 import { clearTouchPresses, input, touchState } from '../../platform/input.js';
 import { moth } from '../../player/mothling.js';
 import { player } from '../../player/player.js';
+import { focusCamera, kickCamera } from '../../render/camera.js';
 import { burst } from '../../render/particles.js';
 import { $ } from '../../ui/dom.js';
 import { toast } from '../../ui/toast.js';
@@ -145,6 +146,7 @@ function updateFishing()
             F.fish = pickFish(spot.kind);
             playSfx('bite', F.to, 1);
             ripple(F.to, hsl(.95, .7, .8), 1.4);
+            focusCamera(F.to, { pull: .55, zoom: .8, dur: .9, rise: .25 });     // look: the bobber dips
         }
     }
     else if (F.state === 'bite')
@@ -157,6 +159,7 @@ function updateFishing()
             showFishMeter();
             $('mName').textContent = F.fish.stars >= 3 ? 'Something big and quick' : F.fish.stars === 2 ? 'Something lively' : 'Something small';
             playSfx('splash', F.to, .8);
+            kickCamera(.05);
         }
         else if (F.t > .9)
         {
@@ -196,6 +199,7 @@ function updateFishing()
         else if (F.progress <= 0)
         {
             playSfx('snap', player.pos, 1);
+            kickCamera(.05);
             toast(`The line went slack. The ${F.fish.stars >= 3 ? 'big one' : 'fish'} swam off.`);
             F.state = 'aim'; F.power = 0; player.pose = 'fish';
             showFishMeter();
@@ -225,6 +229,8 @@ function landFish()
     F.flyFish = { f, sizeCm, from: F.bob.copy(), to: player.pos.add(vec3(0, 1.5, 0)), t: 0 };
     playSfx('splash', F.bob, 1);
     burst(F.bob, f.glow, 22, .09, .25);
+    kickCamera(.07);
+    focusCamera(()=> F.flyFish ? F.flyFish.from.lerp(F.flyFish.to, F.flyFish.t) : player.pos.add(vec3(0, 1.5, 0)), { pull: .5, zoom: .78, dur: 1.4 });
     player.hold = 'none';
 }
 

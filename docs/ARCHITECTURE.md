@@ -6,7 +6,7 @@ Violet Isle is native ES modules served as static files, with no bundler. `src/m
 
 | Folder | Holds | May import |
 |---|---|---|
-| `src/lib/` | pure helpers: math, curves | nothing |
+| `src/lib/` | pure helpers: math, curves, sound synthesis | nothing |
 | `src/platform/` | engine setup and re-exports, storage, input, seeded random, mesh and texture builders | lib |
 | `src/game/` | the loop, game mode and save slices, shared progress, the current activity, interactables, events | lib, platform |
 | `src/world/` `player/` `render/` `sky/` `ui/` `audio/` | shared systems: the island, the mothling, camera and effects, the sky, the HTML layer, sound | the layers above, and each other without cycles |
@@ -14,9 +14,9 @@ Violet Isle is native ES modules served as static files, with no bundler. `src/m
 
 `architecture.json` declares these layers for `tools/coupling-report.mjs`.
 
-`electron/` wraps the game as a desktop app. It sits outside `src/` and the layers: the game knows nothing about it except the storage hook in `platform/storage.js`, which the desktop app fills with a file-backed save.
+`electron/` wraps the game as a desktop app. It sits outside `src/` and the layers: the game knows nothing about it except two hooks, the storage hook in `platform/storage.js`, which the desktop app fills with a file-backed save, and `window.violetIsleApp.quit`, which the menu's "Save and exit" uses when it is there (in a browser it goes back to the title screen instead). The app icon, `build/icon.png`, is drawn by `tools/make-icon.mjs` (`just icon`); electron-builder makes the platform icons from it. The fonts ship in `fonts/` so the app looks the same offline.
 
-The features are `house`, `bench`, `snail`, `swing`, `chimes`, `moonlet`, `mushrooms`, `overlook`, `telescope`, `fishing`, `sheep` and `fallen-stars`.
+The features are `house`, `bench`, `snail`, `swing`, `chimes`, `moonlet`, `mushrooms`, `overlook`, `telescope`, `fishing`, `sheep`, `fallen-stars` and `intro`.
 
 ## The loop
 
@@ -43,7 +43,10 @@ Features never import each other. They reach the rest of the game through:
 
 | To | Use |
 |---|---|
-| tell another feature something happened | `game/events.js`: `moon-song-played` (chimes, answered by the moonlet), `house-entered` (house, answered by the aquarium) |
+| tell another feature something happened | `game/events.js`: `moon-song-played` (chimes, answered by the moonlet), `house-entered` (house, answered by the aquarium), `dream-started` (the title screen, answered by the intro) |
+| play a cutscene | `playCutscene` in `ui/cutscene.js`: beats of camera shots, kinetic subtitles (markup in `ui/kinetic.js`) and timed events; the scene's text lives in the feature's `*-data.js` |
+| draw the camera's eye to something | `focusCamera` and `kickCamera` in `render/camera.js` |
+| give a speaker a voice | `setVoice` in `ui/dialog.js` |
 | offer something to use | `addInteract` in `game/interact.js` |
 | take over the mothling (swinging, fishing, the telescope, sitting) | `activity.start()` / `activity.end()` in `game/activity.js` |
 | offer water to fish in | `addWater` in `world/waters.js` (the pond and the moon pool do; fishing makes spots of them) |
@@ -51,6 +54,12 @@ Features never import each other. They reach the rest of the game through:
 | add journal rows, things to do, HUD counters | `addJournalSection`, `addTodo` in `ui/journal.js`; `addHudCounter` in `ui/hud.js` |
 | tell the title screen the player has been here before | `addReturnCheck` in `ui/title.js` |
 | own a modal card | `registerModal` in `ui/modal.js` (fishing's catch card) |
+
+## The camera and sound
+
+`render/camera.js` keeps one view and eases it toward whatever the current mode wants: the title orbit, the follow orbit, the house, an activity's camera or a cutscene's shot. When the mode changes it glides there along an arc instead of cutting, so starting or ending an activity, a cutscene or the dream itself never jumps. An activity can set `camBlend` and `camBlendOut` (seconds) to change how long those glides take.
+
+Sound effects are not files. `audio/recipes.js` builds each one from the oscillators, filters and envelopes in `lib/synth.js` (both import no engine code and are tested), and `audio/sfx.js` turns them into engine sounds at startup.
 
 ## The save
 

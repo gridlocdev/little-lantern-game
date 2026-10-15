@@ -1,12 +1,15 @@
-// The title screen, and stepping from it into the dream.
-import { MOBILE, audioContext, gamepadWasPressed, inputClear, keyWasPressed, vec3 } from '../platform/engine.js';
+// The title screen, stepping from it into the dream, and back to it.
+import { MOBILE, audioContext, gamepadWasPressed, inputClear, keyWasPressed, timeReal, vec3 } from '../platform/engine.js';
 import { musicStart } from '../audio/music.js';
+import { activity } from '../game/activity.js';
+import { events } from '../game/events.js';
 import { core } from '../game/progress.js';
 import { state, writeSave } from '../game/state.js';
 import { player } from '../player/player.js';
 import { cam } from '../render/camera.js';
-import { say } from './dialog.js';
 import { $ } from './dom.js';
+import { typeLine } from './kinetic.js';
+import { closeModal } from './modal.js';
 import { showPlace } from './toast.js';
 
 // a feature can tell the title screen that the player has been here before
@@ -25,23 +28,39 @@ function startGame()
     musicStart();
     cam.look = player.pos.add(vec3(0, 1.1, 0));
     inputClear();
-    if (!returning())
-    {
-        core.visits = 0; writeSave();
-        setTimeout(()=> say('', [
-            'You wake up on a little island floating through the night, with a lantern in your hand.',
-            'The pond nearby is full of stars. Your house is right there, with the door open. There is no hurry for anything.',
-        ]), 900);
-    }
-    else setTimeout(()=> showPlace('Violet Isle', 'welcome back'), 600);
+    const first = !returning();
+    if (first) { core.visits = 0; writeSave(); }
+    else setTimeout(()=> showPlace('Violet Isle', 'welcome back'), 1800);
+    // the intro feature answers a first start with its cutscene
+    events.emit('dream-started', { first });
 }
 $('startBtn').onclick = startGame;
 
+// back to the title screen, the island still turning behind it (the browser's "save and exit")
+export function returnToTitle(note = '')
+{
+    closeModal();
+    activity.current?.cancel?.();
+    state.mode = 'title';
+    $('hud').hidden = true;
+    $('touch').hidden = true;
+    $('title').hidden = false;
+    $('startBtn').textContent = 'Return to the dream';
+    if (note) $('titleNote').textContent = note;
+    nameLine = typeLine($('titleName'), '~Violet~ ~Isle~', { start: timeReal + .4, cps: 9 });
+}
+
+let nameLine = null;
 export const titleSystem = {
     always: true,
-    buildLate() { $('startBtn').textContent = returning() ? 'Return to the dream' : 'Enter the dream'; },
+    buildLate()
+    {
+        $('startBtn').textContent = returning() ? 'Return to the dream' : 'Enter the dream';
+        nameLine = typeLine($('titleName'), '~Violet~ ~Isle~', { start: timeReal + .6, cps: 9 });
+    },
     update()
     {
+        nameLine?.update(timeReal);
         if (state.mode === 'title' && (keyWasPressed('Enter') || gamepadWasPressed(0) || gamepadWasPressed(9))) startGame();
     },
 };

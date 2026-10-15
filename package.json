@@ -10,7 +10,8 @@
     "app": "electron .",
     "package": "electron-builder",
     "test": "node --test",
-    "check": "node tools/coupling-report.mjs --strict"
+    "check": "node tools/coupling-report.mjs --strict",
+    "icon": "node tools/make-icon.mjs"
   },
   "author": "",
   "license": "MIT",
@@ -26,11 +27,15 @@
     "appId": "com.gridlocdev.violetisle",
     "productName": "Violet Isle",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
+    "icon": "build/icon.png",
     "files": [
       "index.html",
       "style.css",
+      "fonts/**/*",
+      "build/icon.png",
       "src/**/*",
       "electron/**/*",
       "package.json"

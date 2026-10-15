@@ -35,6 +35,10 @@ test:
 types:
     npx -y -p typescript@5.6.3 tsc -p jsconfig.json
 
+# redraw the app icon, build/icon.png, from tools/make-icon.mjs
+icon:
+    node tools/make-icon.mjs
+
 # run the game as a desktop app (Electron); the save goes to a file in the app's data folder
 app: _deps
     npx electron .

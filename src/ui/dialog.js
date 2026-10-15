@@ -1,17 +1,22 @@
-// The dialog sheet.
+// The dialog sheet. Lines type themselves out in the speaker's voice (see kinetic.js for the markup).
 import { MOBILE, inputClear, keyWasPressed, mouseWasPressed, timeReal } from '../platform/engine.js';
 import { playSfx } from '../audio/sfx.js';
 import { clearTouchPresses, input } from '../platform/input.js';
 import { $, ui } from './dom.js';
+import { typeLine } from './kinetic.js';
+
+// who speaks in what voice: a pitch for their syllables, 0 for none (the narrator)
+const voices = {};
+export const setVoice = (who, pitch)=> { voices[who] = pitch; };
 
 export function say(who, pages, options)
 {
     return new Promise((resolve)=>
     {
         pages = Array.isArray(pages) ? pages : [pages];
-        ui.dialog = { who, pages, i: 0, options, resolve, opened: timeReal };
+        ui.dialog = { who, pages, i: 0, options, resolve, opened: timeReal, line: null, endedPage: -1 };
         renderDialog();
-        playSfx('page', undefined, .5);
+        playSfx('pop', undefined, .6);
     });
 }
 function renderDialog()
@@ -20,9 +25,15 @@ function renderDialog()
     $('dialog').hidden = !d;
     if (!d) return;
     $('dlgWho').textContent = d.who || '';
-    $('dlgText').textContent = d.pages[d.i];
+    d.line = typeLine($('dlgText'), d.pages[d.i], { start: timeReal + .05, pitch: voices[d.who] ?? (d.who ? 1 : 0) });
+    $('dlgOpts').innerHTML = '';
+    $('dlgHint').textContent = '';
+}
+// once a page has finished typing: its options, or how to go on
+function renderEnd()
+{
+    const d = ui.dialog;
     const opts = $('dlgOpts');
-    opts.innerHTML = '';
     const last = d.i === d.pages.length - 1;
     if (last && d.options)
     {
@@ -31,13 +42,11 @@ function renderDialog()
             const b = document.createElement('button');
             b.className = 'btn' + (k === 0 ? ' primary' : '');
             b.type = 'button';
-            b.innerHTML = '';
             b.append(o.label + ' ');
             if (!MOBILE) { const kb = document.createElement('kbd'); kb.textContent = String(k + 1); b.append(kb); }
             b.onclick = ()=> closeDialog(o);
             opts.appendChild(b);
         });
-        $('dlgHint').textContent = '';
     }
     else $('dlgHint').textContent = MOBILE ? 'Tap to continue' : last ? 'E to close' : 'E to continue';
 }
@@ -45,7 +54,8 @@ export function advanceDialog()
 {
     const d = ui.dialog;
     if (!d || timeReal - d.opened < .15) return;
-    if (d.i < d.pages.length - 1) { d.i++; d.opened = timeReal; renderDialog(); playSfx('page', undefined, .35); }
+    if (!d.line.done) { d.line.finish(); return; }   // the first press shows the whole line
+    if (d.i < d.pages.length - 1) { d.i++; d.opened = timeReal; renderDialog(); playSfx('tok', undefined, .6); }
     else if (!d.options) closeDialog();
 }
 function closeDialog(option)
@@ -64,8 +74,11 @@ export function updateDialog()
 {
     const d = ui.dialog;
     if (!d) return;
+    const wasDone = d.line.done;
+    d.line.update(timeReal);
+    if (d.line.done && d.endedPage !== d.i) { d.endedPage = d.i; renderEnd(); }
     const last = d.i === d.pages.length - 1;
-    if (last && d.options)
+    if (wasDone && last && d.options)
     {
         for (let k = 0; k < d.options.length; k++)
             if (keyWasPressed('Digit' + (k + 1))) return closeDialog(d.options[k]);

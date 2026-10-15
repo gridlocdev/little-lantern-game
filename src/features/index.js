@@ -3,6 +3,7 @@ import { chimesFeature } from './chimes/index.js';
 import { fallenStarsFeature } from './fallen-stars/index.js';
 import { fishingFeature } from './fishing/index.js';
 import { houseFeature } from './house/index.js';
+import { introFeature } from './intro/index.js';
 import { moonletFeature } from './moonlet/index.js';
 import { mushroomsFeature } from './mushrooms/index.js';
 import { overlookFeature } from './overlook/index.js';
@@ -17,4 +18,5 @@ import { telescopeFeature } from './telescope/index.js';
 export const features = [
     houseFeature, benchFeature, snailFeature, swingFeature, chimesFeature, moonletFeature, mushroomsFeature,
     overlookFeature, telescopeFeature, fishingFeature, sheepFeature, fallenStarsFeature,
+    introFeature,       // draws nothing; listed last anyway
 ];

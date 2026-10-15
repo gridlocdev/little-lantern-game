@@ -72,7 +72,7 @@ export function buildHouseInterior()
     addInteract({ pos: hin(fx - .8, 0, fz + 1.1), r: 1.7, zone: 'house', label: ()=> houseState.fire ? 'Let the fire burn low' : 'Stoke the fire', act: ()=>
     {
         houseState.fire = !houseState.fire;
-        playSfx(houseState.fire ? 'whoosh' : 'crackle', furniture.fireLight.pos3D, .7);
+        playSfx(houseState.fire ? 'ignite' : 'crackle', furniture.fireLight.pos3D, .8);
         moth.reach = 1;
     } });
     const kettlePos = hin(fx + .6, .55, fz + .6);

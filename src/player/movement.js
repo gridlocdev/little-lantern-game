@@ -7,7 +7,7 @@ import { mix, wrapAngle } from '../lib/math.js';
 import { input } from '../platform/input.js';
 import { Mothling, setMoth } from './mothling.js';
 import { player } from './player.js';
-import { cam } from '../render/camera.js';
+import { cam, kickCamera } from '../render/camera.js';
 import { burst } from '../render/particles.js';
 import { uiOpen } from '../ui/dom.js';
 import { fadeTransition } from '../ui/fade.js';
@@ -92,6 +92,7 @@ function landed(on)
         player.onGround = false;
         on.squash = 1;
         playSfx('boing', player.pos, 1, 1 + min(player.bounceChain, 8) * .09);
+        kickCamera(.02 + min(player.bounceChain, 6) * .008);
         burst(player.pos.add(vec3(0, .1, 0)), hsl(on.hue || .85, .8, .7), 14, .08, .25);
         on.onBounce?.(player.bounceChain);
         if (player.bounceChain >= 3) toast(`Bounce ×${player.bounceChain}`);

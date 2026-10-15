@@ -9,6 +9,7 @@ import { TAU, dist2 } from '../../lib/math.js';
 import { mtx } from '../../platform/mesh.js';
 import { CONE, SPH } from '../../player/part-meshes.js';
 import { player } from '../../player/player.js';
+import { focusCamera, kickCamera } from '../../render/camera.js';
 import { burst, sparkleColumn } from '../../render/particles.js';
 import { ShootingStar } from '../../sky/shooting-star.js';
 import { addTodo } from '../../ui/journal.js';
@@ -42,6 +43,8 @@ class FallenStar extends EngineObject3D
             const n = randInt(3, 8);
             addStardust(n);
             playSfx('collect', this.pos3D, 1);
+            kickCamera(.04);
+            focusCamera(this.pos3D.add(vec3(0, 2, 0)), { pull: .3, zoom: .9, dur: .8 });
             sparkleColumn(this.pos3D, hsl(.13, .9, .75), 36, 2);
             toast(`+${n} stardust`);
             this.vanish();
