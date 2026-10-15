@@ -1,2 +1,6 @@
 node_modules/
 .DS_Store
+
+# Claude Code: worktrees for isolated sessions, and personal settings
+.claude/worktrees/
+.claude/settings.local.json
