@@ -2,6 +2,7 @@
   "name": "violet-isle",
   "version": "1.0.0",
   "description": "LittleJS 3D cozy game: a moth with a lantern on a floating island, fishing for things that swim between stars",
+  "type": "module",
   "scripts": {
     "start": "python3 -m http.server 8000"
   },

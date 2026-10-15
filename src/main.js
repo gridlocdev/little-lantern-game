@@ -1,12 +1,39 @@
-'use strict';
+import {
+    Render3DPlugin, audioContext, engineInit, gamepadWasPressed, inputClear, keyWasPressed, postProcessBloom,
+    render3D, setSoundVolume, timeReal, vec3,
+} from './platform/engine.js';
+import {
+    StarPillars, buildChimes, buildMoonlet, buildMushrooms, buildOverlook, buildPier, buildPondFishing, buildSheep,
+    buildSwing, buildTelescope, checkMoonletVisit, updateStarFall,
+} from './activities.js';
+import { buildSounds, music, musicStart, musicUpdate } from './audio.js';
+import {
+    activity, cam, clearTouchPresses, gameMode, input, setGameMode, updateCamera, updateInteract, updatePlayer,
+} from './controls.js';
+import { MOBILE } from './core.js';
+import { RippleDrawer } from './fishing.js';
+import { buildAmbientFx, updateAmbientFx } from './fx.js';
+import { buildHouseInterior, updateHouse } from './house.js';
+import { Mothling, buildPartMeshes, player, setMoth } from './player.js';
+import { loadSave, loadSetting, save, storage, writeSave } from './save.js';
+import { MOON_DIR, StarWhale, buildSky, setPalette, updateSky } from './sky.js';
+import {
+    $, openJournal, openMenu, say, setGraphics, showPlace, trackFrameRate, ui, updateDialog, updateHud,
+    updateModals, updatePlaces, updatePrompt, watchFrameRate,
+} from './ui.js';
+import { buildBenchArea, buildHouseExterior, buildPond, buildSignpost, buildSnail } from './village.js';
+import {
+    P, buildFlowers, buildGrass, buildLamps, buildRoads, buildRocks, buildShards, buildTerrain, buildTrees,
+    buildUnderside, heightAt, makeTextures, updateGrass, updateShards,
+} from './world.js';
 
 // ================================================================ MAIN
-let whale;
-const camNear = (p, d)=> render3D.camera.pos.distanceSquared(p) < d * d;
+export let whale;
+export const camNear = (p, d)=> render3D.camera.pos.distanceSquared(p) < d * d;
 function gameInit()
 {
     loadSave();
-    const v = parseFloat(loadSetting('volume')); if (v >= 0 && v <= 1) soundVolume = v;
+    const v = parseFloat(loadSetting('volume')); if (v >= 0 && v <= 1) setSoundVolume(v);
     music.on = save.music !== false;
     new Render3DPlugin;
     render3D.camera.far = 3000;
@@ -32,13 +59,13 @@ function gameInit()
     player.lastSafe = player.pos.copy();
     player.yaw = Math.atan2(-(P.pond.x - P.spawn.x), -(P.pond.z - P.spawn.z));
     cam.yaw = player.yaw; cam.pitch = .28;
-    moth = new Mothling;
+    setMoth(new Mothling);
     $('startBtn').textContent = save.visits || Object.keys(save.fish).length ? 'Return to the dream' : 'Enter the dream';
 }
 function startGame()
 {
     if (gameMode !== 'title') return;
-    gameMode = 'play';
+    setGameMode('play');
     $('title').hidden = true;
     $('hud').hidden = false;
     $('touch').hidden = !MOBILE;
@@ -101,7 +128,7 @@ function gameUpdatePost()
     updateSky();
     render3D.shadowCenter = player.pos.add(vec3(0, 1, 0));
 }
-function gameRender() {}
+function gameRender() { trackFrameRate(); }
 function gameRenderPost() {}
 // load the save before the engine starts, since a file backend may need a moment
 storage.init().then(()=> engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRenderPost));

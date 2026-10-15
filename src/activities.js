@@ -1,14 +1,34 @@
-'use strict';
+import {
+    EngineObject3D, InstancedMesh3D, Light3D, Matrix4, Mesh, PI, WHITE, abs, buildBox, buildCylinder, buildLathe,
+    buildMatrix, buildSphere, clamp, gamepadStick, hsl, max, min, mouseDeltaScreen, mouseIsDown, mouseWheel,
+    noise2D, rand, randInt, render3D, time, timeDelta, vec2, vec3,
+} from './platform/engine.js';
+import { PENTA, bell, playSfx } from './audio.js';
+import {
+    addInteract, clearTouchPresses, gameMode, groundInfo, input, pointerOnCanvas, setActivity, touchState,
+} from './controls.js';
+import { MOBILE, TAU, canvasTexture, dist2, fbm, mix, mtx, obj3, rr, sstep, triMesh, wrapAngle } from './core.js';
+import { addFishingSpot } from './fishing.js';
+import { burst, sparkleColumn } from './fx.js';
+import { camNear, whale } from './main.js';
+import { BOXM, CAPS, CONE, CYL, SPH, SPH_LO, TORUS, moth, player } from './player.js';
+import { save, writeSave } from './save.js';
+import { ShootingStar } from './sky.js';
+import { $, PLACE_NAMES, say, toast } from './ui.js';
+import { discMesh, waterShader } from './village.js';
+import {
+    P, WATER_Y, addClearing, addSolid, heightAt, insideIsland, isClear, solidContains, solidsAt, texStone,
+} from './world.js';
 
 // ================================================================ SITTING
-function startSit(seat, faceYaw, opts = {})
+export function startSit(seat, faceYaw, opts = {})
 {
     player.yaw = faceYaw;
     player.pos = vec3(seat.x, seat.y + (opts.height ?? .45), seat.z);
     player.vel = vec3();
     player.pose = opts.pose || 'sit';
     const fromPos = player.pos.copy();
-    activity = {
+    setActivity({
         name: 'sit', ownsPhysics: true,
         update()
         {
@@ -17,7 +37,7 @@ function startSit(seat, faceYaw, opts = {})
             if (input.move().length() > .4 || input.act() || input.jump() || input.back())
             {
                 clearTouchPresses();
-                activity = null;
+                setActivity(null);
                 player.pose = 'free';
                 const fwd = vec3(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
                 const out = seat.add(fwd.scale(opts.out ?? .9));
@@ -26,15 +46,15 @@ function startSit(seat, faceYaw, opts = {})
                 if (opts.onStand) opts.onStand();
             }
         },
-        cancel() { activity = null; player.pose = 'free'; },
+        cancel() { setActivity(null); player.pose = 'free'; },
         hint: ()=> opts.hint || `${MOBILE ? 'Use' : 'E'}|Get up`,
         cam: opts.cam,
-    };
+    });
     if (opts.onSit) opts.onSit();
 }
 
 // ================================================================ MOONWILLOW SWING
-let swingState = null;
+export let swingState = null;
 const SWING = {};
 class Moonwillow extends EngineObject3D
 {
@@ -67,7 +87,7 @@ class Moonwillow extends EngineObject3D
         }
     }
 }
-function buildSwing()
+export function buildSwing()
 {
     const x = P.swing.x, z = P.swing.z, y = heightAt(x, z);
     // the swing hangs from a long branch and swings toward the island's middle
@@ -130,16 +150,16 @@ function startSwing()
     swingState = { angle: 0, vel: 0, lastSign: 0, window: 0, peak: 0, high: false };
     player.pose = 'swing';
     player.yaw = SWING.dirYaw;
-    activity = {
+    setActivity({
         name: 'swing', ownsPhysics: true,
         update: updateSwing,
         cancel()
         {
-            swingState = null; activity = null; player.pose = 'free'; player.extraPitch = 0;
+            swingState = null; setActivity(null); player.pose = 'free'; player.extraPitch = 0;
         },
         hint: ()=> swingState.window > 0 ? `${MOBILE ? 'Use' : 'E'}|Lean in now!` : `${MOBILE ? 'Use' : 'E'}|Lean in at the top · ${MOBILE ? 'Jump' : 'Space'} lets go · ${MOBILE ? '' : 'Q gets off'}`,
         cam: ()=> ({ target: SWING.pivot.add(vec3(0, -3.2, 0)), dist: 13, yaw: Math.atan2(SWING.side.x, SWING.side.z), pitch: .12 }),
-    };
+    });
 }
 function updateSwing()
 {
@@ -214,7 +234,7 @@ function updateSwing()
 }
 function endSwing(fly)
 {
-    swingState = null; activity = null;
+    swingState = null; setActivity(null);
     player.pose = 'free'; player.extraPitch = 0;
     player.onGround = false;
     if (!fly) player.vel = vec3();
@@ -243,7 +263,7 @@ class ChimeRing extends EngineObject3D
         }
     }
 }
-function buildChimes()
+export function buildChimes()
 {
     const cx = P.chimes.x, cz = P.chimes.z, cy = heightAt(cx, cz);
     for (let i = 0; i < 7; i++)
@@ -346,7 +366,7 @@ class BridgeSlabs extends EngineObject3D
         render3D.emissive = e;
     }
 }
-function buildMoonlet()
+export function buildMoonlet()
 {
     const a = P.bridgeStart, m = P.moonlet;
     const startY = heightAt(a.x, a.z);
@@ -453,7 +473,7 @@ function bridgeAppear(i)
     bell(PENTA[i % PENTA.length], s.pos, .5);
     setTimeout(()=> bridgeAppear(i + 1), 160);
 }
-function checkMoonletVisit()
+export function checkMoonletVisit()
 {
     if (save.moonlet) return;
     if (dist2(player.pos.x, player.pos.z, P.moonlet.x, P.moonlet.z) < P.moonlet.r)
@@ -484,7 +504,7 @@ class MushroomCaps extends EngineObject3D
         }
     }
 }
-function buildMushrooms()
+export function buildMushrooms()
 {
     const cx = P.mushrooms.x, cz = P.mushrooms.z;
     // [dx, dz, cap radius, stem height]: three low caps you can jump onto from the ground, the rest are reached by bouncing
@@ -552,7 +572,7 @@ class WishLantern extends EngineObject3D
         render3D.emissive = e;
     }
 }
-function buildOverlook()
+export function buildOverlook()
 {
     const o = P.overlook, y = heightAt(o.x, o.z);
     obj3(vec3(o.x, y - .25, o.z), buildCylinder(9, .6, 24), WHITE, { tileInfo: texStone });
@@ -651,7 +671,7 @@ class FallenStar extends EngineObject3D
         render3D.emissive = e;
     }
 }
-class StarPillars extends EngineObject3D
+export class StarPillars extends EngineObject3D
 {
     constructor() { super(vec3()); this.additive = true; this.castShadow = false; }
     render3D()
@@ -663,7 +683,7 @@ class StarPillars extends EngineObject3D
         }
     }
 }
-function landFallenStar(pos)
+export function landFallenStar(pos)
 {
     playSfx('collect', pos, .6, .5);
     burst(pos.add(vec3(0, .5, 0)), hsl(.13, .9, .75), 30, .12, .3);
@@ -674,7 +694,7 @@ function compassWord(dx, dz)
     const a = Math.atan2(dx, -dz);
     return ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest'][(Math.round(a / (PI / 4)) + 8) % 8];
 }
-function updateStarFall()
+export function updateStarFall()
 {
     if (gameMode !== 'play') return;
     nextStarFall -= timeDelta;
@@ -764,7 +784,7 @@ class CloudSheep extends EngineObject3D
         render3D.emissive = e;
     }
 }
-function buildSheep()
+export function buildSheep()
 {
     for (let i = 0; i < 6; i++)
     {
@@ -777,7 +797,7 @@ function buildSheep()
 }
 
 // ================================================================ OBSERVATORY: TELESCOPE AND CONSTELLATIONS
-const CONSTELLATIONS = [
+export const CONSTELLATIONS = [
     { id: 'kettle', name: 'The Kettle', desc: 'A kettle that has been about to boil for ten thousand years.', az: .4, el: .55,
         pts: [[-1, -.6], [1, -.6], [1.1, .4], [.5, .8], [-.5, .8], [-1.1, .4], [-1.8, .9], [.1, 1.2]], lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0], [5, 6], [3, 7], [4, 7]] },
     { id: 'moth', name: 'The Moth', desc: 'Someone up there carries a lantern too.', az: 2.3, el: .7,
@@ -813,7 +833,7 @@ class ConstellationSky extends EngineObject3D
         }
     }
 }
-function buildTelescope()
+export function buildTelescope()
 {
     const t = P.telescope, y = heightAt(t.x, t.z);
     obj3(vec3(t.x, y - .2, t.z), buildCylinder(7, .5, 20), WHITE, { tileInfo: texStone });
@@ -854,7 +874,7 @@ function startTelescope()
     player.yaw = Math.atan2(-(t.x - player.pos.x), -(t.z - player.pos.z));
     $('scope').hidden = false;
     $('scopeHint').textContent = MOBILE ? 'Drag to look around. Tap Jump to step back.' : 'Drag, or use the arrow keys, to look around. Scroll to zoom. Q to step back.';
-    activity = {
+    setActivity({
         name: 'telescope', ownsPhysics: false, lockCamera: true,
         update: updateTelescope,
         cancel: endTelescope,
@@ -865,11 +885,11 @@ function startTelescope()
             const eye = SCOPE.base.add(vec3(0, .3, 0));
             return { pos: eye, look: eye.add(dir.scale(50)), fov: scope.fov, snap: 12 };
         },
-    };
+    });
 }
 function endTelescope()
 {
-    scope = null; activity = null; player.pose = 'free';
+    scope = null; setActivity(null); player.pose = 'free';
     $('scope').hidden = true;
 }
 function updateTelescope()
@@ -911,7 +931,7 @@ function updateTelescope()
 }
 
 // ================================================================ THE VOID PIER
-function buildPier()
+export function buildPier()
 {
     const a = P.pierBase, b = P.pierTip;
     const y = heightAt(a.x, a.z) + .35;
@@ -952,7 +972,7 @@ function buildPier()
     PLACE_NAMES.push({ name: 'The Void Pier', sub: 'fish in the open sky', x: (a.x + b.x) / 2, z: (a.z + b.z) / 2, r: L / 2 + 2, zone: 'island' });
     addClearing(a.x, a.z, 6);
 }
-function buildPondFishing()
+export function buildPondFishing()
 {
     const c = P.pond, edge = c.r - 1.1;
     addSolid({ kind: 'circle', x: c.x, z: c.z, r: edge - .35, top: 99 });

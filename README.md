@@ -15,7 +15,6 @@ Other recipes:
 | Recipe | What it does |
 | --- | --- |
 | `just serve` | serve the game on http://localhost:8000 (`just port=9000 serve` for another port) |
-| `just open` | open `index.html` straight from disk, no server |
 | `just install` | `npm install` the pinned engine |
 | `just check` | syntax-check every script in `src/` |
 

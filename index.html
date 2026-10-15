@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
 </head>
 <body>
 <div class="ui" id="hud" hidden>
@@ -102,20 +103,9 @@
   </div>
 </div>
 
-<script src="node_modules/littlejsengine/dist/littlejs.min.js"></script>
-<script src="src/core.js"></script>
-<script src="src/save.js"></script>
-<script src="src/world.js"></script>
-<script src="src/sky.js"></script>
-<script src="src/player.js"></script>
-<script src="src/controls.js"></script>
-<script src="src/fx.js"></script>
-<script src="src/audio.js"></script>
-<script src="src/ui.js"></script>
-<script src="src/village.js"></script>
-<script src="src/fishing.js"></script>
-<script src="src/activities.js"></script>
-<script src="src/house.js"></script>
-<script src="src/main.js"></script>
+<script type="importmap">
+{ "imports": { "littlejsengine": "./node_modules/littlejsengine/dist/littlejs.esm.min.js" } }
+</script>
+<script type="module" src="src/main.js"></script>
 </body>
 </html>

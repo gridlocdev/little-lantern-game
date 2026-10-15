@@ -1,7 +1,19 @@
-'use strict';
+import {
+    EngineObject3D, InstancedMesh3D, Light3D, Mesh, PI, ParticleEmitter3D, Shader, WHITE, buildBox, buildCone,
+    buildCylinder, buildMatrix, buildSphere, buildTorus, hsl, max, render3D, time, vec2, vec3,
+} from './platform/engine.js';
+import { startSit } from './activities.js';
+import { addInteract } from './controls.js';
+import { TAU, canvasTexture, mtx, obj3, rr, triMesh } from './core.js';
+import { enterHouse } from './house.js';
+import { camNear } from './main.js';
+import { CAPS, CYL, SPH, SPH_LO, TORUS, player } from './player.js';
+import { GLSL_NOISE } from './sky.js';
+import { PLACE_NAMES, say } from './ui.js';
+import { P, WATER_Y, addClearing, addSolid, heightAt, texPlank, texRoof, texStone } from './world.js';
 
 // ================================================================ VILLAGE: POND, HOUSE, BENCH, SIGNPOST, SNAIL
-function waterShader(cx, cz, radius, tint = 0)
+export function waterShader(cx, cz, radius, tint = 0)
 {
     return new Shader(GLSL_NOISE + `
 float wStars(vec2 q, float density, float s){
@@ -40,14 +52,14 @@ void mainImage(out vec4 c, vec2 uv){
   c = vec4(col, 1.);
 }`);
 }
-function discMesh(radius, segs = 64)
+export function discMesh(radius, segs = 64)
 {
     const pts = [vec3()], idx = [];
     for (let i = 0; i <= segs; i++) { const a = i / segs * TAU; pts.push(vec3(Math.cos(a) * radius, 0, Math.sin(a) * radius)); }
     for (let i = 1; i <= segs; i++) idx.push(0, i + 1, i);
     return triMesh(pts, idx, vec3(0, 1, 0), WHITE);
 }
-function buildPond()
+export function buildPond()
 {
     const w = obj3(vec3(P.pond.x, WATER_Y, P.pond.z), discMesh(P.pond.r + .6), WHITE, { emissive: 1, castShadow: false });
     w.shader = waterShader(P.pond.x, P.pond.z, P.pond.r);
@@ -78,7 +90,7 @@ function buildPond()
 }
 
 // ---------------------------------------------------------------- the crooked house
-const HOUSE = { W: 8, D: 7, H: 4 };
+export const HOUSE = { W: 8, D: 7, H: 4 };
 let houseWindowLight;
 function prismRoof(w, d, h, over)
 {
@@ -98,7 +110,7 @@ function prismRoof(w, d, h, over)
     m.doubleSided = true;
     return m;
 }
-function buildHouseExterior()
+export function buildHouseExterior()
 {
     const { W, D, H } = HOUSE;
     const hx = P.house.x, hz = P.house.z, y0 = heightAt(hx, hz) - .1;
@@ -185,7 +197,7 @@ function placeBench(x, z, yaw, zone = 'island', y)
     const seat = vec3(x, y, z);
     addInteract({ pos: seat, r: 1.8, zone, label: 'Sit', act: ()=> startSit(seat, yaw) });
 }
-function buildBenchArea()
+export function buildBenchArea()
 {
     const yaw = Math.atan2(-(P.pond.x - P.bench.x), -(P.pond.z - P.bench.z));
     placeBench(P.bench.x, P.bench.z, yaw);
@@ -218,7 +230,7 @@ function signTexture(text)
         g.fillText(text, s / 2, s / 2, s - 20);
     }, false);
 }
-function buildSignpost()
+export function buildSignpost()
 {
     const sx = 8.6, sz = 20.5, sy = heightAt(sx, sz);
     obj3(vec3(sx, sy + 1.4, sz), buildBox(vec3(.16, 2.8, .16)), hsl(.75, .2, .3));
@@ -284,7 +296,7 @@ class Snail extends EngineObject3D
         render3D.emissive = e;
     }
 }
-function buildSnail()
+export function buildSnail()
 {
     const x = P.snail.x, z = P.snail.z;
     const s = new Snail(vec3(x, heightAt(x, z), z));

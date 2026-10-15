@@ -1,14 +1,27 @@
-'use strict';
+import {
+    PI, abs, clamp, gamepadIsDown, gamepadStick, gamepadWasPressed, hsl, keyDirection, keyIsDown, keyWasPressed,
+    max, min, mouseDeltaScreen, mouseIsDown, mouseWheel, render3D, time, timeDelta, usingGamepadInput, vec2, vec3,
+} from './platform/engine.js';
+import { playSfx } from './audio.js';
+import { mix, wrapAngle } from './core.js';
+import { burst } from './fx.js';
+import { HOUSE_IN } from './house.js';
+import { player } from './player.js';
+import { save, writeSave } from './save.js';
+import { fadeTransition, toast, uiOpen } from './ui.js';
+import { boxLocal, heightAt, insideIsland, solidContains, solidTop, solidsAt } from './world.js';
 
 // ================================================================ INPUT, MOVEMENT, CAMERA, INTERACTION
-let gameMode = 'title';      // title, play, ui
-let activity = null;         // an activity that has taken over the mothling: {name, update(), cancel(), cam}
-const cam = { yaw: 0, pitch: .3, dist: 7, distT: 7, manualT: -99, look: vec3(), fov: PI / 3, house: false };
-const touchState = { jump: false, act: false, jumpHeld: false, actHeld: false, journal: false };
-let pointerOnCanvas = false;
+export let gameMode = 'title';      // title, play, ui
+export let activity = null;         // an activity that has taken over the mothling: {name, update(), cancel(), cam}
+export const setGameMode = (m)=> { gameMode = m; };
+export const setActivity = (a)=> { activity = a; };
+export const cam = { yaw: 0, pitch: .3, dist: 7, distT: 7, manualT: -99, look: vec3(), fov: PI / 3, house: false };
+export const touchState = { jump: false, act: false, jumpHeld: false, actHeld: false, journal: false };
+export let pointerOnCanvas = false;
 document.addEventListener('pointerdown', (e)=> { pointerOnCanvas = e.target && e.target.tagName === 'CANVAS'; });
 
-const input = {
+export const input = {
     move()
     {
         let v = keyDirection();
@@ -25,10 +38,10 @@ const input = {
     journal: ()=> keyWasPressed('KeyJ') || keyWasPressed('Tab') || gamepadWasPressed(3) || touchState.journal,
     pause: ()=> keyWasPressed('Escape') || gamepadWasPressed(9),
 };
-function clearTouchPresses() { touchState.jump = touchState.act = touchState.journal = false; }
+export function clearTouchPresses() { touchState.jump = touchState.act = touchState.journal = false; }
 
 // ---------------------------------------------------------------- ground and collision
-function groundInfo(x, z, feetY)
+export function groundInfo(x, z, feetY)
 {
     // returns the highest floor at or just under the feet, and what it is
     let y = -1e9, on;
@@ -79,7 +92,7 @@ function walkable(x, z, feetY)
 
 const GRAV = 22;
 const JUMP_VEL = 8.6; // apex about 1.7 m, enough to land on the low mushroom caps
-function updatePlayer()
+export function updatePlayer()
 {
     const dt = timeDelta;
     const free = gameMode === 'play' && !activity && !uiOpen();
@@ -176,7 +189,7 @@ function driftBack()
 }
 
 // ---------------------------------------------------------------- camera
-function updateCamera()
+export function updateCamera()
 {
     const dt = timeDelta;
     // orbit by dragging on the world, the right stick, or the wheel
@@ -252,15 +265,15 @@ function updateCamera()
 
 // ---------------------------------------------------------------- interaction prompts
 const interactables = [];
-function addInteract(o)
+export function addInteract(o)
 {
     o.zone ||= 'island';
     o.r ||= 2;
     interactables.push(o);
     return o;
 }
-let focusItem = null;
-function updateInteract()
+export let focusItem = null;
+export function updateInteract()
 {
     focusItem = null;
     if (gameMode !== 'play' || activity || uiOpen()) return;

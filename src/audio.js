@@ -1,8 +1,11 @@
-'use strict';
+import {
+    Sound, audioContext, audioMasterGain, getNoteFrequency, rand, randInt, render3D, timeReal,
+} from './platform/engine.js';
+import { save, writeSave } from './save.js';
 
 // ================================================================ SOUND
 let SFX = {};
-function buildSounds()
+export function buildSounds()
 {
     const S = (a, range = 60)=> new Sound(a, undefined, range);
     SFX = {
@@ -34,7 +37,7 @@ function buildSounds()
         cast: S([.35, .3, 900, .02, .08, .2, 4, 1, -6]),
     };
 }
-function playSfx(name, pos, vol = 1, pitch = 1)
+export function playSfx(name, pos, vol = 1, pitch = 1)
 {
     const s = SFX[name];
     if (!s) return;
@@ -46,8 +49,8 @@ function playSfx(name, pos, vol = 1, pitch = 1)
     catch (e) {}
 }
 // pentatonic notes for the chimes and melodies, semitones from C
-const PENTA = [0, 2, 4, 7, 9, 12, 14, 16];
-function bell(semi, pos, vol = .8)
+export const PENTA = [0, 2, 4, 7, 9, 12, 14, 16];
+export function bell(semi, pos, vol = .8)
 {
     if (!SFX.bell) return;
     try { pos ? render3D.playSound(SFX.bell, pos, vol, getNoteFrequency(semi, 1)) : SFX.bell.playNote(semi, undefined, vol); }
@@ -55,9 +58,9 @@ function bell(semi, pos, vol = .8)
 }
 
 // ---------------------------------------------------------------- generative night music
-const music = { on: true, nodes: null, nextChord: 0, nextNote: 0, chord: 0, house: false };
+export const music = { on: true, nodes: null, nextChord: 0, nextNote: 0, chord: 0, house: false };
 const CHORDS = [[0, 4, 7, 11], [-3, 0, 4, 7], [5, 9, 12, 16], [2, 5, 9, 12], [-5, -1, 2, 7]];
-function musicStart()
+export function musicStart()
 {
     if (!audioContext || music.nodes) return;
     try
@@ -102,7 +105,7 @@ function musicSetChord(i)
         v.o2.frequency.setTargetAtTime(f * 2, t, 1.5);
     });
 }
-function musicUpdate()
+export function musicUpdate()
 {
     if (!music.nodes) return;
     const t = audioContext.currentTime;
@@ -122,7 +125,7 @@ function musicUpdate()
         try { SFX.pluck.playNote(semi, undefined, rand(.12, .22)); } catch (e) {}
     }
 }
-function setMusic(on)
+export function setMusic(on)
 {
     music.on = save.music = on;
     writeSave();

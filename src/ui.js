@@ -1,12 +1,24 @@
-'use strict';
+import {
+    inputClear, keyWasPressed, lerp, max, mouseWasPressed, render3D, setCanvasPixelRatio, setSoundVolume,
+    soundVolume, timeDelta, timeReal, usingGamepadInput,
+} from './platform/engine.js';
+import { CONSTELLATIONS } from './activities.js';
+import { music, playSfx, setMusic } from './audio.js';
+import { activity, clearTouchPresses, focusItem, gameMode, input, touchState } from './controls.js';
+import { MOBILE, dist2 } from './core.js';
+import { FISH, pendingCatch, resolveCatch } from './fishing.js';
+import { BOOKS } from './house.js';
+import { OUTFITS, player } from './player.js';
+import { forgetSave, save, writeSetting } from './save.js';
+import { PALETTES } from './sky.js';
 
 // ================================================================ HTML INTERFACE
-const $ = (id)=> document.getElementById(id);
-const ui = { modal: null, dialog: null };
-const uiOpen = ()=> !!(ui.modal || ui.dialog);
+export const $ = (id)=> document.getElementById(id);
+export const ui = { modal: null, dialog: null };
+export const uiOpen = ()=> !!(ui.modal || ui.dialog);
 if (MOBILE) document.body.classList.add('touch');
 
-function toast(text, ms = 3200)
+export function toast(text, ms = 3200)
 {
     const box = $('toasts');
     const el = document.createElement('div');
@@ -17,7 +29,7 @@ function toast(text, ms = 3200)
     setTimeout(()=> { el.classList.add('out'); setTimeout(()=> el.remove(), 700); }, ms);
 }
 let placeTimer = 0;
-function showPlace(name, sub)
+export function showPlace(name, sub)
 {
     const el = $('place');
     el.innerHTML = '';
@@ -27,7 +39,7 @@ function showPlace(name, sub)
     clearTimeout(placeTimer);
     placeTimer = setTimeout(()=> el.classList.remove('on'), 3400);
 }
-function fadeTransition(fn, hold = 350)
+export function fadeTransition(fn, hold = 350)
 {
     const f = $('fade');
     f.classList.add('on');
@@ -40,7 +52,7 @@ function fadeTransition(fn, hold = 350)
 
 // ---------------------------------------------------------------- prompt
 let lastPrompt = '';
-function updatePrompt()
+export function updatePrompt()
 {
     let text = '';
     if (gameMode === 'play' && !uiOpen())
@@ -59,7 +71,7 @@ function updatePrompt()
 }
 
 // ---------------------------------------------------------------- dialog sheet
-function say(who, pages, options)
+export function say(who, pages, options)
 {
     return new Promise((resolve)=>
     {
@@ -115,7 +127,7 @@ function closeDialog(option)
     d.resolve(option);
 }
 $('dialog').addEventListener('pointerdown', (e)=> { if (e.target.tagName !== 'BUTTON') advanceDialog(); });
-function updateDialog()
+export function updateDialog()
 {
     const d = ui.dialog;
     if (!d) return;
@@ -132,7 +144,7 @@ function updateDialog()
 }
 
 // ---------------------------------------------------------------- modals
-function openModal(id)
+export function openModal(id)
 {
     if (ui.modal) $(ui.modal).hidden = true;
     ui.modal = id;
@@ -150,7 +162,7 @@ function closeModal()
     clearTouchPresses();
     if (was === 'catch' && pendingCatch) resolveCatch(false);
 }
-function updateModals()
+export function updateModals()
 {
     if (!ui.modal) return;
     if (ui.modal === 'catch')
@@ -165,7 +177,7 @@ function updateModals()
 
 // journal
 let journalTab = 'fish';
-function openJournal(tab)
+export function openJournal(tab)
 {
     if (tab) journalTab = tab;
     renderJournal();
@@ -246,7 +258,7 @@ function renderJournal()
 }
 
 // menu
-function openMenu()
+export function openMenu()
 {
     $('volSlider').value = soundVolume;
     $('musicToggle').textContent = music.on ? 'On' : 'Off';
@@ -256,21 +268,29 @@ function openMenu()
     openModal('menu');
 }
 $('mClose').onclick = closeModal;
-$('volSlider').oninput = (e)=> { soundVolume = +e.target.value; writeSetting('volume', soundVolume); };
+$('volSlider').oninput = (e)=> { setSoundVolume(+e.target.value); writeSetting('volume', soundVolume); };
 $('musicToggle').onclick = ()=> setMusic(!music.on);
 $('gfxToggle').onclick = ()=> setGraphics(!gfx.low);
-const gfx = { low: false, checked: false, slowT: 0 };
-function setGraphics(low, quiet)
+export const gfx = { low: false, checked: false, slowT: 0 };
+export function setGraphics(low, quiet)
 {
     gfx.low = low;
     writeSetting('graphics', low ? 'low' : 'full');
     if (render3D) render3D.shadows = !low;
-    canvasPixelRatio = low ? 1 : Math.min(window.devicePixelRatio || 1, MOBILE ? 1.25 : 1.5);
+    setCanvasPixelRatio(low ? 1 : Math.min(window.devicePixelRatio || 1, MOBILE ? 1.25 : 1.5));
     $('gfxToggle').textContent = low ? 'Light' : 'Full';
     if (!quiet) toast(low ? 'Lighter graphics: fewer shadows and less grass.' : 'Full graphics.');
 }
+// the engine keeps its average frame rate private to the module, so track it here the same way, once per drawn frame
+let averageFPS = 0, lastFrameMS = 0;
+export function trackFrameRate()
+{
+    const now = performance.now();
+    if (lastFrameMS) averageFPS = lerp(averageFPS, 1e3 / ((now - lastFrameMS) || 1), .05);
+    lastFrameMS = now;
+}
 // drop to lighter graphics once if the frame rate stays low for a while
-function watchFrameRate()
+export function watchFrameRate()
 {
     if (gfx.low || gfx.checked || gameMode !== 'play' || timeReal < 8) return;
     if (averageFPS > 0 && averageFPS < 28) gfx.slowT += timeDelta; else gfx.slowT = max(0, gfx.slowT - timeDelta);
@@ -300,7 +320,7 @@ bindTap('tJournal', ()=> { if (gameMode === 'play' && !ui.dialog) ui.modal === '
 
 // HUD
 let hudCache = '';
-function updateHud()
+export function updateHud()
 {
     const total = Object.values(save.fish).reduce((a, b)=> a + b, 0);
     const key = save.stardust + '|' + total;
@@ -311,9 +331,9 @@ function updateHud()
 }
 
 // places you can arrive at
-const PLACE_NAMES = [];
+export const PLACE_NAMES = [];
 let currentPlace = null;
-function updatePlaces()
+export function updatePlaces()
 {
     let here = null;
     for (const p of PLACE_NAMES)

@@ -22,13 +22,9 @@ play: _deps
     open http://localhost:{{port}}/index.html
     wait $server
 
-# open index.html straight from disk in the default browser (no server)
-open: _deps
-    open index.html
-
-# syntax-check every game script
+# syntax-check every game module
 check:
-    @for f in src/*.js; do node --check "$f" || exit 1; done
+    @for f in $(find src -name '*.js'); do node --check "$f" || exit 1; done
 
 _deps:
     @[ -d node_modules/littlejsengine ] || npm install

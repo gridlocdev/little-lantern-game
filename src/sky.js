@@ -1,12 +1,19 @@
-'use strict';
+import {
+    EngineObject3D, PI, Shader, Timer, buildSphere, buildTorus, hsl, max, min, rand, render3D, rgb, time, timeDelta,
+    vec3,
+} from './platform/engine.js';
+import { landFallenStar } from './activities.js';
+import { playSfx } from './audio.js';
+import { TAU, mixColor, mtx, rr } from './core.js';
+import { save } from './save.js';
 
 // ================================================================ SKY, MOON, PLANET, WHALE
-const MOON_DIR = vec3(-.5, .3, -.81).normalize();
+export const MOON_DIR = vec3(-.5, .3, -.81).normalize();
 const PLANET_DIR = vec3(.72, .34, .6).normalize();
 const g3 = (v)=> `vec3(${v.x.toFixed(4)},${v.y.toFixed(4)},${v.z.toFixed(4)})`;
 const gc = (c)=> `vec3(${c.r.toFixed(3)},${c.g.toFixed(3)},${c.b.toFixed(3)})`;
 
-const GLSL_NOISE = `
+export const GLSL_NOISE = `
 float vh1(vec3 p){ p = fract(p*.3183099+.1); p *= 17.; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
 float vn3(vec3 x){ vec3 i = floor(x), f = fract(x); f = f*f*(3.-2.*f);
   return mix(mix(mix(vh1(i), vh1(i+vec3(1,0,0)), f.x), mix(vh1(i+vec3(0,1,0)), vh1(i+vec3(1,1,0)), f.x), f.y),
@@ -16,7 +23,7 @@ float vh2(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 `;
 
 // three dream palettes for the sky, the bed cycles through them
-const PALETTES = [
+export const PALETTES = [
     { name: 'Violet Night', top: hsl(.72, .6, .07), bottom: hsl(.76, .5, .015), a: hsl(.92, .55, .36), b: hsl(.5, .6, .3), c: hsl(.75, .6, .25), glow: hsl(.74, .5, .65) },
     { name: 'Aurora Drift', top: hsl(.6, .65, .07), bottom: hsl(.66, .5, .015), a: hsl(.38, .7, .32), b: hsl(.8, .6, .34), c: hsl(.5, .7, .22), glow: hsl(.5, .5, .65) },
     { name: 'Rose Eclipse', top: hsl(.83, .55, .08), bottom: hsl(.88, .4, .02), a: hsl(.98, .6, .38), b: hsl(.08, .7, .3), c: hsl(.9, .6, .26), glow: hsl(.95, .5, .68) },
@@ -72,7 +79,7 @@ class SkyHalo extends EngineObject3D
         render3D.drawSoftDisc(cam.add(MOON_DIR.scale(700)), 175, rgb(1, 1, 1, .18));
     }
 }
-function buildSky()
+export function buildSky()
 {
     for (const p of PALETTES) skyShaders.push(skyShader(p));
     const dome = buildSphere(1, 40, 20, true).flipNormals();
@@ -119,7 +126,7 @@ void mainImage(out vec4 c, vec2 uv){
     ringObj.rotation3D = vec3(.45, .3, .25);
     haloObj = new SkyHalo;
 }
-function setPalette(i)
+export function setPalette(i)
 {
     save.palette = i % PALETTES.length;
     skyDome.shader = skyShaders[save.palette];
@@ -128,7 +135,7 @@ function setPalette(i)
     render3D.ambientGroundColor = mixColor(p.bottom, hsl(.78, .45, .14), .75);
     render3D.sunColor = mixColor(p.glow, hsl(.69, .3, .72), .65);
 }
-function updateSky()
+export function updateSky()
 {
     const cam = render3D.camera.pos;
     skyDome.pos3D = cam.copy();
@@ -140,7 +147,7 @@ function updateSky()
 }
 
 // ---------------------------------------------------------------- the star whale
-class StarWhale extends EngineObject3D
+export class StarWhale extends EngineObject3D
 {
     constructor()
     {
@@ -187,7 +194,7 @@ class StarWhale extends EngineObject3D
 
 // ---------------------------------------------------------------- shooting stars
 const skyEvents = [];
-class ShootingStar extends EngineObject3D
+export class ShootingStar extends EngineObject3D
 {
     // falling ones land on the island and leave a fallen star to collect
     constructor(target)

@@ -1,7 +1,18 @@
-'use strict';
+import {
+    EngineObject3D, Mesh, PI, Trail3D, WHITE, abs, buildMatrix, clamp, gamepadWasPressed, hsl, inputClear,
+    keyWasPressed, max, min, rand, render3D, time, timeDelta, usingGamepadInput, vec3,
+} from './platform/engine.js';
+import { bell, playSfx } from './audio.js';
+import { addInteract, clearTouchPresses, input, setActivity, touchState } from './controls.js';
+import { MOBILE, TAU, mtx } from './core.js';
+import { burst } from './fx.js';
+import { refreshAquarium } from './house.js';
+import { SPH, SPH_LO, TORUS, moth, player } from './player.js';
+import { save, writeSave } from './save.js';
+import { $, openModal, toast, ui } from './ui.js';
 
 // ================================================================ COSMIC FISH
-const FISH = [
+export const FISH = [
     { id: 'minnow', name: 'Glimmer Minnow', where: 'pond', stars: 1, size: [6, 14], shape: 'slim', w: 40, diff: .22,
         body: hsl(.58, .35, .82), fin: hsl(.6, .6, .9), glow: hsl(.55, .9, .8),
         desc: 'A sliver of moonlight that learned to swim. It tastes faintly of starlight, apparently.', hint: 'Common in Starlight Pond.' },
@@ -34,7 +45,7 @@ const FISH = [
         desc: 'A baby of the great whale that circles the island. It hums a little song when you hold it, and the big one hums back.', hint: 'Legendary. Somewhere in the Moonlet pool.' },
 ];
 for (const f of FISH) f.css = `rgb(${f.body.r * 255 | 0},${f.body.g * 255 | 0},${f.body.b * 255 | 0})`;
-const fishById = (id)=> FISH.find((f)=> f.id === id);
+export const fishById = (id)=> FISH.find((f)=> f.id === id);
 
 function fishMeshes(f)
 {
@@ -121,7 +132,7 @@ function fishMeshes(f)
     }
     return f.meshes = { body: m, glow: g };
 }
-function drawFish(f, matrix, alpha = 1, glowBoost = 1)
+export function drawFish(f, matrix, alpha = 1, glowBoost = 1)
 {
     const { body, glow } = fishMeshes(f);
     const c = alpha < 1 ? WHITE.withAlpha(alpha) : WHITE;
@@ -160,9 +171,9 @@ function paintFishCard(f, size)
 }
 
 // ---------------------------------------------------------------- fishing
-let fishing = null;
+export let fishing = null;
 const FISH_SPOTS = [];
-function addFishingSpot(spot)
+export function addFishingSpot(spot)
 {
     // spot: {kind: 'pond'|'void'|'moonlet', center, radius(water), y, pos()->stand point, castDir()}
     FISH_SPOTS.push(spot);
@@ -230,20 +241,20 @@ function startFishing(spot)
     player.pose = 'fish';
     player.hold = 'rod';
     fishing = { spot, state: 'aim', power: 0, powerDir: 1, t: 0, bob: player.pos.copy(), progress: .3, zone: .3, zoneV: 0, fishX: .5, fishV: 0, tilt: 0 };
-    activity = {
+    setActivity({
         name: 'fishing', lockCamera: false, mouseHold: true,
         update: updateFishing,
         cancel: stopFishing,
         hint: ()=> fishingHint(),
         cam: ()=> ({ target: player.pos.add(vec3(0, 1.4, 0)), dist: 7.5, yaw: player.yaw + .35, pitch: .38 }),
-    };
+    });
     showFishMeter();
     if (!fishingRig) fishingRig = new FishingRig;
 }
 function stopFishing()
 {
     fishing = null;
-    activity = null;
+    setActivity(null);
     player.pose = 'free';
     player.hold = 'lantern';
     $('meter').hidden = true;
@@ -414,7 +425,7 @@ function landFish()
     burst(F.bob, f.glow, 22, .09, .25);
     player.hold = 'none';
 }
-let pendingCatch = null;
+export let pendingCatch = null;
 function showCatch(f, sizeCm, kind)
 {
     const first = !save.fish[f.id];
@@ -437,7 +448,7 @@ function playCatchJingle(stars)
     const notes = stars >= 3 ? [0, 4, 7, 12, 16] : [0, 4, 7, 12];
     notes.forEach((n, i)=> setTimeout(()=> bell(n + 7, undefined, .55), i * 110));
 }
-function resolveCatch(keep)
+export function resolveCatch(keep)
 {
     const c = pendingCatch;
     if (!c) return;
@@ -500,7 +511,7 @@ class SkyFish extends EngineObject3D
 // rings on the water, or in the air off the pier
 const ripples = [];
 function ripple(pos, color, scale = 1) { ripples.push({ pos: pos.copy(), color, t: 0, scale }); }
-class RippleDrawer extends EngineObject3D
+export class RippleDrawer extends EngineObject3D
 {
     constructor() { super(vec3()); this.additive = true; this.castShadow = false; }
     update() { for (let i = ripples.length; i--;) if ((ripples[i].t += timeDelta) > 1.6) ripples.splice(i, 1); }

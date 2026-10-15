@@ -1,5 +1,3 @@
-'use strict';
-
 // ================================================================ SAVING
 // Everything the game remembers goes through this file. The game reads and writes a small in-memory table of
 // string values; a storage backend fills that table once before the engine starts and is told about every change.
@@ -34,7 +32,7 @@ const localStorageBackend = {
     remove: (key)=> localStorage.removeItem(key),
 };
 
-const storage = {
+export const storage = {
     backend: window.violetIsleStorage || localStorageBackend,
     table: {},
     async init()
@@ -58,7 +56,7 @@ const storage = {
 };
 
 // ---------------------------------------------------------------- game progress
-const save = {
+export const save = {
     fish: {},            // species id -> count caught
     best: {},            // species id -> biggest size cm
     aquarium: [],        // species ids kept
@@ -85,7 +83,7 @@ const save = {
     hammock: false,
     music: true,
 };
-function loadSave()
+export function loadSave()
 {
     try
     {
@@ -94,9 +92,9 @@ function loadSave()
     }
     catch (e) {}
 }
-const writeSave = ()=> storage.set(SAVE_KEY, JSON.stringify(save));
-const forgetSave = ()=> storage.remove(SAVE_KEY);
+export const writeSave = ()=> storage.set(SAVE_KEY, JSON.stringify(save));
+export const forgetSave = ()=> storage.remove(SAVE_KEY);
 
 // ---------------------------------------------------------------- settings (kept apart from progress, so a new dream keeps them)
-const loadSetting = (name)=> storage.get(SETTING_KEYS[name]);
-const writeSetting = (name, value)=> storage.set(SETTING_KEYS[name], value);
+export const loadSetting = (name)=> storage.get(SETTING_KEYS[name]);
+export const writeSetting = (name, value)=> storage.set(SETTING_KEYS[name], value);

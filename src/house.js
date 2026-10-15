@@ -1,13 +1,28 @@
-'use strict';
+import {
+    EngineObject3D, Light3D, Mesh, PI, Shader, WHITE, buildBox, buildCone, buildCylinder, buildMatrix, buildSphere,
+    clamp, hsl, max, min, rand, randInt, render3D, time, timeDelta, vec2, vec3,
+} from './platform/engine.js';
+import { startSit } from './activities.js';
+import { music, playSfx, setMusic } from './audio.js';
+import { activity, addInteract, cam, focusItem, input } from './controls.js';
+import { MOBILE, TAU, mtx, obj3 } from './core.js';
+import { drawFish, fishById } from './fishing.js';
+import { burst, sparkleColumn } from './fx.js';
+import { CONE, CYL, OUTFITS, SPH, SPH_LO, TORUS, moth, player } from './player.js';
+import { save, writeSave } from './save.js';
+import { GLSL_NOISE, PALETTES, setPalette } from './sky.js';
+import { fadeTransition, openJournal, say, showPlace, toast, uiOpen } from './ui.js';
+import { HOUSE } from './village.js';
+import { addSolid, heightAt, texPlank, texRug, texStone, texWallpaper } from './world.js';
 
 // ================================================================ INSIDE THE CROOKED HOUSE
 // the room floats in the dark far below the island; you get there through the front door
-const HOUSE_IN = vec3(0, -260, 420);
+export const HOUSE_IN = vec3(0, -260, 420);
 const ROOM = { w: 12, d: 9, h: 4.2 };
 const hin = (x, y, z)=> HOUSE_IN.add(vec3(x, y, z));
 const houseState = { fire: true, lamp: true, kettle: 0, kettleReady: false, cupFull: false };
 let fireLight, lampLight, catObj, flowerObj, jarObj, recordObj;
-const BOOKS = [
+export const BOOKS = [
     { title: 'A Field Guide to Falling Stars', pages: [
         'Chapter One. Stars do not fall so much as they wander off. They get distracted by something shiny below them and simply forget to stay up.',
         'When a star lands, it glows for a while out of embarrassment. This is the best time to collect it.',
@@ -35,7 +50,7 @@ const DREAMS = [
     'You dream nothing at all, which is its own kind of nice.',
 ];
 
-function enterHouse()
+export function enterHouse()
 {
     playSfx('door', player.pos, .9);
     fadeTransition(()=>
@@ -78,7 +93,7 @@ function roomBox(x, y, z, sx, sy, sz, color, tex, opts = {})
     if (opts.solid !== false) addSolid({ kind: 'box', x: o.pos3D.x, z: o.pos3D.z, hx: sx / 2, hz: sz / 2, yaw: 0, top: HOUSE_IN.y + y + sy / 2, zone: 'house' });
     return o;
 }
-function buildHouseInterior()
+export function buildHouseInterior()
 {
     const { w, d, h } = ROOM;
     // floor and walls
@@ -323,7 +338,7 @@ function drinkTea()
 }
 // fish you keep swim here
 let aquariumList = [];
-function refreshAquarium()
+export function refreshAquarium()
 {
     aquariumList = save.aquarium.slice(-12).map((id, i)=> ({ f: fishById(id), ph: i * 1.7 + rand(), sp: rand(.25, .5), y: rand(-.35, .35), dir: rand() < .5 ? 1 : -1 }));
 }
@@ -481,7 +496,7 @@ class StarCat extends EngineObject3D
         render3D.emissive = e;
     }
 }
-function updateHouse()
+export function updateHouse()
 {
     if (player.zone !== 'house') return;
     if (recordObj) recordObj.rotation3D = vec3(0, music.on ? time * 3 : recordObj.rotation3D.y, 0);

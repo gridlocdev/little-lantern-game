@@ -1,14 +1,21 @@
-'use strict';
+import {
+    EngineObject3D, InstancedMesh3D, Light3D, Mesh, PI, WHITE, buildBox, buildCone, buildCylinder, buildMatrix,
+    buildSphere, clamp, hsl, max, min, noise2D, render3D, rgb, time, timeDelta, vec2, vec3,
+} from './platform/engine.js';
+import { MOBILE, TAU, WR, canvasTexture, dist2, fbm, mix, mixColor, rr, sampleCurve, sstep, triMesh } from './core.js';
+import { camNear } from './main.js';
+import { player } from './player.js';
+import { gfx } from './ui.js';
 
 // ================================================================ WORLD LAYOUT
 const EDGE_Y = -1.5;
 const edgeR = (th)=> 104 + 7 * Math.sin(3 * th + 1) + 4 * Math.sin(7 * th + 2) + 2.5 * Math.sin(13 * th + .5);
 const edgeAt = (x, z)=> edgeR(Math.atan2(z, x));
 const edgePoint = (th, off = 0)=> { const r = edgeR(th) + off; return [Math.cos(th) * r, Math.sin(th) * r]; };
-const insideIsland = (x, z, margin = 0)=> Math.hypot(x, z) < edgeAt(x, z) - margin;
+export const insideIsland = (x, z, margin = 0)=> Math.hypot(x, z) < edgeAt(x, z) - margin;
 
 const OVERLOOK_TH = -1.42, PIER_TH = 1.68, MOONLET_TH = PI + .14;
-const P = {
+export const P = {
     house: { x: -9, z: -5 },
     pond: { x: 12, z: -9, r: 8.5 },
     spawn: { x: 5, z: 18 },
@@ -52,7 +59,7 @@ function shapeH(x, z)
     return h;
 }
 const VILLAGE_H = max(1.2, shapeH(0, 0));
-const WATER_Y = VILLAGE_H - .3;
+export const WATER_Y = VILLAGE_H - .3;
 const FLATS = [
     { x: 2, z: -2, r: 24, fall: 14, h: VILLAGE_H },
     { x: P.chimes.x, z: P.chimes.z, r: 8.5, fall: 7 },
@@ -133,7 +140,7 @@ for (let i = 0; i < GN; i++)
     const x = -HALF + i * STEP, z = -HALF + j * STEP;
     heights[j * GN + i] = Math.hypot(x, z) > edgeAt(x, z) + 1.5 ? EDGE_Y : heightRaw(x, z);
 }
-const heightAt = (x, z)=> gridSample(heights, x, z);
+export const heightAt = (x, z)=> gridSample(heights, x, z);
 // the drawn terrain sinks into a bed under the roads, deeper where it is steep, so a road never sinks into the
 // hillside between its vertices; walking still uses heightAt, which is where the road surface is
 const gridH = (i, j)=> heights[clamp(j, 0, GN - 1) * GN + clamp(i, 0, GN - 1)];
@@ -162,7 +169,7 @@ function normalAt(x, z)
 const SOLID_CELL = 8;
 const solidGrid = new Map();
 const solidKey = (cx, cz)=> cx * 10007 + cz;
-function addSolid(s)
+export function addSolid(s)
 {
     s.zone ||= 'island';
     s.bottom ??= -1e9;
@@ -185,30 +192,30 @@ function removeSolid(s)
         if (i >= 0) list.splice(i, 1);
     }
 }
-const solidsAt = (x, z)=> solidGrid.get(solidKey(Math.floor(x / SOLID_CELL), Math.floor(z / SOLID_CELL))) || [];
+export const solidsAt = (x, z)=> solidGrid.get(solidKey(Math.floor(x / SOLID_CELL), Math.floor(z / SOLID_CELL))) || [];
 // local box coordinates
-function boxLocal(s, x, z)
+export function boxLocal(s, x, z)
 {
     const dx = x - s.x, dz = z - s.z;
     return [dx * s.c - dz * s.s, dx * s.s + dz * s.c];
 }
-function solidContains(s, x, z, pad = 0)
+export function solidContains(s, x, z, pad = 0)
 {
     if (s.kind === 'circle') return dist2(x, z, s.x, s.z) < s.r + pad;
     const [lx, lz] = boxLocal(s, x, z);
     return Math.abs(lx) < s.hx + pad && Math.abs(lz) < s.hz + pad;
 }
-const solidTop = (s, x, z)=> s.topFn ? s.topFn(x, z) : s.top;
+export const solidTop = (s, x, z)=> s.topFn ? s.topFn(x, z) : s.top;
 
 // keep spots clear for scenery placement
 const clearings = [];
-const addClearing = (x, z, r, noGrass = false)=> clearings.push({ x, z, r, noGrass });
-const isClear = (x, z, pad = 0)=> !clearings.some((c)=> dist2(x, z, c.x, c.z) < c.r + pad);
+export const addClearing = (x, z, r, noGrass = false)=> clearings.push({ x, z, r, noGrass });
+export const isClear = (x, z, pad = 0)=> !clearings.some((c)=> dist2(x, z, c.x, c.z) < c.r + pad);
 const grassClear = (x, z)=> !clearings.some((c)=> c.noGrass && dist2(x, z, c.x, c.z) < c.r);
 
 // ================================================================ TEXTURES
-let texDetail, texCobble, texPlank, texRoof, texStone, texRug, texWallpaper, texBook;
-function makeTextures()
+export let texDetail, texCobble, texPlank, texRoof, texStone, texRug, texWallpaper, texBook;
+export function makeTextures()
 {
     texDetail = canvasTexture(256, (g, s)=>
     {
@@ -343,7 +350,7 @@ function terrainColor(x, z, h, slope, rd, r, Rr)
     if (rd < 2) c = mixColor(c, hsl(.74, .2, .2), .5);
     return c;
 }
-function buildTerrain()
+export function buildTerrain()
 {
     const pts = [], nrm = [], cols = [], uvs = [], idx = [];
     const vIndex = new Int32Array(GN * GN).fill(-1);
@@ -377,7 +384,7 @@ function buildTerrain()
 }
 
 // the jagged amethyst root under the island
-function buildUnderside()
+export function buildUnderside()
 {
     const ANG = 180, LV = 30, DEPTH = 80;
     const pts = [], cols = [], idx = [];
@@ -449,7 +456,7 @@ function liftRoadClear(P2, clearance = .04)
         if (!moved) break;
     }
 }
-function buildRoads()
+export function buildRoads()
 {
     const mesh = new Mesh;
     ROADS.forEach((pts, ri)=>
@@ -505,7 +512,7 @@ class LampPool extends EngineObject3D
     }
     render3D() { if (camNear(this.pos3D, 80)) render3D.drawSoftDisc(this.pos3D, this.poolSize, this.poolColor, vec3(0, 1, 0), 24); }
 }
-function buildLamps()
+export function buildLamps()
 {
     const spots = [];
     ROADS.forEach((pts, ri)=>
@@ -558,7 +565,7 @@ function buildLamps()
 
 // grass tufts: a few meshes that sway, drawn as instances in chunks near the camera
 const grassMeshes = [], grassChunks = [];
-function buildGrass()
+export function buildGrass()
 {
     const VARIANTS = 4;
     for (let v = 0; v < VARIANTS; v++)
@@ -627,7 +634,7 @@ function buildGrass()
         });
     }
 }
-function updateGrass()
+export function updateGrass()
 {
     const t = time, c = render3D.camera.pos, far = gfx.low ? 46 : MOBILE ? 58 : 78;
     for (const g of grassChunks)
@@ -651,7 +658,7 @@ function updateGrass()
 }
 
 // trees, rocks and glowing flowers
-function buildTrees()
+export function buildTrees()
 {
     const trunkCol = hsl(.8, .22, .17);
     const puff = (h)=> new Mesh()
@@ -705,7 +712,7 @@ function buildTrees()
     sets.forEach((s, i)=> s.count = counts[i]);
     fruitSet.count = max(1, fruits);
 }
-function buildRocks()
+export function buildRocks()
 {
     const set = new InstancedMesh3D(buildSphere(1, 6, 4, false), 170, undefined, hsl(.74, .1, .42));
     let n = 0, tries = 0;
@@ -725,7 +732,7 @@ function buildRocks()
     set.count = n;
 }
 let flowerSet;
-function buildFlowers()
+export function buildFlowers()
 {
     const petal = new Mesh();
     for (let k = 0; k < 5; k++)
@@ -761,7 +768,7 @@ function buildFlowers()
 
 // orbiting shards in the void
 let shardSet; const shards = [];
-function buildShards()
+export function buildShards()
 {
     const N = 70;
     shardSet = new InstancedMesh3D(buildSphere(1, 4, 2), N, undefined, hsl(.75, .6, .6));
@@ -769,7 +776,7 @@ function buildShards()
     for (let i = 0; i < N; i++)
         shards.push({ r: rr(112, 260), h: rr(-120, 10), a: rr(0, TAU), sp: rr(.006, .02) * (rr(0, 1) < .5 ? 1 : -1), ph: rr(0, TAU), s: rr(.8, 4.5), spin: rr(.1, .5) });
 }
-function updateShards()
+export function updateShards()
 {
     for (let i = 0; i < shards.length; i++)
     {
