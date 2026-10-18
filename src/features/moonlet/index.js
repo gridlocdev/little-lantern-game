@@ -17,6 +17,7 @@ import { BOXM } from '../../player/part-meshes.js';
 import { player } from '../../player/player.js';
 import { startSit } from '../../player/sit.js';
 import { discMesh, waterShader } from '../../render/water.js';
+import { buildHeron } from './heron.js';
 import { playBridgeScene } from './scene.js';
 import { addTodo } from '../../ui/journal.js';
 import { PLACE_NAMES } from '../../ui/places.js';
@@ -26,7 +27,7 @@ import { P } from '../../world/layout.js';
 import { heightAt } from '../../world/terrain.js';
 import { addWater } from '../../world/waters.js';
 
-const save = state.slice('moonlet', { bridge: false, moonlet: false, hammock: false });
+const save = state.slice('moonlet', { bridge: false, moonlet: false, hammock: false, heronMet: false, heronTip: 0, calfCaught: false, heronThanked: false });
 
 const bridgeSlabs = [];
 let moonletY = 0;
@@ -202,6 +203,10 @@ function buildMoonlet()
         const ang = rr(0, TAU), rad = rr(5, m.r - .5), x = m.x + Math.cos(ang) * rad, z = m.z + Math.sin(ang) * rad;
         obj3(vec3(x, moonletHeight(x, z) + .3, z), buildSphere(.2, 6, 4), hsl(.13, .8, .78), { emissive: 1, castShadow: false });
     }
+    // Ardea fishes from the far side of the pool, facing you as you come over the bridge
+    const across = Math.atan2(P.bridgeStart.z - m.z, P.bridgeStart.x - m.x) + PI - .45;
+    const ax = m.x + Math.cos(across) * 5.1, az = m.z + Math.sin(across) * 5.1;
+    buildHeron({ pos: vec3(ax, moonletHeight(ax, az), az), center: vec3(m.x, 0, m.z), waterY: moonletY - .23, ground: moonletHeight, save });
     PLACE_NAMES.push({ name: 'The Moonlet', sub: 'a piece of the island that wandered off', x: m.x, z: m.z, r: m.r + 1, zone: 'island' });
 }
 function bridgeAppear(i)

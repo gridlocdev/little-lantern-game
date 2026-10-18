@@ -4,6 +4,7 @@ import { bell, playSfx } from '../../audio/sfx.js';
 import { refreshAquarium } from './aquarium.js';
 import { save } from './save.js';
 import { SkyFish } from './sky-fish.js';
+import { events } from '../../game/events.js';
 import { writeSave } from '../../game/state.js';
 import { TAU } from '../../lib/math.js';
 import { input } from '../../platform/input.js';
@@ -55,6 +56,7 @@ export function showCatch(f, sizeCm, kind, onDone)
     paintFishCard(f, sizeCm);
     openModal('catch');
     playCatchJingle(f.stars);
+    events.emit('fish-caught', { id: f.id, sizeCm, where: kind });
     if (f.id === 'calf') setTimeout(()=> { playSfx('whale', undefined, .8, 1.6); toast('Far away, the great whale hums back.'); }, 1200);
 }
 // a rising chime up an F major chord, in the key of the island's music

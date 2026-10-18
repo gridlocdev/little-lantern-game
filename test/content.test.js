@@ -10,7 +10,7 @@ import {
 } from '../src/features/snail/lines-data.js';
 import { RACE } from '../src/features/snail/race-data.js';
 import { INTRO_CAPTION, INTRO_LINES } from '../src/features/intro/lines-data.js';
-import { BRIDGE_LINES } from '../src/features/moonlet/lines-data.js';
+import { BRIDGE_LINES, HERON_CALF, HERON_MEET, HERON_NAME, HERON_STRANGER, HERON_TIPS } from '../src/features/moonlet/lines-data.js';
 import { WISHES } from '../src/features/overlook/wishes-data.js';
 import { END_CARD, ENDING_LINES } from '../src/features/ending/lines-data.js';
 
@@ -48,7 +48,9 @@ test('cutscene and dialog lines are text, and their kinetic markers come in pair
 {
     assert.ok(text(INTRO_CAPTION.title) && text(INTRO_CAPTION.sub));
     const sets = [INTRO_LINES, SNAIL_MEETING, BRIDGE_LINES, SNAIL_ASK, RACE_CHALLENGE, RUN_TIP, RACE_COUNT, RACE_HUD, RACE_WIN, RACE_LOSE,
-        Object.fromEntries(SNAIL_LINES.flatMap((pages, i)=> pages.map((p, j)=> [`chat ${i}.${j}`, p])))];
+        Object.fromEntries(SNAIL_LINES.flatMap((pages, i)=> pages.map((p, j)=> [`chat ${i}.${j}`, p]))),
+        Object.fromEntries([...HERON_MEET.map((p, i)=> [`meet ${i}`, p]), ...HERON_CALF.map((p, i)=> [`calf ${i}`, p])]),
+        Object.fromEntries(HERON_TIPS.flatMap((pages, i)=> pages.map((p, j)=> [`tip ${i}.${j}`, p])))];
     for (const set of sets)
         for (const [k, line] of Object.entries(set))
         {
@@ -59,6 +61,11 @@ test('cutscene and dialog lines are text, and their kinetic markers come in pair
                 if ('*~_^'.includes(m) && word.length > 1) assert.equal(word[word.length - 1], m, `${k}: ${word}`);
             }
         }
+});
+test('the heron has a name, and every talk is one or two short lines', ()=>
+{
+    assert.ok(text(HERON_NAME) && text(HERON_STRANGER));
+    for (const pages of HERON_TIPS) assert.ok(pages.length >= 1 && pages.length <= 2 && pages.every((p)=> p.length <= 80), pages[0]);
 });
 test('the ending has its lines and its card', ()=>
 {
