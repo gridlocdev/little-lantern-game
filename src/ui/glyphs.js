@@ -17,16 +17,16 @@ const SETS = {
     },
     xbox: {
         use: 'xbox_button_x', jump: 'xbox_button_a', back: 'xbox_button_b', journal: 'xbox_button_y', menu: 'xbox_button_menu',
-        run: 'xbox_rb|xbox_rt', move: 'xbox_stick_l', look: 'xbox_stick_r', page: 'xbox_dpad_left', keep: 'xbox_button_x', release: 'xbox_button_b', start: 'xbox_button_a',
+        run: 'xbox_rb|xbox_rt', zoom: 'xbox_lb|xbox_lt', move: 'xbox_stick_l', look: 'xbox_stick_r', page: 'xbox_dpad_left', keep: 'xbox_button_x', release: 'xbox_button_b', start: 'xbox_button_a',
     },
     ps: {
         use: 'playstation_button_square', jump: 'playstation_button_cross', back: 'playstation_button_circle', journal: 'playstation_button_triangle',
-        menu: 'playstation5_button_options', run: 'playstation_trigger_r1|playstation_trigger_r2', move: 'playstation_stick_l', look: 'playstation_stick_r',
+        menu: 'playstation5_button_options', run: 'playstation_trigger_r1|playstation_trigger_r2', zoom: 'playstation_trigger_l1|playstation_trigger_l2', move: 'playstation_stick_l', look: 'playstation_stick_r',
         page: 'playstation_dpad_left', keep: 'playstation_button_square', release: 'playstation_button_circle', start: 'playstation_button_cross',
     },
     switch: {
         use: 'switch_button_y', jump: 'switch_button_b', back: 'switch_button_a', journal: 'switch_button_x', menu: 'switch_button_plus',
-        run: 'switch_button_r|switch_button_zr', move: 'switch_stick_l', look: 'switch_stick_r', page: 'switch_dpad_left', keep: 'switch_button_y', release: 'switch_button_a', start: 'switch_button_b',
+        run: 'switch_button_r|switch_button_zr', zoom: 'switch_button_l|switch_button_zl', move: 'switch_stick_l', look: 'switch_stick_r', page: 'switch_dpad_left', keep: 'switch_button_y', release: 'switch_button_a', start: 'switch_button_b',
     },
 };
 // what each glyph says, for screen readers
