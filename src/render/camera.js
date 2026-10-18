@@ -2,7 +2,7 @@
 // the current activity (or cutscene) points it at. When what it follows changes, it glides from where it was instead
 // of jumping. Anything can briefly draw its eye to a point (focusCamera) or punch in on an impact (kickCamera).
 import {
-    PI, clamp, gamepadStick, keyIsDown, min, mouseDeltaScreen, mouseIsDown, mouseWheel, render3D, time, timeDelta,
+    PI, clamp, gamepadIsDown, gamepadStick, keyIsDown, min, mouseDeltaScreen, mouseIsDown, mouseWheel, render3D, time, timeDelta,
     timeReal, vec3,
 } from '../platform/engine.js';
 import { activity } from '../game/activity.js';
@@ -42,7 +42,8 @@ export const kickCamera = (amount = .08)=> { kickTarget = Math.max(kickTarget, a
 // ---------------------------------------------------------------- where each mode wants the camera
 function orbitInput(dt)
 {
-    // orbit by dragging on the world, the right stick, or the wheel
+    // orbit by dragging on the world or the right stick; zoom with the wheel, or the right stick up and down while the
+    // left bumper or trigger is held
     if (state.mode !== 'play' || activity.current?.lockCamera || uiOpen()) return;
     if (mouseIsDown(0) && pointerOnCanvas && !activity.current?.mouseHold)
     {
@@ -52,7 +53,14 @@ function orbitInput(dt)
         if (d.length() > 0) cam.manualT = time;
     }
     const rs = gamepadStick(1);
-    if (rs.length() > .1) { cam.yaw -= rs.x * dt * 2.4; cam.pitch = clamp(cam.pitch - rs.y * dt * 1.6, -.15, 1.25); cam.manualT = time; }
+    const zooming = gamepadIsDown(4) || gamepadIsDown(6);
+    if (rs.length() > .1)
+    {
+        cam.yaw -= rs.x * dt * 2.4;
+        if (zooming) cam.distT = clamp(cam.distT - rs.y * dt * 9, 3, 16);
+        else cam.pitch = clamp(cam.pitch - rs.y * dt * 1.6, -.15, 1.25);
+        cam.manualT = time;
+    }
     if (keyIsDown('KeyZ')) { cam.yaw += dt * 1.8; cam.manualT = time; }
     if (keyIsDown('KeyC')) { cam.yaw -= dt * 1.8; cam.manualT = time; }
     if (mouseWheel) cam.distT = clamp(cam.distT + mouseWheel * .9, 3, 16);
