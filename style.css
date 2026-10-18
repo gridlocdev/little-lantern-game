@@ -72,6 +72,9 @@ kbd {
 .pad-only { display: none !important; }
 body[data-input="pad"] .pad-only { display: revert !important; }
 body[data-input="pad"] .keys-only { display: none !important; }
+/* with a gamepad the mouse pointer hides, and whatever has focus is always ringed, since A presses it */
+body[data-input="pad"], body[data-input="pad"] * { cursor: none !important; }
+body[data-input="pad"] .ui :focus { outline: 2px solid var(--amber); outline-offset: 2px; box-shadow: 0 0 16px rgba(255, 205, 120, .35); }
 
 /* title */
 #title {
