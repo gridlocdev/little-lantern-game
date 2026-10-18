@@ -13,6 +13,18 @@ install:
 serve: _deps
     python3 -m http.server {{port}}
 
+# serve the game to the local network, to try it on a phone: prints the address to open there
+lan: _deps
+    #!/usr/bin/env bash
+    set -euo pipefail
+    ip=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || hostname -I 2>/dev/null | cut -d' ' -f1)
+    echo "On your phone (same Wi-Fi): http://$ip:{{port}}/"
+    # no-store, so a reload on the phone always gets the latest files (Safari otherwise keeps old scripts a while)
+    python3 -c 'import http.server as h, sys
+    class H(h.SimpleHTTPRequestHandler):
+        def end_headers(self): self.send_header("Cache-Control", "no-store"); super().end_headers()
+    h.ThreadingHTTPServer(("0.0.0.0", int(sys.argv[1])), H).serve_forever()' {{port}}
+
 # serve the game and open it in the default browser
 play: _deps
     #!/usr/bin/env bash
