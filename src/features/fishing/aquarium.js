@@ -39,28 +39,45 @@ class AquariumFish extends EngineObject3D
 }
 
 // Looking into the tank: the camera comes down to the glass, the mothling steps out of the shot, and left and right
-// glide along the tank. The name of the fish nearest the middle shows in the hint.
+// glide along the tank. The fish nearest the middle is named in a caption at the top of the screen.
 const TANK = ()=> HOUSE_IN.add(vec3(HOUSE_AQUARIUM.x, 1.55, HOUSE_AQUARIUM.z));
+let caption = null, named = null;
+function nameFish(f)
+{
+    if (!caption)
+    {
+        caption = document.createElement('div');
+        caption.className = 'ui tank-name';
+        caption.innerHTML = '<div class="cap-kicker">Swimming by</div><div class="cap-name"></div><div class="stars"></div>';
+        document.body.append(caption);
+    }
+    if (f === named) return;
+    named = f;
+    caption.classList.remove('show');
+    if (!f) return;
+    caption.querySelector('.cap-name').textContent = f.name;
+    caption.querySelector('.stars').textContent = '★'.repeat(f.stars);
+    void caption.offsetWidth;       // restart the fade for the new name
+    caption.classList.add('show');
+}
 function lookIntoTank()
 {
     const view = { x: 0 };
     player.hidden = true;
-    const stop = ()=> { player.hidden = false; activity.end(); };
+    const stop = ()=> { player.hidden = false; nameFish(null); activity.end(); };
     activity.start({
         name: 'aquarium', ownsPhysics: true, lockCamera: true,
         update()
         {
             view.x = clamp(view.x + input.move().x * timeDelta * .9, -.5, .5);
+            let near = null;
+            for (const a of aquariumList) if (a.f && (!near || Math.abs(a.x - view.x) < Math.abs(near.x - view.x))) near = a;
+            nameFish(near?.f ?? null);
             if (input.act()) return openJournal('fish');
             if (input.back() || input.jump()) { clearTouchPresses(); stop(); }
         },
         cancel: stop,
-        hint: ()=>
-        {
-            let near = null;
-            for (const a of aquariumList) if (a.f && (!near || Math.abs(a.x - view.x) < Math.abs(near.x - view.x))) near = a;
-            return `{use}|${near ? near.f.name + ' · ' : ''}{use} opens the journal · {back} to step back${MOBILE ? '' : ' · {move} looks along the tank'}`;
-        },
+        hint: ()=> `{use}|Open the journal · {back} step back${MOBILE ? '' : ' · {move} look along the tank'}`,
         cam: ()=>
         {
             const c = TANK(), sway = Math.sin(time * .4) * .04;

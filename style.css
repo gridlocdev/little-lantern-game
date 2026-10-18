@@ -323,6 +323,15 @@ body.cine #hud, body.cine #prompt, body.cine #touch, body.cine #place, body.cine
 #storybook.typed .sb-keys { opacity: 1; }
 @media (max-width: 700px) { #storybook { align-items: flex-end; justify-content: center; } .sb-page { width: 100%; min-height: 0; } }
 
+/* the aquarium: the fish nearest the middle of the view, named at the top */
+.tank-name { left: 0; right: 0; top: calc(70px + env(safe-area-inset-top, 0px)); text-align: center; opacity: 0; transform: translateY(-6px);
+  transition: opacity .6s, transform .6s; }
+.tank-name.show { opacity: 1; transform: none; }
+.tank-name .cap-kicker { font-size: .72rem; letter-spacing: .3em; text-transform: uppercase; color: var(--amber); }
+.tank-name .cap-name { font-family: var(--font-display); font-variation-settings: var(--soft); font-style: italic; font-size: clamp(1.6rem, 4vw, 2.4rem);
+  text-shadow: 0 0 18px rgba(255, 205, 120, .45), 0 2px 14px rgba(3, 1, 16, .8); }
+.tank-name .stars { font-size: .9rem; margin-top: 2px; text-shadow: 0 0 10px rgba(255, 205, 120, .6); }
+
 /* the end card */
 .end-card { text-align: center; width: min(520px, 100%); gap: 16px; padding: 30px 26px 22px; box-shadow: 0 0 80px rgba(255, 205, 120, .18); }
 .end-card h2 { font-size: clamp(2.6rem, 8vmin, 3.6rem); }
