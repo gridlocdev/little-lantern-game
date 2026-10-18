@@ -5,3 +5,4 @@ release/
 # Claude Code: worktrees for isolated sessions, and personal settings
 .claude/worktrees/
 .claude/settings.local.json
+_site/
