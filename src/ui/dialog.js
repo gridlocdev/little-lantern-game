@@ -1,5 +1,5 @@
 // The dialog sheet. Lines type themselves out in the speaker's voice (see kinetic.js for the markup).
-import { MOBILE, inputClear, max, keyWasPressed, mouseWasPressed, timeReal } from '../platform/engine.js';
+import { MOBILE, inputClear, max, keyWasPressed, timeReal } from '../platform/engine.js';
 import { playSfx } from '../audio/sfx.js';
 import { clearTouchPresses, input } from '../platform/input.js';
 import { $, ui } from './dom.js';
@@ -74,6 +74,14 @@ function closeDialog(option)
     d.resolve(option);
 }
 keyNav($('dlgOpts'));
+// a click or tap anywhere goes on (a choice's button takes its own click, and a card above takes its own). This is the
+// only pointer path: the engine's mouse press from a touch was lost on some taps on a phone, and both together turned
+// one tap into two
+document.addEventListener('pointerdown', (e)=>
+{
+    const target = /** @type {HTMLElement} */ (e.target);
+    if (ui.dialog && !target.closest('button, .modal')) advanceDialog();
+});
 export function updateDialog()
 {
     const d = ui.dialog;
@@ -94,5 +102,5 @@ export function updateDialog()
         }
         return;
     }
-    if (input.act() || input.jump() || mouseWasPressed(0) || input.back()) advanceDialog();
+    if (input.act() || input.jump() || input.back()) advanceDialog();
 }

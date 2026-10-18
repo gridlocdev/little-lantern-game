@@ -23,6 +23,6 @@ setTouchGamepadEnable(MOBILE);
 setTouchGamepadButtonCount(0);
 setTouchGamepadPassthrough(true);
 setTouchGamepadAnalog(true);
-setTouchGamepadSize(120);
+setTouchGamepadSize(120);     // until ui/touch.js sets it from style.css's --stick, which scales with the screen
 setTouchGamepadAlpha(.35);
 setTouchGamepadDisplayTime(0);
