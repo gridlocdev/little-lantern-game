@@ -30,7 +30,7 @@ export class Mothling extends EngineObject3D
         this.scarfReady = false;
         this.lanternSwing = 0; this.lanternVel = 0;
         this.stretch = 0; this.stretchTimer = 6;
-        this.reach = 0;
+        this.reach = 0; this.petPitch = -1.3; this.petLean = .15;     // petting: where the free hand aims, and how far she leans
         this.handPos = vec3(); this.hipPos = vec3();
         this.light = new Light3D(vec3(), 8.5, hsl(.11, .85, .66), 1.7);
         this.light.glow = .9; this.light.glowFalloff = 1.8;
@@ -73,9 +73,9 @@ export class Mothling extends EngineObject3D
         else if (mode === 'book') { t.armR = -1.2; t.armL = -1.2; t.armRY = .55; t.armLY = -.55; t.headTilt = .25; }
         else if (mode === 'look') { t.headTilt = -.55; t.armR = -1.5; t.armL = -1.3; t.armRY = .3; t.armLY = -.3; }
         else if (mode === 'chime') { t.armR = -1.4 + Math.sin(time * 9) * .25; t.armRY = .2; }
-        else if (mode === 'pet') { t.armR = -1.3 + Math.sin(time * 7) * .2; t.armRY = .25; t.lean = .15; }
+        else if (mode === 'pet') { t.armL = this.petPitch + Math.sin(time * 6) * .16; t.armLY = -.3; t.armR = -.35; t.lean = this.petLean; }   // stroking with the free hand
         else if (mode === 'carry') { t.armR = -2.4; t.armL = -2.4; t.armRY = .25; t.armLY = -.25; t.wingOpen = .5; t.flap = .2; t.flapSpeed = 5; }
-        t.armR += -this.reach * 1.3;
+        t.armL += -this.reach * 1.3;     // reaching for things with the free hand; the right holds the lantern, cup or can
         return t;
     }
     update()

@@ -157,28 +157,26 @@ export const RECIPES = {
             return (f(o(t), 380, .8).lp + g(n(), 260, .7).lp * 1.2) * beat * breath(t);
         }, .5);
     },
-    // a cat meowing, from measurements of domestic cat meows (Nicastro 2004: about .8 s long, pitch arching from about
-    // 500 to a peak near 880 Hz, formants at mid-call near 1450 and 3050 Hz, gliding like a diphthong). A buzzy
-    // voice is shaped by three moving resonances: a closed-mouth nasal "m", opening wide and bright into "eee-a",
-    // then rounding into "ow" as the formants fall and the pitch drops away.
+    // a soft mew, not a yowl. Domestic cat meows arch from about 500 to 880 Hz over .8 s (Nicastro 2004); a gentle,
+    // content one is shorter and stays low. A rounder, breathier voice than a full meow, most of its buzz filtered off,
+    // shaped by two soft resonances: a little hum with the mouth closed, a brief "eh", and a fall as it trails away.
     meow()
     {
-        const len = .78;
-        const pitch = ramp([[0, 520], [.08, 600], [.28, 880], [.5, 760], [len, 440]]);
-        const src = osc((t)=> pitch(t) * (1 + .015 * sine(7 * t)), (p)=> saw(p) * .65 + square(p, .3) * .35);
-        const f1 = ramp([[0, 600], [.1, 900], [.3, 1450], [.42, 1400], [.62, 900], [len, 700]]);
-        const f2 = ramp([[0, 1700], [.1, 2500], [.22, 3050], [.4, 3000], [.6, 1900], [len, 1300]]);
-        const f3 = ramp([[0, 3800], [.25, 4300], [len, 3600]]);
-        const nasal = ramp([[0, 1], [.07, 1], [.13, 0], [len, 0]]);          // the "m" before the mouth opens
-        const amp = ramp([[0, 0], [.03, .35], [.1, .8], [.18, 1], [.5, .85], [.7, .35], [len, 0]]);
-        const a = svf(), b = svf(), c = svf(), m = svf(), tilt = svf(), n = noise(33);
+        const len = .5;
+        const pitch = ramp([[0, 560], [.1, 680], [.24, 700], [len, 520]]);
+        const src = osc((t)=> pitch(t) * (1 + .01 * sine(6 * t)), (p)=> tri(p) * .7 + saw(p) * .3);
+        const f1 = ramp([[0, 700], [.12, 1100], [.3, 1000], [len, 750]]);
+        const f2 = ramp([[0, 1800], [.14, 2300], [.3, 2100], [len, 1500]]);
+        const nasal = ramp([[0, 1], [.06, 1], [.14, 0], [len, 0]]);          // the hum before the mouth opens
+        const amp = ramp([[0, 0], [.06, .5], [.16, 1], [.32, .75], [len, 0]]);
+        const a = svf(), b = svf(), m = svf(), soft = svf(), n = noise(33);
         return R(len, (t)=>
         {
-            const v = src(t), x = v + n() * .05;                              // a little breath in the voice
-            const open = a(x, f1(t), 5).bp + b(x, f2(t), 6).bp * .8 + c(x, f3(t), 7).bp * .3;
-            const hum = m(v, 330, 2).bp;
-            return tilt(mix(open, hum * 1.6, nasal(t)) * amp(t), 6000, .7).lp;
-        }, .2);
+            const v = src(t), x = v + n() * .08;                              // breathy
+            const open = a(x, f1(t), 3).bp + b(x, f2(t), 3.5).bp * .5;
+            const hum = m(v, 360, 1.5).bp;
+            return soft(mix(open, hum * 1.4, nasal(t)) * amp(t), 2600, .6).lp;
+        }, .14);
     },
     // a wooden door: a creaking hinge, then the latch
     door()
