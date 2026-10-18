@@ -1,4 +1,5 @@
-// Sitting on things, as an activity.
+// Sitting (or lying) on things, as an activity. opts: pose, height, out, hint, cam, update, onSit, onStand (after
+// getting up) and onEnd (whenever it ends, getting up or interrupted).
 import { MOBILE, max, vec3 } from '../platform/engine.js';
 import { activity } from '../game/activity.js';
 import { clearTouchPresses, input } from '../platform/input.js';
@@ -31,6 +32,7 @@ export function startSit(seat, faceYaw, opts = {})
             }
         },
         cancel() { activity.end(); player.pose = 'free'; },
+        cleanup: opts.onEnd,
         hint: ()=> opts.hint || `${MOBILE ? 'Use' : 'E'}|Get up`,
         cam: opts.cam,
     });

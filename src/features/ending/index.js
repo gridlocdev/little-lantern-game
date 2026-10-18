@@ -1,6 +1,7 @@
 // The ending: once every thing to do in the journal is done, the next quiet moment outside plays a closing scene and
 // then the end card, with the choice to stay and wander or go back to the title.
 import { timeDelta, timeReal } from '../../platform/engine.js';
+import { musicCue } from '../../audio/music.js';
 import { END_CARD, ENDING_LINES } from './lines-data.js';
 import { playEnding } from './scene.js';
 import { activity } from '../../game/activity.js';
@@ -17,7 +18,7 @@ import { toast } from '../../ui/toast.js';
 import { typeLine } from '../../ui/kinetic.js';
 
 const save = state.slice('ending', { seen: false });
-let calm = 0, hinted = false, titleLine = null;
+let calm = 0, hinted = false, titleLine = null, cue = null;     // cue: the ending music, from the scene to the card closing
 
 function showEndCard()
 {
@@ -37,7 +38,7 @@ function showEndCard()
 }
 $('endKeep').onclick = closeModal;
 $('endToTitle').onclick = ()=> { closeModal(); returnToTitle('The island will wait for you.'); };
-registerModal('endcard', { update() { titleLine?.update(timeReal); } });
+registerModal('endcard', { update() { titleLine?.update(timeReal); }, onClose() { cue?.release(); cue = null; } });
 
 // the house walks the mothling home and puts it to bed, then the end card; without a house, straight to the card
 function goHome()
@@ -59,6 +60,7 @@ function updateEnding()
     {
         calm = 0;
         save.seen = true; writeSave();
+        cue = musicCue('ending');
         playEnding(goHome);
     }
 }

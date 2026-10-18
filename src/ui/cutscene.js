@@ -1,5 +1,5 @@
 // Cutscenes: a list of beats played as an activity that owns the camera, with letterbox bars, a typed title card,
-// kinetic subtitles in the speaker's voice and big words that land with a thump.
+// kinetic subtitles in the speaker's voice, big words that land with a thump and joyful words that hop in with a tune.
 //
 // A beat is one shot:
 //     dur          seconds on screen
@@ -20,12 +20,14 @@ import { activity } from '../game/activity.js';
 import { clearTouchPresses, input } from '../platform/input.js';
 import { kickCamera } from '../render/camera.js';
 import { $ } from './dom.js';
-import { typeLine } from './kinetic.js';
+import { lineSeconds, typeLine } from './kinetic.js';
 
 const DEG = PI / 180;
 const ease = (x)=> x < .5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
 export const smooth = (x)=> { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
 export const inOut = (x)=> ease(Math.min(1, Math.max(0, x)));
+// a beat's length for a subtitle: its delay, the typing, and time to read it, but never less than `least`
+export const fitLine = (text, { cps = 26, delay = .35, read = 1.4, least = 2 } = {})=> Math.max(least, delay + lineSeconds(text, cps) + read);
 
 let scene = null;
 export const inCutscene = ()=> !!scene;
@@ -59,13 +61,14 @@ function enterBeat(i)
     $('cineWho').textContent = b.who || '';
     $('cineWho').classList.toggle('on', !!b.who);
     $('cineSub').classList.toggle('narrator', !b.who);
-    s.line = b.text ? typeLine($('cineLine'), b.text, { start: s.t + (b.delay ?? .35), cps: b.cps ?? 26, pitch: b.voice ?? 0, onBig: thump }) : null;
+    s.line = b.text ? typeLine($('cineLine'), b.text, { start: s.t + (b.delay ?? .35), cps: b.cps ?? 26, pitch: b.voice ?? 0, onBig: thump, onJoy: cheer }) : null;
     if (!b.text) $('cineLine').textContent = '';
-    s.big = b.big ? typeLine($('cineBig'), b.big, { start: s.t + (b.bigDelay ?? .2), cps: b.bigCps ?? 9, onBig: thump }) : null;
+    s.big = b.big ? typeLine($('cineBig'), b.big, { start: s.t + (b.bigDelay ?? .2), cps: b.bigCps ?? 9, onBig: thump, onJoy: cheer }) : null;
     if (!b.big) $('cineBig').textContent = '';
     if (b.caption) caption(b.caption.title, b.caption.sub);
 }
 function thump() { playSfx('thrum', undefined, .7); kickCamera(.06); }
+function cheer() { playSfx('joy', undefined, .6); kickCamera(.025); }
 function caption(title, sub)
 {
     const el = $('cineCap');

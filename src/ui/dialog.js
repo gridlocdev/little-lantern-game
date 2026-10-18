@@ -26,7 +26,7 @@ function renderDialog()
     $('dialog').hidden = !d;
     if (!d) return;
     $('dlgWho').textContent = d.who || '';
-    d.line = typeLine($('dlgText'), d.pages[d.i], { start: timeReal + .05, pitch: voices[d.who] ?? (d.who ? 1 : 0) });
+    d.line = typeLine($('dlgText'), d.pages[d.i], { start: timeReal + .05, pitch: voices[d.who] ?? (d.who ? 1 : 0), onJoy: ()=> playSfx('joy', undefined, .45) });
     $('dlgOpts').innerHTML = '';
     $('dlgHint').textContent = '';
 }

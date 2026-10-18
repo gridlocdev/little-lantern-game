@@ -4,7 +4,7 @@ import { vec3 } from '../../platform/engine.js';
 import { playSfx } from '../../audio/sfx.js';
 import { SNAIL_MEETING } from './lines-data.js';
 import { player } from '../../player/player.js';
-import { inOut, playCutscene, smooth } from '../../ui/cutscene.js';
+import { fitLine, inOut, playCutscene, smooth } from '../../ui/cutscene.js';
 import { P } from '../../world/layout.js';
 import { heightAt } from '../../world/terrain.js';
 
@@ -23,31 +23,33 @@ export function playMeeting(oswin, onEnd)
     const fromYaw = oswin.yaw;
     // a three-quarter view of his face, off to the side so the mothling in front of him is not in the way
     const faceCam = (dist, up)=> head().add(fwd().scale(.55).add(across().scale(-1)).normalize().scale(dist)).add(vec3(0, up, 0));
-    const say = (text, delay = .3)=> ({ who: 'Oswin', voice: OSWIN_VOICE, text, delay, cps: 22 });
+    // each beat lasts as long as his line needs, and no less than its camera move
+    const say = (text, delay = .3, least = 2)=> ({ who: 'Oswin', voice: OSWIN_VOICE, text, delay, cps: 22, dur: fitLine(text, { cps: 22, delay, least }) });
     return playCutscene({
         name: 'meet-oswin', blendIn: 1.2, blendOut: 1.4,
         beats: [
             {   // a two-shot from the side as he turns to you
-                dur: 3.4, ...say(SNAIL_MEETING.hello, .9),
+                ...say(SNAIL_MEETING.hello, .9, 3.4),
                 shot: (t, d)=>
                 {
                     const mid = head().lerp(me(), .5);
                     return { pos: mid.add(across().scale(5.2 - smooth(t / d))).add(vec3(0, .9, 0)), look: mid, fov: 50 };
                 },
                 act: (t)=> { oswin.yaw = fromYaw + (turnTo - fromYaw) * inOut(t / 1.2); },
-                at: [[.8, ()=> { oswin.glow = 1; playSfx('pop', undefined, .5, .7); }]],
+                at: [[.8, ()=> { oswin.glow = 1; oswin.wiggle = 1; playSfx('pop', undefined, .5, .7); }]],
             },
             {   // his face, close and from a little below
-                dur: 3.2, ...say(SNAIL_MEETING.name, .4),
+                ...say(SNAIL_MEETING.name, .4, 3.2),
                 shot: (t, d)=> ({ pos: faceCam(2.2 - smooth(t / d) * .6, -.15), look: head(), fov: 40, roll: 5 }),
                 at: [[.5, ()=> { oswin.glow = 1.6; playSfx('shimmer', undefined, .5); }]],
+                act: ()=> { oswin.talk = .2; },
             },
             {   // over your shoulder; the eye travels from his face to his shell
-                dur: 3.8, blend: .8, ...say(SNAIL_MEETING.house),
+                blend: .8, ...say(SNAIL_MEETING.house, .3, 3.8),
                 shot: (t)=> ({ pos: me().add(away().scale(1.9)).add(across().scale(.8)).add(vec3(0, .5, 0)), look: head().lerp(shell(), smooth((t - 1) / 1.6)), fov: 46 }),
             },
             {   // the lantern shell
-                dur: 3.4, ...say(SNAIL_MEETING.home, .2),
+                ...say(SNAIL_MEETING.home, .2, 3.4),
                 shot: (t)=>
                 {
                     const a = Math.atan2(fwd().x, fwd().z) + 1.9 + t * .12;
@@ -56,7 +58,7 @@ export function playMeeting(oswin, onEnd)
                 act: ()=> { oswin.glow = Math.max(oswin.glow, .7); },
             },
             {   // the pond he means, from high to low
-                dur: 5, blend: 1.1, ...say(SNAIL_MEETING.pond, .5),
+                blend: 1.1, ...say(SNAIL_MEETING.pond, .5, 5),
                 shot: (t, d)=>
                 {
                     const k = smooth(t / d), a = .6 + k * .7;
@@ -65,8 +67,10 @@ export function playMeeting(oswin, onEnd)
                 at: [[1.8, ()=> playSfx('plop', undefined, .5)], [3, ()=> playSfx('splash', undefined, .35)]],
             },
             {   // back to him for the last word
-                dur: 3.8, ...say(SNAIL_MEETING.fish, .3),
+                ...say(SNAIL_MEETING.fish, .3, 3.8),
                 shot: (t, d)=> ({ pos: faceCam(2.8 - smooth(t / d) * .5, .25), look: head().lerp(me(), .3), fov: 44 }),
+                act: ()=> { oswin.talk = .2; },
+                at: [[2.1, ()=> { oswin.wiggle = 1; oswin.glow = 1.2; }]],   // as "fish" lands: he can hardly contain himself
             },
         ],
         onEnd: ()=> { oswin.yaw = turnTo; onEnd(); },

@@ -3,6 +3,7 @@
 // random, so moving an entry that draws (or adding one before it) moves the island's scenery.
 import { engineInit } from './platform/engine.js';
 import { musicSystem } from './audio/music.js';
+import { nightSystem } from './audio/night.js';
 import { soundSystem } from './audio/sfx.js';
 import { features } from './features/index.js';
 import { loop } from './game/loop.js';
@@ -37,7 +38,7 @@ import { terrainSystem } from './world/terrain-mesh.js';
 import { undersideSystem } from './world/underside.js';
 
 loop.use([
-    cameraSystem, rendererSystem, textureSystem, partMeshSystem, soundSystem, musicSystem, skySystem,
+    cameraSystem, rendererSystem, textureSystem, partMeshSystem, soundSystem, musicSystem, nightSystem, skySystem,
     terrainSystem, undersideSystem, roadSystem, pondSystem, signpostSystem,
     titleSystem,        // on the title screen, Enter starts the game
     routerSystem,       // input goes to an open dialog or card, or the current activity, before the mothling moves

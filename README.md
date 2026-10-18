@@ -19,6 +19,7 @@ Other recipes:
 | `just check` | syntax-check every module in `src/`, then check the layer rules |
 | `just test` | run the unit tests for `src/lib/` and the content files |
 | `just types` | type-check the game against the engine's types |
+| `just music` | re-render the soundtrack from `tools/music/songs.js` with soundfont-player (needs a checkout beside this one, or `just music <path>`, and ffmpeg) |
 | `just app` | run the game as a desktop app (Electron) |
 | `just package` | build the desktop app for this computer's OS into `release/` |
 | `just package-for mac` | build one platform: `mac`, `win` or `linux` |
@@ -49,12 +50,13 @@ Without just: `npm install && npm start`, then open http://localhost:8000.
   - `render/` the camera, renderer setup, textures, particles, water, graphics quality
   - `sky/` the sky dome, palettes, moon, shooting stars and the star whale
   - `ui/` the title screen, HUD, prompt, dialog, journal, menu and places
-  - `audio/` sound effects and music
+  - `audio/` sound effects and the night's crickets, water and frogs, synthesized at startup, and the music, which plays the tracks in `music/` and brings in a place's layer as you near it
   - `features/` one folder per thing to do: house, bench, snail, swing, chimes, moonlet, mushrooms, overlook, telescope, fishing, sheep, fallen stars
   - `main.js` lists the shared systems around the features and starts the engine
 - `test/` unit tests for `src/lib/` and the content files
 - `electron/` the desktop app: `main.js` opens the window and keeps the save in a file, `preload.cjs` hands the game that file save
 - `.github/workflows/release.yml` builds the desktop app for macOS, Windows and Linux when a `v*` tag is pushed
+- `music/` the soundtrack as mp3s, one per place or moment; `tools/music/` writes them (`just music`): the songs are specs for soundfont-player's composer, played through its sampler offline and encoded with ffmpeg
 - `tools/coupling-report.mjs` checks the layer rules (`just check`); `architecture.json` declares the layers
 - The engine is pinned to `littlejsengine@1.21.0` in `package.json`
 

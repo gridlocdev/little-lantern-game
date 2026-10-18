@@ -5,7 +5,10 @@ import { BOOKS } from '../src/features/house/books-data.js';
 import { DREAMS } from '../src/features/house/dreams-data.js';
 import { CHIME_NAMES, MOON_SONG } from '../src/features/chimes/song-data.js';
 import { CONSTELLATIONS } from '../src/features/telescope/constellations-data.js';
-import { SNAIL_LINES, SNAIL_MEETING } from '../src/features/snail/lines-data.js';
+import {
+    RACE_CHALLENGE, RACE_COUNT, RACE_HUD, RACE_LOSE, RACE_TOASTS, RACE_WIN, RUN_TIP, SNAIL_ASK, SNAIL_LINES, SNAIL_MEETING,
+} from '../src/features/snail/lines-data.js';
+import { RACE } from '../src/features/snail/race-data.js';
 import { INTRO_CAPTION, INTRO_LINES } from '../src/features/intro/lines-data.js';
 import { BRIDGE_LINES } from '../src/features/moonlet/lines-data.js';
 import { WISHES } from '../src/features/overlook/wishes-data.js';
@@ -41,17 +44,19 @@ test('constellations: four of them, as the journal promises, each drawable', ()=
     }
 });
 
-test('cutscene lines are text, and their kinetic markers come in pairs', ()=>
+test('cutscene and dialog lines are text, and their kinetic markers come in pairs', ()=>
 {
     assert.ok(text(INTRO_CAPTION.title) && text(INTRO_CAPTION.sub));
-    for (const set of [INTRO_LINES, SNAIL_MEETING, BRIDGE_LINES])
+    const sets = [INTRO_LINES, SNAIL_MEETING, BRIDGE_LINES, SNAIL_ASK, RACE_CHALLENGE, RUN_TIP, RACE_COUNT, RACE_HUD, RACE_WIN, RACE_LOSE,
+        Object.fromEntries(SNAIL_LINES.flatMap((pages, i)=> pages.map((p, j)=> [`chat ${i}.${j}`, p])))];
+    for (const set of sets)
         for (const [k, line] of Object.entries(set))
         {
             assert.ok(text(line), k);
             for (const word of line.split(/\s+/))
             {
                 const m = word[0];
-                if ('*~_'.includes(m)) assert.equal(word[word.length - 1], m, `${k}: ${word}`);
+                if ('*~_^'.includes(m) && word.length > 1) assert.equal(word[word.length - 1], m, `${k}: ${word}`);
             }
         }
 });
@@ -59,4 +64,15 @@ test('the ending has its lines and its card', ()=>
 {
     assert.ok(Object.values(ENDING_LINES).length >= 4 && Object.values(ENDING_LINES).every(text));
     assert.ok(Object.values(END_CARD).every(text));
+});
+test('every way of holding the game has a running tip, and the race toasts fill in the time', ()=>
+{
+    for (const k of ['keys', 'pad', 'touch']) assert.ok(text(RUN_TIP[k]), k);
+    assert.ok(RACE_TOASTS.time.includes('{s}') && RACE_TOASTS.best.includes('{s}'));
+});
+test('Oswin is faster than walking and slower than running (player/movement.js: 4.3 and 7.2 m/s)', ()=>
+{
+    assert.ok(RACE.speed > 4.3 && RACE.speed < 7.2, `speed ${RACE.speed}`);
+    for (const k of ['lane', 'accel', 'turnPause', 'touch', 'finish', 'giveUp', 'prize']) assert.ok(RACE[k] > 0, k);
+    assert.ok(Math.hypot(RACE.to.x - RACE.from.x, RACE.to.z - RACE.from.z) > 15, 'a course worth running');
 });

@@ -1,4 +1,5 @@
 port := "8000"
+soundfonts := "../soundfont-player"
 
 # list recipes
 default:
@@ -38,6 +39,11 @@ types:
 # redraw the app icon, build/icon.png, from tools/make-icon.mjs
 icon:
     node tools/make-icon.mjs
+
+# render the soundtrack (tools/music/songs.js) with soundfont-player into music/ and src/audio/tracks-data.js
+# needs ffmpeg and a soundfont-player checkout; e.g. just music ~/src/games/soundfont-player intro race
+music path=soundfonts *tracks: _deps
+    npx electron tools/music/render.mjs {{path}} {{tracks}}
 
 # run the game as a desktop app (Electron); the save goes to a file in the app's data folder
 app: _deps

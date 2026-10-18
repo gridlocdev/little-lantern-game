@@ -3,6 +3,7 @@ import {
     EngineObject3D, Light3D, Mesh, PI, WHITE, buildBox, buildMatrix, buildSphere, hsl, max, render3D, time,
     timeDelta, vec2, vec3,
 } from '../../platform/engine.js';
+import { addSoundPlace } from '../../audio/places.js';
 import { PENTA, bell } from '../../audio/sfx.js';
 import { CHIME_NAMES, MOON_SONG } from './song-data.js';
 import { events } from '../../game/events.js';
@@ -112,4 +113,10 @@ function ringChime(c)
     }
 }
 
-export const chimesFeature = { build: buildChimes };
+export const chimesFeature = {
+    build()
+    {
+        buildChimes();
+        addSoundPlace({ name: 'crystal', at: ()=> P.chimes, near: 14, far: 42 });     // the music turns glassy up Amethyst Hill
+    },
+};

@@ -1,8 +1,10 @@
 // The light bridge and the Moonlet at its end.
 import {
-    EngineObject3D, Light3D, MOBILE, Mesh, PI, WHITE, buildBox, buildLathe, buildSphere, hsl, max, min, noise2D,
+    EngineObject3D, Light3D, MOBILE, Mesh, PI, WHITE, buildLathe, buildSphere, hsl, max, min, noise2D,
     render3D, time, timeDelta, vec3,
 } from '../../platform/engine.js';
+import { musicCue } from '../../audio/music.js';
+import { addSoundPlace } from '../../audio/places.js';
 import { PENTA, bell } from '../../audio/sfx.js';
 import { events } from '../../game/events.js';
 import { addInteract } from '../../game/interact.js';
@@ -50,6 +52,61 @@ class BridgeSlabs extends EngineObject3D
         }
         render3D.emissive = e;
     }
+}
+// The hammock: a striped cloth that sags between two spreader bars and curls up at the sides, gathered at each end into
+// ropes tied to the crystal posts. Built in world space from the middle of the ground under it and the way it runs.
+const HAMMOCK = { half: 1.2, width: 1, seat: .55, sag: .32, curl: .16, bar: .85, post: 1.5, tie: 1.3 };
+function hammockMesh(at, along)
+{
+    const H = HAMMOCK, across = vec3(-along.z, 0, along.x);
+    const P = (x, y, z)=> at.add(along.scale(x)).add(vec3(0, y, 0)).add(across.scale(z));
+    const pts = [], idx = [], nrm = [], cols = [];
+    const NU = 18, NV = 8;
+    const stripe = [hsl(.92, .45, .62), hsl(.92, .45, .62), hsl(.8, .3, .74), hsl(.8, .3, .74)];
+    for (let i = 0; i <= NU; i++)
+    for (let j = 0; j <= NV; j++)
+    {
+        const u = i / NU * 2 - 1, v = j / NV * 2 - 1;
+        const w = H.width / 2 * (1 - .8 * Math.abs(u) ** 4);     // gathered toward the bars
+        pts.push(P(u * H.half, H.seat + H.sag * u * u + H.curl * v * v * (1 - u * u), v * w));
+        nrm.push(vec3(0, 1, 0));
+        cols.push(stripe[j % stripe.length]);
+    }
+    for (let i = 0; i < NU; i++)
+    for (let j = 0; j < NV; j++)
+    {
+        const a = i * (NV + 1) + j, b = a + NV + 1;
+        idx.push(a, b, a + 1, a + 1, b, b + 1);
+    }
+    // a four-sided tube from a to b, for the ropes and the bars
+    const tube = (a, b, r, col)=>
+    {
+        const d = b.subtract(a).normalize(), side = d.cross(Math.abs(d.y) > .9 ? vec3(1, 0, 0) : vec3(0, 1, 0)).normalize(), up = d.cross(side);
+        const base = pts.length;
+        for (const p of [a, b])
+        for (let k = 0; k < 4; k++)
+        {
+            const ang = k / 4 * TAU, off = side.scale(Math.cos(ang) * r).add(up.scale(Math.sin(ang) * r));
+            pts.push(p.add(off)); nrm.push(off.normalize()); cols.push(col);
+        }
+        for (let k = 0; k < 4; k++)
+        {
+            const k2 = (k + 1) % 4;
+            idx.push(base + k, base + 4 + k, base + k2, base + k2, base + 4 + k, base + 4 + k2);
+        }
+    };
+    const wood = hsl(.08, .35, .42), rope = hsl(.12, .25, .78);
+    for (const s of [-1, 1])
+    {
+        const endY = H.seat + H.sag, gather = H.width / 2 * .2;
+        tube(P(s * H.half, endY, -gather - .1), P(s * H.half, endY, gather + .1), .04, wood);
+        const knot = P(s * H.post, H.tie, 0);
+        for (const z of [-gather - .08, 0, gather + .08]) tube(P(s * H.half, endY, z), knot, .015, rope);
+    }
+    const m = triMesh(pts, idx, nrm, cols);
+    m.computeNormals(true);
+    m.doubleSided = true;
+    return m;
 }
 function buildMoonlet()
 {
@@ -112,6 +169,7 @@ function buildMoonlet()
     new Light3D(vec3(m.x, moonletY + .6, m.z), 12, hsl(.13, .7, .65), 1.4);
     addSolid({ kind: 'circle', x: m.x, z: m.z, r: m.r + .4, topFn: moonletHeight, floor: true, platformOnly: true });
     addSolid({ kind: 'circle', x: m.x, z: m.z, r: 3.4, top: 99 });
+    addSoundPlace({ name: 'water', at: ()=> m, near: 5.5, far: 16 });     // the pool laps, and a frog lives in it
     addWater({
         kind: 'moonlet', reach: 2.5, r: 2.4,
         pos: ()=> { const d = vec3(player.pos.x - m.x, 0, player.pos.z - m.z); const l = d.length() || 1; return vec3(m.x + d.x / l * 4.6, moonletY, m.z + d.z / l * 4.6); },
@@ -128,22 +186,14 @@ function buildMoonlet()
         obj3(p.add(vec3(0, 1.1, 0)), buildSphere(1, 5, 3), hsl(.55, .7, .65), { scale3D: vec3(.45, 2.4, .45), emissive: .7 });
         addSolid({ kind: 'circle', x: p.x, z: p.z, r: .35, top: hy + 2.3 });
     }
-    const hammock = new Mesh();
-    for (let k = 0; k <= 8; k++)
-    {
-        const t = k / 8 - .5;
-        hammock.combine(buildBox(vec3(.42, .05, 1.1)), vec3(t * 3.2, -Math.cos(t * PI) * .55 + .55, 0), hsl(.92, .4, .6));
-    }
-    obj3(vec3(hx, hy + .6, hz), hammock, WHITE, { rotation3D: vec3(0, Math.atan2(side.x, side.z) - PI / 2, 0) });
+    obj3(vec3(), hammockMesh(vec3(hx, hy, hz), side), WHITE, { castShadow: true });
+    let cue = null;
     addInteract({ pos: vec3(hx, hy, hz), r: 2.2, label: 'Lie in the hammock', when: ()=> true, act: ()=>
     {
-        // lying on its back stretches the body out behind the way it faces, so face along the hammock (post to
-        // post) and put the feet half a body ahead of the middle; the bed hangs .6 above the ground
-        const along = hyaw - PI / 2, fwd = vec3(-Math.sin(along), 0, -Math.cos(along));
-        startSit(vec3(hx, hy, hz).add(fwd.scale(.62)), along, { pose: 'lieBack', height: .64, out: 0, hint: `${MOBILE ? 'Use' : 'E'}|Get up`,
-            onSit: ()=> { if (!save.hammock) { save.hammock = true; writeSave(); } toast('The whole sky turns slowly around you.'); },
-            // climb out over the side, not into a post
-            onStand: ()=> { const out = vec3(hx, 0, hz).add(vec3(-Math.sin(hyaw), 0, -Math.cos(hyaw)).scale(1.4)); player.pos = vec3(out.x, moonletHeight(out.x, out.z), out.z); player.yaw = hyaw; },
+        // curled up on her side along the cloth, facing out over the pool
+        startSit(vec3(hx, hy + HAMMOCK.seat, hz), hyaw, { pose: 'hammock', height: 0, out: 1.3, hint: `${MOBILE ? 'Use' : 'E'}|Get up`,
+            onSit: ()=> { if (!save.hammock) { save.hammock = true; writeSave(); } cue = musicCue('ending'); toast('The whole sky turns slowly around you.'); },
+            onEnd: ()=> { cue?.release(); cue = null; },
             cam: ()=> ({ target: vec3(hx, hy + 1, hz), dist: 9, yaw: time * .08, pitch: .5 }) });
     } });
     // moonflowers

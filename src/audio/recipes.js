@@ -281,6 +281,27 @@ export const RECIPES = {
         for (let i = 0; i < 12; i++) { const at = i * .08; if (t > at) s += chime(1046.5 * 2 ** ((i * 2 + (i % 3)) / 12), t - at, 3) * .5; }
         return s;
     }, .32),
+    // a happy word: three quick notes hopping up a major chord, each with a little upward flick, and a sparkle on top
+    joy()
+    {
+        const notes = [587.3, 740, 880].map((f, i)=>
+        {
+            const at = i * .075;
+            const flick = (t)=> f * (1 + .06 * exp(-Math.max(0, t - at) * 60));    // each note flicks up into place
+            return { at, lo: osc(flick), hi: osc((t)=> flick(t) * 2, tri), level: 1 + i * .15 };
+        });
+        return R(1.1, (t)=>
+        {
+            let s = 0;
+            for (const n of notes)
+            {
+                const lo = n.lo(t), hi = n.hi(t);     // both run from the start so their phase stays continuous
+                if (t > n.at) s += (lo * .8 + hi * .2) * pluck(t - n.at, .003, 9) * n.level;
+            }
+            if (t > .22) s += chime(1760, t - .22, 1.6) * .45;
+            return s;
+        }, .4);
+    },
     // a deep soft hit under a big word
     thrum()
     {
