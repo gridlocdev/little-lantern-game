@@ -55,7 +55,7 @@ Features never import each other. They reach the rest of the game through:
 | name a place | `PLACE_NAMES` in `ui/places.js` |
 | add journal rows, things to do, HUD counters | `addJournalSection`, `addTodo` in `ui/journal.js`; `addHudCounter` in `ui/hud.js` |
 | tell the title screen the player has been here before | `addReturnCheck` in `ui/title.js` |
-| own a modal card | `registerModal` in `ui/modal.js` (fishing's catch card) |
+| own a modal card | `registerModal` in `ui/modal.js` (fishing's catch card); its buttons, tabs and sliders work from the keyboard and the gamepad on their own (`ui/keynav.js`: the d-pad moves, A presses, the bumpers change tabs, the right stick scrolls), and B is the card's own way out, through `input.back()` |
 
 ## The camera and sound
 
