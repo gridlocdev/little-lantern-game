@@ -36,6 +36,7 @@
       "style.css",
       "fonts/**/*",
       "music/**/*",
+      "prompts/**/*",
       "build/icon.png",
       "src/**/*",
       "electron/**/*",

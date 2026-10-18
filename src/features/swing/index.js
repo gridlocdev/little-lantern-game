@@ -95,7 +95,7 @@ function startSwing()
         {
             swingState = player.swing = null; activity.end(); player.pose = 'free'; player.extraPitch = 0;
         },
-        hint: ()=> swingState.window > 0 ? `${MOBILE ? 'Use' : 'E'}|Lean in now!` : `${MOBILE ? 'Use' : 'E'}|Lean in at the top · ${MOBILE ? 'Jump' : 'Space'} lets go · ${MOBILE ? '' : 'Q gets off'}`,
+        hint: ()=> swingState.window > 0 ? '{use}|Lean in now!' : `{use}|Lean in at the top · {jump} lets go${MOBILE ? '' : ' · {back} gets off'}`,
         cam: ()=> ({ target: SWING.pivot.add(vec3(0, -3.2, 0)), dist: 13, yaw: Math.atan2(SWING.side.x, SWING.side.z), pitch: .12 }),
     });
 }

@@ -20,6 +20,7 @@ import { rendererSystem } from './render/renderer.js';
 import { textureSystem } from './render/textures.js';
 import { skySystem } from './sky/dome.js';
 import { whaleSystem } from './sky/whale.js';
+import { glyphSystem } from './ui/glyphs.js';
 import { hudSystem } from './ui/hud.js';
 import { placeSystem } from './ui/places.js';
 import { promptSystem } from './ui/prompt.js';
@@ -40,6 +41,7 @@ import { undersideSystem } from './world/underside.js';
 loop.use([
     cameraSystem, rendererSystem, textureSystem, partMeshSystem, soundSystem, musicSystem, nightSystem, skySystem,
     terrainSystem, undersideSystem, roadSystem, pondSystem, signpostSystem,
+    glyphSystem,        // key or button glyphs, for whatever was pressed last
     titleSystem,        // on the title screen, Enter starts the game
     routerSystem,       // input goes to an open dialog or card, or the current activity, before the mothling moves
     playerSystem,

@@ -1,7 +1,7 @@
 // Reading the books on the shelf, as a little scene: the mothling takes the book down, walks to the armchair and
 // sits, the camera comes round to face it, and the book opens beside it as a storybook. Afterwards it gets up,
 // walks back and puts the book away.
-import { MOBILE, keyWasPressed, timeDelta, vec3 } from '../../platform/engine.js';
+import { gamepadWasPressed, keyWasPressed, timeDelta, vec3 } from '../../platform/engine.js';
 import { playSfx } from '../../audio/sfx.js';
 import { BOOKS } from './books-data.js';
 import { CHAIR, SHELF, hin } from './plan.js';
@@ -66,7 +66,7 @@ function readBook(i)
             player.pos = SEAT();
             storybook.update();
             const next = input.act() || input.jump() || keyWasPressed('ArrowRight') || keyWasPressed('KeyD');
-            if (keyWasPressed('ArrowLeft') || keyWasPressed('KeyA')) storybook.back();
+            if (keyWasPressed('ArrowLeft') || keyWasPressed('KeyA') || gamepadWasPressed(14)) storybook.back();
             if (input.back() || (next && !storybook.next())) { storybook.close(); clearTouchPresses(); return true; }
             return false;
         },
@@ -106,6 +106,6 @@ function readBook(i)
             else t += timeDelta;
         },
         cancel: end,
-        hint: ()=> step === 6 ? '' : `${MOBILE ? 'Jump' : 'Q'}|Skip`,
+        hint: ()=> step === 6 ? '' : '{back}|Skip',
     });
 }
