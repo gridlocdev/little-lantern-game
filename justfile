@@ -45,6 +45,11 @@ icon:
 music path=soundfonts *tracks: _deps
     npx electron tools/music/render.mjs {{path}} {{tracks}}
 
+# play the game as a phone would (a 390 x 844 touch screen) through tools/phone-tour.mjs, or another scenario; prints
+# its checks and where the screenshots went. e.g. just phone, or PHONE_W=844 PHONE_H=390 just phone
+phone scenario="tools/phone-tour.mjs": _deps
+    npx electron tools/phone.mjs {{scenario}}
+
 # run the game as a desktop app (Electron); the save goes to a file in the app's data folder
 app: _deps
     npx electron .

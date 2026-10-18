@@ -18,6 +18,7 @@ Other recipes:
 | `just test` | run the unit tests for `src/lib/` and the content files |
 | `just types` | type-check the game against the engine's types |
 | `just music` | re-render the soundtrack from `tools/music/songs.js` with soundfont-player (needs a checkout beside this one, or `just music <path>`, and ffmpeg) |
+| `just phone` | play the game as a phone would (an emulated 390 × 844 touch screen, in Electron) through `tools/phone-tour.mjs`: prints its checks and where the screenshots went; `PHONE_W=844 PHONE_H=390 just phone` turns it on its side |
 | `just app` | run the game as a desktop app (Electron) |
 | `just package` | build the desktop app for this computer's OS into `release/` |
 | `just package-for mac` | build one platform: `mac`, `win` or `linux` |
