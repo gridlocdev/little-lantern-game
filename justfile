@@ -48,9 +48,12 @@ test:
 types:
     npx -y -p typescript@5.6.3 tsc -p jsconfig.json
 
-# redraw the app icon, build/icon.png, from tools/make-icon.mjs
+# redraw the app icon, build/icon.png, and the phone home-screen icons in icons/, from tools/make-icon.mjs
 icon:
     node tools/make-icon.mjs
+    node tools/make-icon.mjs icons/apple-touch-icon.png 180 --bleed
+    node tools/make-icon.mjs icons/icon-192.png 192 --bleed
+    node tools/make-icon.mjs icons/icon-512.png 512 --bleed
 
 # render the soundtrack (tools/music/songs.js) with soundfont-player into music/ and src/audio/tracks-data.js
 # needs ffmpeg and a soundfont-player checkout; e.g. just music ~/src/games/soundfont-player intro race
