@@ -14,7 +14,7 @@
 // failing backend never stops the game.
 
 export const SAVE_KEY = 'violet-isle-dream-v1';     // from when the game was called Violet Isle; kept so saves carry over
-export const SETTING_KEYS = { volume: SAVE_KEY + '-vol', graphics: SAVE_KEY + '-gfx' };
+export const SETTING_KEYS = { volume: SAVE_KEY + '-vol', graphics: SAVE_KEY + '-gfx', mouse: SAVE_KEY + '-mouse' };
 
 const localStorageBackend = {
     load()

@@ -6,7 +6,7 @@ import {
     timeReal, vec3,
 } from '../platform/engine.js';
 import { activity } from '../game/activity.js';
-import { state } from '../game/state.js';
+import { loadSetting, state } from '../game/state.js';
 import { mix, wrapAngle } from '../lib/math.js';
 import { pointerOnCanvas } from '../platform/input.js';
 import { player } from '../player/player.js';
@@ -14,7 +14,8 @@ import { uiOpen } from '../ui/dom.js';
 import { HOUSE_IN, insideIsland } from '../world/layout.js';
 import { heightAt } from '../world/terrain.js';
 
-export const cam = { yaw: 0, pitch: .3, dist: 7, distT: 7, manualT: -99, look: vec3(), fov: PI / 3, house: false };
+// sens: how fast the mouse turns the camera, 1 by default (the menu's mouse sensitivity slider)
+export const cam = { yaw: 0, pitch: .3, dist: 7, distT: 7, manualT: -99, look: vec3(), fov: PI / 3, house: false, sens: 1 };
 
 // what the camera shows, before focus and kicks
 const view = { pos: vec3(0, 40, 175), look: vec3(), fov: PI / 3, roll: 0 };
@@ -49,8 +50,8 @@ function orbitInput(dt)
     if ((pointerLockIsActive() || (mouseIsDown(0) && pointerOnCanvas)) && !activity.current?.mouseHold)
     {
         const d = mouseDeltaScreen;
-        cam.yaw -= d.x * .0055;
-        cam.pitch = clamp(cam.pitch + d.y * .0045, -.15, 1.25);
+        cam.yaw -= d.x * .0055 * cam.sens;
+        cam.pitch = clamp(cam.pitch + d.y * .0045 * cam.sens, -.15, 1.25);
         if (d.length() > 0) cam.manualT = time;
     }
     const rs = gamepadStick(1);
@@ -184,4 +185,7 @@ function updateCamera()
 }
 export const camNear = (p, d)=> render3D.camera.pos.distanceSquared(p) < d * d;
 
-export const cameraSystem = { updatePost: updateCamera };
+export const cameraSystem = {
+    build() { const s = parseFloat(loadSetting('mouse')); if (s > 0) cam.sens = s; },
+    updatePost: updateCamera,
+};
