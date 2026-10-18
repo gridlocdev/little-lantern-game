@@ -40,7 +40,7 @@ const MAP = { '/__render.html': 'render.html', '/__render.js': 'render-page.js',
 function resolve(urlPath)
 {
     if (MAP[urlPath]) return path.join(HERE, MAP[urlPath]);
-    if (urlPath.startsWith('/__music/')) return path.join(OUT, urlPath.slice(9));
+    if (urlPath.startsWith('/__music/')) { const file = path.join(OUT, urlPath.slice(9)); return file.startsWith(OUT + path.sep) ? file : null; }
     const file = path.join(SFP, urlPath);
     return file.startsWith(SFP + path.sep) ? file : null;
 }
