@@ -238,7 +238,9 @@ body.touch #meter { bottom: auto; top: calc(58px + env(safe-area-inset-top, 0px)
 .scope-cap .cap-name { font-family: var(--font-display); font-style: italic; font-size: clamp(1.6rem, 4.5vmin, 2.6rem); color: var(--ink); text-shadow: 0 0 18px rgba(255, 205, 120, .45); }
 .scope-cap .cap-desc { font-size: .95rem; color: var(--ink-dim); line-height: 1.5; margin-top: 4px; }
 #scope .hint { position: absolute; left: 0; right: 0; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); text-align: center; color: var(--ink-dim); font-size: .9rem; padding: 0 16px; }
-#touch { right: 0; bottom: 0; padding: 0 calc(16px + env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) 0;
+/* above the engine's touch stick overlay (z-index 50), whose 360 px zone spans nearly a phone's whole width, so a tap on
+   a button reaches it; the gaps between buttons still go to the stick */
+#touch { z-index: 60; right: 0; bottom: 0; padding: 0 calc(16px + env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) 0;
   display: grid; grid-template-columns: auto auto; gap: 12px; align-items: end; justify-items: center; }
 #tBack { grid-area: 1 / 1; } #tAct { grid-area: 2 / 1; } #tJump { grid-area: 1 / 2 / 3 / 3; }
 #touch .tap.small { width: 58px; height: 58px; font-size: .74rem; }
