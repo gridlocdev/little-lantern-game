@@ -26,9 +26,9 @@ function updateTouch()
     const play = MOBILE && state.mode === 'play' && !uiOpen();
     // Back, for an activity that says how to leave it (petting the cat is over in a moment, and has no hint)
     const back = play && !!activity.current?.hint;
-    // the engine's stick catches every tap in a 360 px square bottom left, above the cards and the dialog, so it is
-    // only on while there is walking (or looking) to do
-    const stick = play && !storybook.open;
+    // the engine's stick catches every tap in a 360 px square bottom left, above the cards, the dialog and a cutscene's
+    // Skip, so it is only on while there is walking (or looking) to do
+    const stick = play && !storybook.open && !document.body.classList.contains('cine');
     const key = `${play}${back}${stick}`;
     if (key === shown) return;
     shown = key;
