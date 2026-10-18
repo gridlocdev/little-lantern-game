@@ -3,6 +3,7 @@ import { setSoundVolume, soundVolume } from '../platform/engine.js';
 import { music, setMusic } from '../audio/music.js';
 import { forgetSave, writeSave, writeSetting } from '../game/state.js';
 import { input } from '../platform/input.js';
+import { cam } from '../render/camera.js';
 import { gfx, setGraphics } from '../render/quality.js';
 import { $ } from './dom.js';
 import { closeModal, openModal, registerModal } from './modal.js';
@@ -14,6 +15,8 @@ const desktop = /** @type {any} */ (window).littleLanternApp;
 export function openMenu()
 {
     /** @type {HTMLInputElement} */ ($('volSlider')).value = String(soundVolume);
+    /** @type {HTMLInputElement} */ ($('mouseSlider')).value = String(cam.sens);
+    $('mouseValue').textContent = cam.sens.toFixed(1) + '×';
     $('musicToggle').textContent = music.on ? 'On' : 'Off';
     $('gfxToggle').textContent = gfx.low ? 'Light' : 'Full';
     $('resetBtn').textContent = 'Start a new dream';
@@ -24,6 +27,12 @@ export function openMenu()
 $('mClose').onclick = closeModal;
 registerModal('menu', { dismiss: true, update() { if (input.back()) closeModal(); } });
 $('volSlider').oninput = (e)=> { setSoundVolume(+/** @type {HTMLInputElement} */ (e.target).value); writeSetting('volume', soundVolume); };
+$('mouseSlider').oninput = (e)=>
+{
+    cam.sens = +/** @type {HTMLInputElement} */ (e.target).value;
+    $('mouseValue').textContent = cam.sens.toFixed(1) + '×';
+    writeSetting('mouse', cam.sens);
+};
 $('musicToggle').onclick = ()=> setMusic(!music.on);
 $('gfxToggle').onclick = ()=> setGraphics(!gfx.low);
 $('resetBtn').onclick = (e)=>
