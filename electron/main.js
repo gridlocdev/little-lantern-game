@@ -26,8 +26,17 @@ function writeSave(all)
     }).catch((e)=> console.error('could not save', e));
     return writing;
 }
+// the game was called Violet Isle, and the save folder is named after the app: the first time, a save made under the
+// old name is copied over (and left where it was)
+async function adoptOldSave()
+{
+    const old = path.join(app.getPath('appData'), 'Violet Isle', 'save.json');
+    try { await fs.access(SAVE_FILE()); return; } catch (e) {}
+    try { await fs.mkdir(path.dirname(SAVE_FILE()), { recursive: true }); await fs.copyFile(old, SAVE_FILE()); } catch (e) {}
+}
 ipcMain.handle('save:load', async ()=>
 {
+    await adoptOldSave();
     try { return JSON.parse(await fs.readFile(SAVE_FILE(), 'utf8')); }
     catch (e) { return {}; }    // a first run, or a save that could not be read
 });
@@ -43,7 +52,7 @@ function createWindow()
 {
     const win = new BrowserWindow({
         width: 1280, height: 800, minWidth: 800, minHeight: 500,
-        title: 'Violet Isle',
+        title: 'Little Lantern',
         backgroundColor: '#07051a',
         icon: ICON,
         autoHideMenuBar: true,

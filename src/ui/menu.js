@@ -9,7 +9,7 @@ import { closeModal, openModal, registerModal } from './modal.js';
 import { returnToTitle } from './title.js';
 
 // the desktop app gives a way to quit (electron/preload.cjs); a browser tab cannot close itself, so it goes to the title
-const desktop = /** @type {any} */ (window).violetIsleApp;
+const desktop = /** @type {any} */ (window).littleLanternApp;
 
 export function openMenu()
 {
