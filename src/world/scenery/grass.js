@@ -86,12 +86,20 @@ function buildGrass()
 }
 function updateGrass()
 {
-    const t = time, c = render3D.camera.pos, far = gfx.low ? 46 : MOBILE ? 58 : 78;
+    const c = render3D.camera.pos, far = gfx.low ? 46 : MOBILE ? 58 : 78, island = player.zone === 'island';
+    // the engine can't cull a chunk (its bounds are centred on the origin), so chunks wholly behind the camera are
+    // left out here: further back than half a chunk's diagonal along the way it looks
+    const yaw = render3D.camera.rotation.y, fx = -Math.sin(yaw), fz = -Math.cos(yaw);
     for (const g of grassChunks)
     {
-        const d = Math.hypot(g.center.x - c.x, g.center.z - c.z);
-        g.count = d < far && player.zone === 'island' ? g.full : 0;
+        const dx = g.center.x - c.x, dz = g.center.z - c.z;
+        g.count = island && Math.hypot(dx, dz) < far && dx * fx + dz * fz > -18 ? g.full : 0;
     }
+}
+// the blades sway: only what is drawn needs it, so it runs once per drawn frame, not on every catch-up update
+function swayGrass()
+{
+    const t = time;
     for (const m of grassMeshes)
     {
         const gust = .5 + .5 * Math.sin(t * .37 + m.phase);
@@ -107,4 +115,4 @@ function updateGrass()
     }
 }
 
-export const grassSystem = { always: true, build: buildGrass, update: updateGrass };
+export const grassSystem = { always: true, build: buildGrass, update: updateGrass, render: swayGrass };

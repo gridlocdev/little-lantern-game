@@ -14,5 +14,6 @@ export const rendererSystem = {
         render3D.shadowRange = 46;
         render3D.shadowBias = .002;
     },
-    buildLate() { postProcessBloom(.6, 1.05, 10); },
+    // the glow costs taps per pixel every frame (size 10: 43, 5: 21); a phone's screen is many pixels for its GPU
+    buildLate() { postProcessBloom(.6, 1.05, MOBILE ? 5 : 10); },
 };
