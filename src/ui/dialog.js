@@ -3,6 +3,7 @@ import { MOBILE, inputClear, max, keyWasPressed, mouseWasPressed, timeReal } fro
 import { playSfx } from '../audio/sfx.js';
 import { clearTouchPresses, input } from '../platform/input.js';
 import { $, ui } from './dom.js';
+import { glyph } from './glyphs.js';
 import { focusDefault, keyNav } from './keynav.js';
 import { typeLine } from './kinetic.js';
 
@@ -44,13 +45,13 @@ function renderEnd()
             b.className = 'btn' + (k === 0 ? ' primary' : '');
             b.type = 'button';
             b.append(o.label + ' ');
-            if (!MOBILE) { const kb = document.createElement('kbd'); kb.textContent = String(k + 1); b.append(kb); }
+            if (!MOBILE && k < 4) { const g = document.createElement('span'); g.dataset.glyph = String(k + 1); g.innerHTML = glyph(String(k + 1)); b.append(g); }
             b.onclick = ()=> closeDialog(o);
             opts.appendChild(b);
         });
         if (!MOBILE) focusDefault(opts);
     }
-    else $('dlgHint').textContent = MOBILE ? 'Tap to continue' : last ? 'E to close' : 'E to continue';
+    else $('dlgHint').innerHTML = MOBILE ? 'Tap to continue' : `<span data-glyph="use">${glyph('use')}</span> ${last ? 'to close' : 'to continue'}`;
 }
 export function advanceDialog()
 {

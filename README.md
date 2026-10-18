@@ -56,6 +56,7 @@ Without just: `npm install && npm start`, then open http://localhost:8000.
 - `test/` unit tests for `src/lib/` and the content files
 - `electron/` the desktop app: `main.js` opens the window and keeps the save in a file, `preload.cjs` hands the game that file save
 - `.github/workflows/release.yml` builds the desktop app for macOS, Windows and Linux when a `v*` tag is pushed
+- `prompts/` key and button glyphs from Kenney's Input Prompts (CC0), for the keyboard and Xbox, PlayStation and Switch pads
 - `music/` the soundtrack as mp3s, one per place or moment; `tools/music/` writes them (`just music`): the songs are specs for soundfont-player's composer, played through its sampler offline and encoded with ffmpeg
 - `tools/coupling-report.mjs` checks the layer rules (`just check`); `architecture.json` declares the layers
 - The engine is pinned to `littlejsengine@1.21.0` in `package.json`

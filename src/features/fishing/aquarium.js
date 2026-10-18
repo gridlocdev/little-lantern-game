@@ -59,8 +59,7 @@ function lookIntoTank()
         {
             let near = null;
             for (const a of aquariumList) if (a.f && (!near || Math.abs(a.x - view.x) < Math.abs(near.x - view.x))) near = a;
-            const k = MOBILE ? 'Use' : 'E';
-            return `${k}|${near ? near.f.name + ' · ' : ''}${k} opens the journal · ${MOBILE ? 'Jump' : 'Q'} to step back${MOBILE ? '' : ' · A and D look along the tank'}`;
+            return `{use}|${near ? near.f.name + ' · ' : ''}{use} opens the journal · {back} to step back${MOBILE ? '' : ' · {move} looks along the tank'}`;
         },
         cam: ()=>
         {

@@ -1,6 +1,6 @@
 // The light bridge and the Moonlet at its end.
 import {
-    EngineObject3D, Light3D, MOBILE, Mesh, PI, WHITE, buildLathe, buildSphere, hsl, max, min, noise2D,
+    EngineObject3D, Light3D, Mesh, PI, WHITE, buildLathe, buildSphere, hsl, max, min, noise2D,
     render3D, time, timeDelta, vec3,
 } from '../../platform/engine.js';
 import { musicCue } from '../../audio/music.js';
@@ -192,7 +192,7 @@ function buildMoonlet()
     addInteract({ pos: vec3(hx, hy, hz), r: 2.2, label: 'Lie in the hammock', when: ()=> true, act: ()=>
     {
         // curled up on her side along the cloth, facing out over the pool
-        startSit(vec3(hx, hy + HAMMOCK.seat, hz), hyaw, { pose: 'hammock', height: 0, out: 1.3, hint: `${MOBILE ? 'Use' : 'E'}|Get up`,
+        startSit(vec3(hx, hy + HAMMOCK.seat, hz), hyaw, { pose: 'hammock', height: 0, out: 1.3, hint: '{use}|Get up',
             onSit: ()=> { if (!save.hammock) { save.hammock = true; writeSave(); } cue = musicCue('ending'); toast('The whole sky turns slowly around you.'); },
             onEnd: ()=> { cue?.release(); cue = null; },
             cam: ()=> ({ target: vec3(hx, hy + 1, hz), dist: 9, yaw: time * .08, pitch: .5 }) });

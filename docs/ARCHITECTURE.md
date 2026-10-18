@@ -49,6 +49,7 @@ Features never import each other. They reach the rest of the game through:
 | give a speaker a voice | `setVoice` in `ui/dialog.js` |
 | offer something to use | `addInteract` in `game/interact.js` |
 | take over the mothling (swinging, fishing, the telescope, sitting) | `activity.start()` / `activity.end()` in `game/activity.js` |
+| name a key or button in a hint | write the action in braces, `'{use}|Get up'` or `{back} to stop`; `ui/glyphs.js` draws it for the keyboard or the pad pressed last (Kenney's Input Prompts in `prompts/`), and static markup uses `<span data-glyph="use">` |
 | offer water to fish in | `addWater` in `world/waters.js` (the pond and the moon pool do; fishing makes spots of them) |
 | make a place sound different | `addSoundPlace` in `audio/places.js`: near it, the island's music brings in that place's layer (`pond`, `crystal`, `cabin`, `beam`), and `water` places lap and have frogs |
 | name a place | `PLACE_NAMES` in `ui/places.js` |

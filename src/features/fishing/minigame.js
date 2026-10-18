@@ -1,6 +1,6 @@
 // Fishing: aim, cast, wait for a bite, reel in.
 import {
-    MOBILE, PI, abs, clamp, gamepadWasPressed, hsl, keyWasPressed, rand, timeDelta, usingGamepadInput, vec3,
+    MOBILE, PI, abs, clamp, gamepadWasPressed, hsl, keyWasPressed, rand, timeDelta, vec3,
 } from '../../platform/engine.js';
 import { playSfx } from '../../audio/sfx.js';
 import { showCatch } from './catch-card.js';
@@ -66,8 +66,8 @@ function fishingHint()
 {
     const F = fishing;
     if (!F) return '';
-    const k = MOBILE ? 'Use' : usingGamepadInput() ? 'X' : 'E';
-    if (F.state === 'aim') return `${k}|Hold to cast, release to let go · ${MOBILE ? 'Jump' : 'Q'} to stop fishing`;
+    const k = '{use}';
+    if (F.state === 'aim') return `${k}|Hold to cast, release to let go · {back} to stop fishing`;
     if (F.state === 'wait') return `${k}|Wait for a bite · ${k} reels in`;
     if (F.state === 'bite') return `${k}|Now! Hook it`;
     if (F.state === 'reel') return `${k}|Hold to pull the green band onto the fish`;
