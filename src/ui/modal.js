@@ -5,8 +5,13 @@ import { clearTouchPresses } from '../platform/input.js';
 import { $, ui } from './dom.js';
 import { focusDefault, keyNav } from './keynav.js';
 
-const modalHandlers = {};    // modal id -> { update(), onClose() }
-export const registerModal = (id, handler)=> { modalHandlers[id] = handler; };
+const modalHandlers = {};    // modal id -> { update(), onClose(), dismiss }
+// dismiss: a click on the dimmed backdrop around the card closes it (cards that ask for a choice leave it off)
+export function registerModal(id, handler)
+{
+    modalHandlers[id] = handler;
+    if (handler.dismiss) $(id).addEventListener('pointerdown', (e)=> { if (e.target === $(id) && ui.modal === id) closeModal(); });
+}
 
 export function openModal(id)
 {

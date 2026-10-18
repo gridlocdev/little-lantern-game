@@ -22,7 +22,7 @@ export function openMenu()
     openModal('menu');
 }
 $('mClose').onclick = closeModal;
-registerModal('menu', { update() { if (input.back()) closeModal(); } });
+registerModal('menu', { dismiss: true, update() { if (input.back()) closeModal(); } });
 $('volSlider').oninput = (e)=> { setSoundVolume(+/** @type {HTMLInputElement} */ (e.target).value); writeSetting('volume', soundVolume); };
 $('musicToggle').onclick = ()=> setMusic(!music.on);
 $('gfxToggle').onclick = ()=> setGraphics(!gfx.low);

@@ -20,7 +20,7 @@ export function openJournal(tab)
 }
 /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('#journal [data-tab]')).forEach((b)=> b.onclick = ()=> { journalTab = b.dataset.tab; renderJournal(); });
 $('jClose').onclick = closeModal;
-registerModal('journal', { update() { if (input.journal() || input.back()) closeModal(); } });
+registerModal('journal', { dismiss: true, update() { if (input.journal() || input.back()) closeModal(); } });
 
 function renderJournal()
 {
