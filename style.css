@@ -290,7 +290,7 @@ body.cine #hud, body.cine #prompt, body.cine #touch, body.cine #place, body.cine
   border: 0; background: none; padding: 4px 6px; cursor: pointer; pointer-events: auto;
   font: 700 .74rem var(--font-ui); letter-spacing: .08em; color: rgba(241, 236, 255, .42); transition: color .2s; }
 .cine-skip.on, .cine-skip:hover { color: var(--ink); }
-.cine-skip i { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid currentColor;
+.cine-skip > i { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid currentColor;
   background: conic-gradient(var(--amber) calc(var(--hold, 0) * 360deg), transparent 0); }
 
 @media (prefers-reduced-motion: reduce) {
