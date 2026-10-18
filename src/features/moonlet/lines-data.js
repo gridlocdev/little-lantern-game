@@ -5,5 +5,5 @@ export const BRIDGE_LINES = {
     west: 'Far to the west, past Cloudsheep Meadow...',
     bridge: '...a bridge of *light* unfolds from the edge of the island.',
     title: '~The~ ~Moonlet~',
-    go: '_Go_ and see.',
+    go: 'Somewhere new to explore! Off you go to ^see!^',
 };

@@ -6,7 +6,7 @@ import { BRIDGE_LINES } from './lines-data.js';
 import { player } from '../../player/player.js';
 import { kickCamera } from '../../render/camera.js';
 import { MOON_DIR } from '../../sky/directions.js';
-import { playCutscene, smooth } from '../../ui/cutscene.js';
+import { fitLine, playCutscene, smooth } from '../../ui/cutscene.js';
 import { P } from '../../world/layout.js';
 import { heightAt } from '../../world/terrain.js';
 
@@ -53,10 +53,10 @@ export function playBridgeScene({ unfold, finish, moonletY })
                 },
                 at: [[.4, ()=> { playSfx('shimmer', undefined, .6); kickCamera(.04); }]],
             },
-            {   // home
-                dur: 2.6, text: BRIDGE_LINES.go,
+            {   // home, where the mothling hops for joy at somewhere new to go
+                dur: fitLine(BRIDGE_LINES.go, { least: 3 }), text: BRIDGE_LINES.go,
                 shot: (t, d)=> ({ pos: me().add(along.scale(-3.5 + smooth(t / d) * .6)).add(side.scale(1.2)).add(vec3(0, .8, 0)), look: me().add(along.scale(4)), fov: 54 }),
-                act: ()=> { player.pose = 'free'; },
+                act: (t)=> { player.pose = t > .6 && t < 2.6 ? 'cheer' : 'free'; },
             },
         ],
         onEnd: ()=> { player.pose = 'free'; finish(); },
