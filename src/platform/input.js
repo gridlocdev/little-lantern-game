@@ -1,7 +1,6 @@
 // Raw keys, gamepad, mouse and touch turned into named actions.
 import {
-    gamepadIsDown, gamepadStick, gamepadWasPressed, keyDirection, keyIsDown, keyWasPressed, mouseIsDown,
-    usingGamepadInput,
+    MOBILE, gamepadIsDown, gamepadStick, gamepadWasPressed, keyDirection, keyIsDown, keyWasPressed, mouseIsDown,
 } from './engine.js';
 
 export const touchState = { jump: false, act: false, jumpHeld: false, actHeld: false, journal: false };
@@ -21,7 +20,9 @@ export const input = {
     act: ()=> keyWasPressed('KeyE') || keyWasPressed('KeyF') || keyWasPressed('Enter') || gamepadWasPressed(2) || touchState.act,
     actHeld: (mouseHold = false)=> keyIsDown('KeyE') || keyIsDown('KeyF') || keyIsDown('Space') || gamepadIsDown(2) || gamepadIsDown(0) || touchState.actHeld || touchState.jumpHeld || (mouseIsDown(0) && pointerOnCanvas && mouseHold),
     back: ()=> keyWasPressed('Escape') || keyWasPressed('KeyQ') || gamepadWasPressed(1),
-    run: ()=> keyIsDown('ShiftLeft') || keyIsDown('ShiftRight') || gamepadIsDown(5) || gamepadIsDown(7) || (gamepadStick(0).length() > .95 && usingGamepadInput()),
+    // Shift, or the right bumper or trigger; a pad's stick only walks (faster the further it tilts). The touch
+    // joystick has no shoulder buttons, so there pushing it all the way out runs
+    run: ()=> keyIsDown('ShiftLeft') || keyIsDown('ShiftRight') || gamepadIsDown(5) || gamepadIsDown(7) || (MOBILE && gamepadStick(0).length() > .95),
     journal: ()=> keyWasPressed('KeyJ') || keyWasPressed('Tab') || gamepadWasPressed(3) || touchState.journal,
     pause: ()=> keyWasPressed('Escape') || gamepadWasPressed(9),
 };

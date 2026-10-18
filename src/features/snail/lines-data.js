@@ -50,7 +50,7 @@ export const RACE_CHALLENGE = {
 // how to run, by what the player is holding; the race is a lesson in running
 export const RUN_TIP = {
     keys: 'A tip, from one athlete to another: hold *Shift,* and those little legs will really _go._',
-    pad: 'A tip, from one athlete to another: hold a *shoulder* button, and those little legs will really _go._',
+    pad: 'A tip, from one athlete to another: hold the right *bumper,* and those little legs will really _go._',
     touch: 'A tip, from one athlete to another: push your thumb all the way *out,* and those little legs will really _go._',
 };
 export const RACE_COUNT = { ready: 'On your marks...', go: '^Go!^' };
