@@ -1,5 +1,5 @@
 // The title screen, stepping from it into the dream, and back to it.
-import { MOBILE, audioContext, gamepadWasPressed, inputClear, keyWasPressed, timeReal, vec3 } from '../platform/engine.js';
+import { audioContext, gamepadWasPressed, inputClear, keyWasPressed, timeReal, vec3 } from '../platform/engine.js';
 import { musicStart } from '../audio/music.js';
 import { activity } from '../game/activity.js';
 import { events } from '../game/events.js';
@@ -23,7 +23,6 @@ function startGame()
     state.mode = 'play';
     $('title').hidden = true;
     $('hud').hidden = false;
-    $('touch').hidden = !MOBILE;
     try { audioContext && audioContext.resume(); } catch (e) {}
     musicStart();
     cam.look = player.pos.add(vec3(0, 1.1, 0));
@@ -43,7 +42,6 @@ export function returnToTitle(note = '')
     activity.current?.cancel?.();
     state.mode = 'title';
     $('hud').hidden = true;
-    $('touch').hidden = true;
     $('title').hidden = false;
     $('startLabel').textContent = 'Return to the dream';
     if (note) $('titleNote').textContent = note;

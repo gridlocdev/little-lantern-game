@@ -1,6 +1,6 @@
 // The Moonwillow swing: pump to swing higher, let go at the top to glide.
 import {
-    EngineObject3D, MOBILE, Matrix4, Mesh, PI, abs, buildCylinder, buildMatrix, buildSphere, clamp, hsl, max,
+    EngineObject3D, Matrix4, Mesh, PI, abs, buildCylinder, buildMatrix, buildSphere, clamp, hsl, max,
     render3D, time, timeDelta, vec3,
 } from '../../platform/engine.js';
 import { bell, playSfx } from '../../audio/sfx.js';
@@ -8,7 +8,7 @@ import { Moonwillow } from './moonwillow.js';
 import { activity } from '../../game/activity.js';
 import { addInteract } from '../../game/interact.js';
 import { state, writeSave } from '../../game/state.js';
-import { clearTouchPresses, input, touchState } from '../../platform/input.js';
+import { clearTouchPresses, input } from '../../platform/input.js';
 import { mtx, obj3 } from '../../platform/mesh.js';
 import { BOXM, TORUS } from '../../player/part-meshes.js';
 import { player } from '../../player/player.js';
@@ -95,7 +95,7 @@ function startSwing()
         {
             swingState = player.swing = null; activity.end(); player.pose = 'free'; player.extraPitch = 0;
         },
-        hint: ()=> swingState.window > 0 ? '{use}|Lean in now!' : `{use}|Lean in at the top · {jump} lets go${MOBILE ? '' : ' · {back} gets off'}`,
+        hint: ()=> swingState.window > 0 ? '{use}|Lean in now!' : '{use}|Lean in at the top · {jump} lets go · {back} gets off',
         cam: ()=> ({ target: SWING.pivot.add(vec3(0, -3.2, 0)), dist: 13, yaw: Math.atan2(SWING.side.x, SWING.side.z), pitch: .12 }),
     });
 }
@@ -164,7 +164,7 @@ function updateSwing()
         clearTouchPresses();
         return;
     }
-    if (input.back() || (MOBILE && touchState.journal))
+    if (input.back())
     {
         endSwing(false);
         player.pos = seat.add(SWING.dir.scale(-1.2)).add(vec3(0, .5, 0));

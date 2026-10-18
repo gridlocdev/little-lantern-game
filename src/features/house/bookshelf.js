@@ -65,8 +65,9 @@ function readBook(i)
             if (t === 0) openStorybook(book);
             player.pos = SEAT();
             storybook.update();
-            const next = input.act() || input.jump() || keyWasPressed('ArrowRight') || keyWasPressed('KeyD');
-            if (keyWasPressed('ArrowLeft') || keyWasPressed('KeyA') || gamepadWasPressed(14)) storybook.back();
+            const tap = storybook.takeTap();
+            const next = input.act() || input.jump() || keyWasPressed('ArrowRight') || keyWasPressed('KeyD') || tap === 'next';
+            if (keyWasPressed('ArrowLeft') || keyWasPressed('KeyA') || gamepadWasPressed(14) || tap === 'back') storybook.back();
             if (input.back() || (next && !storybook.next())) { storybook.close(); clearTouchPresses(); return true; }
             return false;
         },

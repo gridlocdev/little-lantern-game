@@ -27,6 +27,7 @@ import { placeSystem } from './ui/places.js';
 import { promptSystem } from './ui/prompt.js';
 import { routerSystem } from './ui/router.js';
 import { titleSystem } from './ui/title.js';
+import { touchSystem } from './ui/touch.js';
 import { roadSystem } from './world/roads.js';
 import { flowerSystem } from './world/scenery/flowers.js';
 import { grassSystem } from './world/scenery/grass.js';
@@ -45,6 +46,7 @@ loop.use([
     glyphSystem,        // key or button glyphs, for whatever was pressed last
     cursorSystem,       // the mouse pointer hides while you play
     titleSystem,        // on the title screen, Enter starts the game
+    touchSystem,        // the on-screen buttons on a phone or tablet
     routerSystem,       // input goes to an open dialog or card, or the current activity, before the mothling moves
     playerSystem,
     ...features,

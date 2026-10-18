@@ -32,13 +32,15 @@ const SETS = {
 // what each glyph says, for screen readers
 const NAMES = { use: 'Use', jump: 'Jump', back: 'Back', journal: 'Journal', menu: 'Menu', run: 'Run', move: 'Move', look: 'Look', zoom: 'Zoom', page: 'Back a page', keep: 'Keep', release: 'Release', start: 'Start' };
 // on a touch screen, the two on-screen buttons
-const TOUCH = { use: 'Use', jump: 'Jump', back: 'Jump', keep: 'Keep', release: 'Release' };
+const TOUCH = { use: 'Use', jump: 'Jump', back: 'Back', keep: 'Keep', release: 'Release' };
 
 // 'touch', 'keys', or a pad: 'xbox', 'ps' or 'switch'
 export function inputDevice()
 {
     if (!usingGamepadInput()) return MOBILE ? 'touch' : 'keys';
+    // the engine's touch stick counts as gamepad 0 too, so on a phone it is a pad only if one is plugged in
     const id = (navigator.getGamepads?.() ?? []).find((g)=> g)?.id ?? '';
+    if (MOBILE && !id) return 'touch';
     if (/playstation|dualshock|dualsense|054c/i.test(id)) return 'ps';
     if (/nintendo|switch|joy-con|pro controller|057e/i.test(id)) return 'switch';
     return 'xbox';

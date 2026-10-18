@@ -1,6 +1,6 @@
 // Fishing: aim, cast, wait for a bite, reel in.
 import {
-    MOBILE, PI, abs, clamp, gamepadWasPressed, hsl, keyWasPressed, rand, timeDelta, vec3,
+    PI, abs, clamp, hsl, rand, timeDelta, vec3,
 } from '../../platform/engine.js';
 import { playSfx } from '../../audio/sfx.js';
 import { showCatch } from './catch-card.js';
@@ -10,7 +10,7 @@ import { ripple } from './ripples.js';
 import { save } from './save.js';
 import { activity } from '../../game/activity.js';
 import { addInteract } from '../../game/interact.js';
-import { clearTouchPresses, input, touchState } from '../../platform/input.js';
+import { clearTouchPresses, input } from '../../platform/input.js';
 import { moth } from '../../player/mothling.js';
 import { player } from '../../player/player.js';
 import { focusCamera, kickCamera } from '../../render/camera.js';
@@ -43,7 +43,7 @@ function startFishing(spot)
     player.yaw = spot.kind === 'void' ? spot.yaw : Math.atan2(-(center.x - stand.x), -(center.z - stand.z));
     player.pose = 'fish';
     player.hold = 'rod';
-    fishing = { spot, state: 'aim', power: 0, powerDir: 1, t: 0, bob: player.pos.copy(), progress: .3, zone: .3, zoneV: 0, fishX: .5, fishV: 0, tilt: 0 };
+    fishing = { spot, state: 'aim', armed: false, power: 0, powerDir: 1, t: 0, bob: player.pos.copy(), progress: .3, zone: .3, zoneV: 0, fishX: .5, fishV: 0, tilt: 0 };
     activity.start({
         name: 'fishing', lockCamera: false, mouseHold: true,
         update: updateFishing,
@@ -89,7 +89,7 @@ function updateFishing()
     const F = fishing, dt = timeDelta, spot = F.spot;
     F.t += dt;
     const held = input.actHeld(activity.current?.mouseHold);
-    if (F.state !== 'reel' && F.state !== 'caught' && (keyWasPressed('KeyQ') || keyWasPressed('Escape') || gamepadWasPressed(1) || (MOBILE && touchState.jump && F.state === 'aim')))
+    if (F.state !== 'reel' && F.state !== 'caught' && input.back())
     {
         clearTouchPresses();
         return stopFishing();
@@ -97,7 +97,9 @@ function updateFishing()
     if (F.state === 'aim')
     {
         F.bob = moth.rodTip ? moth.rodTip.copy() : player.pos.copy();
-        if (held)
+        // the press that started fishing, or reeled back in to aim, has to be let go before a hold charges a cast
+        if (!held) F.armed = true;
+        if (held && F.armed)
         {
             F.charging = true;
             F.power += F.powerDir * dt * .9;
@@ -139,7 +141,7 @@ function updateFishing()
         let dip = Math.sin(F.t * 2.3) * .04;
         for (const n of (F.nibbles || [])) if (abs(F.t - n) < .15) { dip -= .12; if (!F['n' + n]) { F['n' + n] = 1; playSfx('tick', F.to, .7); ripple(F.to, hsl(.6, .5, .8), .5); } }
         F.bob = F.to.add(vec3(0, dip, 0));
-        if (input.act()) { F.state = 'aim'; F.power = 0; showFishMeter(); return; }
+        if (input.act()) { F.state = 'aim'; F.armed = false; F.power = 0; showFishMeter(); return; }
         if (F.t > F.biteAt)
         {
             F.state = 'bite'; F.t = 0;

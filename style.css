@@ -101,6 +101,13 @@ body[data-input="pad"] .ui :focus { outline: 2px solid var(--amber); outline-off
 .touch-only { display: none !important; }
 body.touch .touch-only { display: revert !important; }
 body.touch .desk-only { display: none !important; }
+body.touch .keys.touch-only, body.touch .keys-small.touch-only { display: grid !important; }     /* revert would make them blocks */
+/* a phone or tablet: no text selection, long-press menus, tap flashes, double-tap zoom or pull to refresh; only
+   cards scroll */
+body.touch { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; overscroll-behavior: none; }
+body.touch canvas { touch-action: none; }
+body.touch .card, body.touch #title { touch-action: pan-y; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 
 /* HUD */
 #hud { top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
@@ -145,6 +152,8 @@ body.touch .desk-only { display: none !important; }
 
 /* fishing and swing meters */
 #meter { left: 0; right: 0; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; padding: 0 16px; }
+/* on a touch screen the bottom is the stick and the buttons, so the meter goes under the HUD */
+body.touch #meter { bottom: auto; top: calc(58px + env(safe-area-inset-top, 0px)); }
 #meter .box { width: min(440px, 100%); background: var(--speckle), var(--glass); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 8px; box-shadow: var(--plate); }
 #meter .label { font-size: .85rem; color: var(--ink-dim); display: flex; justify-content: space-between; gap: 10px; }
 .track { position: relative; height: 22px; border-radius: 999px; background: rgba(255, 255, 255, .07); overflow: hidden; border: 1px solid var(--line); }
@@ -163,7 +172,7 @@ body.touch .desk-only { display: none !important; }
 
 /* modal cards */
 .modal { inset: 0; display: grid; place-items: center; padding: 20px 16px; background: rgba(7, 5, 26, .55); z-index: 20; pointer-events: auto; }
-.card { width: min(560px, 100%); max-height: min(84vh, 760px); overflow: auto; background: var(--speckle), var(--glass); border: 1px solid var(--line);
+.card { width: min(560px, 100%); max-height: min(84vh, 760px); max-height: min(84dvh, 760px); overflow: auto; background: var(--speckle), var(--glass); border: 1px solid var(--line);
   border-radius: 16px; padding: 22px 22px 18px; display: grid; gap: 14px; box-shadow: var(--plate);
   scrollbar-width: thin; scrollbar-color: rgba(176, 151, 255, .35) transparent; }
 /* a heading has a little star before it and a rule that fades out after it */
@@ -229,7 +238,10 @@ body.touch .desk-only { display: none !important; }
 .scope-cap .cap-name { font-family: var(--font-display); font-style: italic; font-size: clamp(1.6rem, 4.5vmin, 2.6rem); color: var(--ink); text-shadow: 0 0 18px rgba(255, 205, 120, .45); }
 .scope-cap .cap-desc { font-size: .95rem; color: var(--ink-dim); line-height: 1.5; margin-top: 4px; }
 #scope .hint { position: absolute; left: 0; right: 0; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); text-align: center; color: var(--ink-dim); font-size: .9rem; padding: 0 16px; }
-#touch { right: 0; bottom: 0; padding: 0 16px calc(24px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: auto auto; gap: 12px; align-items: end; }
+#touch { right: 0; bottom: 0; padding: 0 calc(16px + env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) 0;
+  display: grid; grid-template-columns: auto auto; gap: 12px; align-items: end; justify-items: center; }
+#tBack { grid-area: 1 / 1; } #tAct { grid-area: 2 / 1; } #tJump { grid-area: 1 / 2 / 3 / 3; }
+#touch .tap.small { width: 58px; height: 58px; font-size: .74rem; }
 #touch .tap { width: 74px; height: 74px; border-radius: 50%; border: 1px solid var(--line); background: rgba(32, 22, 72, .55);
   color: var(--ink); font-size: .82rem; font-weight: 700; touch-action: none; }
 #touch .tap.big { width: 86px; height: 86px; background: rgba(255, 205, 120, .25); }
@@ -324,6 +336,26 @@ body.cine #hud, body.cine #prompt, body.cine #touch, body.cine #place, body.cine
 .sb-keys { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .8rem; color: var(--ink-dim); opacity: .45; transition: opacity .4s; }
 #storybook.typed .sb-keys { opacity: 1; }
 @media (max-width: 700px) { #storybook { align-items: flex-end; justify-content: center; } .sb-page { width: 100%; min-height: 0; } }
+/* on a touch screen the page is tapped to turn it; it sits above the buttons, which stay for Back */
+body.touch .sb-page { pointer-events: auto; }
+body.touch #storybook { padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px)); }
+
+/* a phone held upright: smaller sliders, the HUD's buttons and counters a little tighter */
+@media (max-width: 480px) {
+  .menu-grid input[type=range] { width: 130px; }
+  .menu-grid label { gap: 8px; }
+  #hud { padding-left: 12px; padding-right: 12px; }
+  .chip, .hud-btns .btn { font-size: .8rem; }
+  .card { padding: 18px 16px 14px; }
+  .card h2 { font-size: 1.6rem; }
+}
+/* a phone on its side: little height, so the title and cards scroll and the prompt sits lower */
+@media (max-height: 480px) {
+  #title { place-items: start center; }
+  #prompt { bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
+  #toasts { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+  .card { max-height: 90vh; max-height: 90dvh; }
+}
 
 /* the aquarium: the fish nearest the middle of the view, named at the top */
 .tank-name { left: 0; right: 0; top: calc(70px + env(safe-area-inset-top, 0px)); text-align: center; opacity: 0; transform: translateY(-6px);

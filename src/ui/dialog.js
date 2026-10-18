@@ -74,7 +74,6 @@ function closeDialog(option)
     d.resolve(option);
 }
 keyNav($('dlgOpts'));
-$('dialog').addEventListener('pointerdown', (e)=> { if (/** @type {HTMLElement} */ (e.target).tagName !== 'BUTTON') advanceDialog(); });
 export function updateDialog()
 {
     const d = ui.dialog;

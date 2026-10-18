@@ -8,7 +8,9 @@ import {
 } from 'littlejsengine';
 export * from 'littlejsengine';
 
-export const MOBILE = isTouchDevice;
+// a phone or tablet: a touch screen whose main pointer is a finger. A laptop with a touch screen keeps the mouse and
+// keys, and its touches still work as the mouse
+export const MOBILE = isTouchDevice && matchMedia('(pointer: coarse)').matches;
 
 setShowSplashScreen(false);
 setTilesPixelated(false);
@@ -16,8 +18,8 @@ setCanvasPixelated(false);
 setCanvasClearColor(hsl(.72, .6, .02));
 setSoundVolume(.5);
 setSoundDefaultRange(60);
-setCanvasPixelRatio(Math.min(window.devicePixelRatio || 1, isTouchDevice ? 1.25 : 1.5));
-setTouchGamepadEnable(isTouchDevice);
+setCanvasPixelRatio(Math.min(window.devicePixelRatio || 1, MOBILE ? 1.25 : 1.5));
+setTouchGamepadEnable(MOBILE);
 setTouchGamepadButtonCount(0);
 setTouchGamepadPassthrough(true);
 setTouchGamepadAnalog(true);
