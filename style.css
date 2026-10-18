@@ -33,6 +33,12 @@
 }
 [hidden] { display: none !important; }
 html, body { height: 100%; margin: 0; padding: 0; }
+/* The engine sizes its canvases from innerWidth and innerHeight and centres them in the body. Opened from an iPhone
+   home screen those disagree with the screen, and the engine's black body showed as a band across the top, so the
+   page is pinned to the screen and the canvases fill it whatever the window reports (input follows the canvas's
+   real box, so taps still land where they look) */
+body { position: fixed; inset: 0; }
+body > canvas { top: 0 !important; left: 0 !important; transform: none !important; width: 100% !important; height: 100% !important; }
 body { background: var(--void); color: var(--ink); font-family: var(--font-ui); font-weight: 550; -webkit-font-smoothing: antialiased; }
 h1, h2, #place, #dialog .who, #dialog .text, .cine-line, .cine-big, .cap-title { font-variation-settings: var(--soft); }
 .ui { position: fixed; z-index: 10; pointer-events: none; }
@@ -84,7 +90,7 @@ body[data-input="pad"] .ui :focus { outline: 2px solid var(--amber); outline-off
 #title .card { width: min(520px, 100%); display: grid; gap: 18px; text-align: center; }
 #title h1 {
   margin: 0; font-family: var(--font-display); font-weight: 300; font-style: italic;
-  font-size: clamp(3.2rem, 11vw, 5.6rem); letter-spacing: -.01em; line-height: 1;
+  font-size: clamp(2.4rem, min(11vw, 15vh), 5.6rem); letter-spacing: -.01em; line-height: 1;
   text-shadow: 0 0 34px rgba(176, 151, 255, .65);
 }
 #title h1 .k-drift .kc { color: var(--ink); }
@@ -105,7 +111,26 @@ body.touch .keys.touch-only, body.touch .keys-small.touch-only { display: grid !
 /* a phone or tablet: no text selection, long-press menus, tap flashes, double-tap zoom or pull to refresh; only
    cards scroll */
 body.touch { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation; overscroll-behavior: none; }
+  overscroll-behavior: none; }
+/* the engine sets touch-action:none inline on the body, which a scrolling card inside it inherits the effect of; pan
+   (no pinch or double-tap zoom) lets cards scroll, and the canvas below stays none */
+body.touch { touch-action: pan-x pan-y !important; }
+/* The touch layout: one set of sizes, scaled to the screen's short side and clamped, that every touch control and
+   everything that must clear them is placed from, so no element carries a pixel position tuned to one phone. On a
+   390 px wide phone they come to the sizes the controls were tuned at: stick 120, Use 74, Jump 86, Back 58 */
+body.touch {
+  --gap: clamp(8px, 3vmin, 14px);
+  --edge-x: calc(var(--gap) * 1.4 + env(safe-area-inset-right, 0px));
+  --edge-y: calc(var(--gap) * 2 + env(safe-area-inset-bottom, 0px));
+  --btn: clamp(60px, 19vmin, 88px);                 /* Use */
+  --btn-big: calc(var(--btn) * 1.16);               /* Jump */
+  --btn-small: calc(var(--btn) * .78);              /* Back */
+  /* the engine's stick size (ui/touch.js measures this and passes it on): its ring is half of it across, centred one
+     size in from the corner, so it needs 1.5 x this of height, which the bottom-left quarter always has */
+  --stick: clamp(88px, 31vmin, 136px);
+  --controls-top: calc(var(--edge-y) + var(--btn) + var(--gap) + var(--btn-small));     /* the button column, Back on Use */
+  --hud-bottom: calc(env(safe-area-inset-top, 0px) + 3.6rem);
+}
 body.touch canvas { touch-action: none; }
 body.touch .card, body.touch #title { touch-action: pan-y; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 
@@ -152,8 +177,11 @@ body.touch .card, body.touch #title { touch-action: pan-y; overscroll-behavior: 
 
 /* fishing and swing meters */
 #meter { left: 0; right: 0; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; padding: 0 16px; }
-/* on a touch screen the bottom is the stick and the buttons, so the meter goes under the HUD */
-body.touch #meter { bottom: auto; top: calc(58px + env(safe-area-inset-top, 0px)); }
+/* on a touch screen the bottom is the stick and the buttons, so the meter goes under the HUD, and the prompt and
+   toasts sit above the button column */
+body.touch #meter { bottom: auto; top: var(--hud-bottom); }
+body.touch #prompt { bottom: calc(var(--controls-top) + var(--gap)); }
+body.touch #toasts { bottom: calc(var(--controls-top) + var(--gap) + 3.2rem); }
 #meter .box { width: min(440px, 100%); background: var(--speckle), var(--glass); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 8px; box-shadow: var(--plate); }
 #meter .label { font-size: .85rem; color: var(--ink-dim); display: flex; justify-content: space-between; gap: 10px; }
 .track { position: relative; height: 22px; border-radius: 999px; background: rgba(255, 255, 255, .07); overflow: hidden; border: 1px solid var(--line); }
@@ -173,10 +201,10 @@ body.touch #meter { bottom: auto; top: calc(58px + env(safe-area-inset-top, 0px)
 /* modal cards */
 .modal { inset: 0; display: grid; place-items: center; padding: 20px 16px; background: rgba(7, 5, 26, .55); z-index: 20; pointer-events: auto; }
 .card { width: min(560px, 100%); max-height: min(84vh, 760px); max-height: min(84dvh, 760px); overflow: auto; background: var(--speckle), var(--glass); border: 1px solid var(--line);
-  border-radius: 16px; padding: 22px 22px 18px; display: grid; gap: 14px; box-shadow: var(--plate);
+  border-radius: 16px; padding: clamp(14px, 3.6vmin, 22px) clamp(14px, 3.6vmin, 22px) clamp(12px, 3vmin, 18px); display: grid; gap: clamp(10px, 2.6vmin, 14px); box-shadow: var(--plate);
   scrollbar-width: thin; scrollbar-color: rgba(176, 151, 255, .35) transparent; }
 /* a heading has a little star before it and a rule that fades out after it */
-.card h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: 1.9rem; text-wrap: balance;
+.card h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-style: italic; font-size: clamp(1.4rem, 5.5vmin, 1.9rem); text-wrap: balance;
   display: flex; align-items: center; gap: .4em; }
 .card h2::before { content: "✦"; font-style: normal; font-size: .45em; color: var(--amber); text-shadow: 0 0 10px rgba(255, 205, 120, .8); }
 .card h2::after { content: ""; flex: 1; min-width: 1em; height: 1px; margin-left: .2em;
@@ -195,7 +223,7 @@ body.touch #meter { bottom: auto; top: calc(58px + env(safe-area-inset-top, 0px)
 .tabs button[aria-selected="true"] { color: var(--ink); background: linear-gradient(180deg, rgba(255, 205, 120, .08), transparent); }
 .tabs button[aria-selected="true"]::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; border-radius: 2px;
   background: var(--amber); box-shadow: 0 0 8px rgba(255, 205, 120, .8); }
-.list { display: grid; gap: 8px; }
+.list { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); align-content: start; }
 .item { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 10px;
   background: linear-gradient(90deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .015)); border: 1px solid rgba(190, 170, 255, .08); min-width: 0; }
 .item.missing { opacity: .55; }
@@ -238,15 +266,24 @@ body.touch #meter { bottom: auto; top: calc(58px + env(safe-area-inset-top, 0px)
 .scope-cap .cap-name { font-family: var(--font-display); font-style: italic; font-size: clamp(1.6rem, 4.5vmin, 2.6rem); color: var(--ink); text-shadow: 0 0 18px rgba(255, 205, 120, .45); }
 .scope-cap .cap-desc { font-size: .95rem; color: var(--ink-dim); line-height: 1.5; margin-top: 4px; }
 #scope .hint { position: absolute; left: 0; right: 0; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); text-align: center; color: var(--ink-dim); font-size: .9rem; padding: 0 16px; }
-/* above the engine's touch stick overlay (z-index 50), whose 360 px zone spans nearly a phone's whole width, so a tap on
-   a button reaches it; the gaps between buttons still go to the stick */
-#touch { z-index: 60; right: 0; bottom: 0; padding: 0 calc(16px + env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) 0;
-  display: grid; grid-template-columns: auto auto; gap: 12px; align-items: end; justify-items: center; }
+/* above the engine's touch stick overlay (z-index 50), so a tap on a button always reaches it */
+#touch { z-index: 60; right: 0; bottom: 0; padding: 0 var(--edge-x) var(--edge-y) 0;
+  display: grid; grid-template-columns: auto auto; gap: var(--gap); align-items: end; justify-items: center; }
+/* The engine's touch stick listens on an invisible 3 x size square in the bottom-left corner, which on an upright
+   phone reaches across to the right side. Its hit test only takes the left half, so the square becomes exactly the
+   bottom-left quarter: the stick works there, and a drag anywhere in the other three quarters turns the camera.
+   The overlay is the engine's own element (a div holding a div holding an svg, with no class); its first div is the
+   left zone. !important wins over the inline style the engine rewrites on every relayout */
+.stick-zone, body > div:not(.ui):has(> div > svg) > div > div:first-of-type { width: 50% !important; height: 50% !important; }
+/* the engine means to hide the right side's zone when it has no controls (it has none here), but then rewrites the
+   zone's whole inline style, display included, so an invisible 3 x size square covers the bottom-right corner and takes
+   the drags meant for the camera (LittleJS 1.21.0, touchGamepadRelayout) */
+.stick-zone-unused, body > div:not(.ui):has(> div > svg) > div > div:nth-of-type(2) { display: none !important; }
 #tBack { grid-area: 1 / 1; } #tAct { grid-area: 2 / 1; } #tJump { grid-area: 1 / 2 / 3 / 3; }
-#touch .tap.small { width: 58px; height: 58px; font-size: .74rem; }
-#touch .tap { width: 74px; height: 74px; border-radius: 50%; border: 1px solid var(--line); background: rgba(32, 22, 72, .55);
-  color: var(--ink); font-size: .82rem; font-weight: 700; touch-action: none; }
-#touch .tap.big { width: 86px; height: 86px; background: rgba(255, 205, 120, .25); }
+#touch .tap { width: var(--btn); height: var(--btn); border-radius: 50%; border: 1px solid var(--line); background: rgba(32, 22, 72, .55);
+  color: var(--ink); font-size: calc(var(--btn) * .175); font-weight: 700; touch-action: none; }
+#touch .tap.big { width: var(--btn-big); height: var(--btn-big); background: rgba(255, 205, 120, .25); }
+#touch .tap.small { width: var(--btn-small); height: var(--btn-small); font-size: calc(var(--btn-small) * .2); }
 
 /* kinetic text: letters are typed in by ui/kinetic.js, the words move here */
 .kw { display: inline-block; white-space: nowrap; }
@@ -338,9 +375,9 @@ body.cine #hud, body.cine #prompt, body.cine #touch, body.cine #place, body.cine
 .sb-keys { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .8rem; color: var(--ink-dim); opacity: .45; transition: opacity .4s; }
 #storybook.typed .sb-keys { opacity: 1; }
 @media (max-width: 700px) { #storybook { align-items: flex-end; justify-content: center; } .sb-page { width: 100%; min-height: 0; } }
-/* on a touch screen the page is tapped to turn it; it sits above the buttons, which stay for Back */
+/* on a touch screen the page is tapped to turn it; it sits above the button column, where Back stops reading */
 body.touch .sb-page { pointer-events: auto; }
-body.touch #storybook { padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px)); }
+body.touch #storybook { padding-bottom: calc(var(--controls-top) + var(--gap)); }
 
 /* a phone held upright: smaller sliders, the HUD's buttons and counters a little tighter */
 @media (max-width: 480px) {
@@ -348,15 +385,36 @@ body.touch #storybook { padding-bottom: calc(130px + env(safe-area-inset-bottom,
   .menu-grid label { gap: 8px; }
   #hud { padding-left: 12px; padding-right: 12px; }
   .chip, .hud-btns .btn { font-size: .8rem; }
-  .card { padding: 18px 16px 14px; }
-  .card h2 { font-size: 1.6rem; }
 }
-/* a phone on its side: little height, so the title and cards scroll and the prompt sits lower */
-@media (max-height: 480px) {
-  #title { place-items: start center; }
+/* wide and short (a phone on its side, a short window): the cards spread out across the width in columns instead of
+   stacking one tall column, so they fit without scrolling and without empty space either side */
+@media (orientation: landscape) and (max-height: 540px) {
+  .modal, #title { padding: max(8px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+  .card { width: min(880px, 100%); max-height: 100%; }
   #prompt { bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
   #toasts { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
-  .card { max-height: 90vh; max-height: 90dvh; }
+  /* title: the name and the story on the left, the controls and the way in on the right */
+  #title .card { width: min(880px, 100%); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 28px; row-gap: 12px;
+    align-items: center; grid-template-areas: "name keys" "tag keys" "tag start" "tag note"; }
+  #title h1 { grid-area: name; }
+  #title .tag { grid-area: tag; font-size: 1rem; }
+  #title .keys { grid-area: keys; }
+  #title .row { grid-area: start; }
+  #title .note { grid-area: note; }
+  /* menu: the settings on the left, how to play on the right, the ways out along the bottom */
+  .menu-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 28px; align-items: start; }
+  .menu-grid > label, #resetRow { grid-column: 1; }
+  .menu-grid > .keys-small { grid-column: 2; grid-row: 1 / span 5; align-self: center; }
+  /* journal: the heading and its tabs share a row; the list below flows into columns */
+  #journal .card { grid-template-columns: auto minmax(0, 1fr); align-items: end; column-gap: 20px; }
+  #jBody, #journal .row { grid-column: 1 / -1; }
+  /* catch: the fish beside what it is */
+  #catch .card { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); column-gap: 20px; align-items: start; }
+  #catch .catch-art { grid-row: 1 / span 4; height: 100%; min-height: 120px; }
+  #catch .card > :not(.catch-art) { grid-column: 2; }
+  /* the storybook: between the stick and the buttons, the full height; the buttons sit beside it, not below */
+  #storybook, body.touch #storybook { justify-content: center; align-items: center; padding: max(8px, env(safe-area-inset-top, 0px)) 0 8px; }
+  .sb-page { width: min(470px, 56vw); min-height: 0; max-height: 100%; overflow: auto; gap: 8px; padding: 16px 22px 12px; }
 }
 
 /* the aquarium: the fish nearest the middle of the view, named at the top */
