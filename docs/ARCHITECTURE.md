@@ -43,7 +43,7 @@ Features never import each other. They reach the rest of the game through:
 
 | To | Use |
 |---|---|
-| tell another feature something happened | `game/events.js`: `moon-song-played` (chimes, answered by the moonlet), `house-entered` (house, answered by the aquarium), `dream-started` (the title screen, answered by the intro) |
+| tell another feature something happened | `game/events.js`: `moon-song-played` (chimes, answered by the moonlet), `house-entered` (house, answered by the aquarium), `dream-started` (the title screen, answered by the intro), `fish-caught` (fishing, answered by Ardea the heron on the Moonlet) |
 | play a cutscene | `playCutscene` in `ui/cutscene.js`: beats of camera shots, kinetic subtitles (markup in `ui/kinetic.js`) and timed events; the scene's text lives in the feature's `*-data.js` |
 | draw the camera's eye to something | `focusCamera` and `kickCamera` in `render/camera.js` |
 | give a speaker a voice | `setVoice` in `ui/dialog.js` |
