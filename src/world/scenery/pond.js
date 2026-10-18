@@ -2,6 +2,7 @@
 import {
     InstancedMesh3D, Light3D, WHITE, buildCylinder, buildMatrix, buildSphere, hsl, max, vec3,
 } from '../../platform/engine.js';
+import { addSoundPlace } from '../../audio/places.js';
 import { TAU } from '../../lib/math.js';
 import { obj3 } from '../../platform/mesh.js';
 import { rr } from '../../platform/random.js';
@@ -56,4 +57,10 @@ function addPondWater()
         clamp: (p)=> { const d = vec3(p.x - c.x, 0, p.z - c.z); const l = d.length(); const k = l > edge - 1.2 ? (edge - 1.2) / l : 1; return vec3(c.x + d.x * k, WATER_Y, c.z + d.z * k); },
     });
 }
-export const pondSystem = { build() { buildPond(); addPondWater(); } };
+export const pondSystem = { build() { buildPond(); addPondWater(); addPondSounds(); } };
+// the music's pond layer, and the water lapping and frogs at its edge
+function addPondSounds()
+{
+    addSoundPlace({ name: 'pond', at: ()=> P.pond, near: P.pond.r + 2, far: P.pond.r + 18 });
+    addSoundPlace({ name: 'water', at: ()=> P.pond, near: P.pond.r + 1, far: P.pond.r + 14 });
+}

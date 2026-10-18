@@ -1,6 +1,7 @@
 // The crooked house: outside, inside, and everything in it.
 import { time, vec3 } from '../../platform/engine.js';
 import { music } from '../../audio/music.js';
+import { addSoundPlace } from '../../audio/places.js';
 import { BOOKS } from './books-data.js';
 import { buildHouseExterior } from './exterior.js';
 import { buildHouseInterior } from './interior.js';
@@ -16,6 +17,7 @@ import { OUTFITS } from '../../player/outfits.js';
 import { player } from '../../player/player.js';
 import { uiOpen } from '../../ui/dom.js';
 import { addTodo } from '../../ui/journal.js';
+import { P } from '../../world/layout.js';
 
 function updateHouse()
 {
@@ -28,6 +30,7 @@ export const houseFeature = {
     build()
     {
         buildHouseExterior();
+        addSoundPlace({ name: 'cabin', at: ()=> P.house, near: 7, far: 22 });      // outside, a guitar from somewhere inside
         addTodo(150, 'Brew a pot of tea at home', ()=> save.tea > 0);
         addTodo(160, 'Pet the star cat', ()=> save.cat > 0);
         addTodo(170, 'Read every book on the shelf', ()=> Object.keys(save.books).length >= BOOKS.length);

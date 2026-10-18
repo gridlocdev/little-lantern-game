@@ -57,10 +57,11 @@ export function showCatch(f, sizeCm, kind, onDone)
     playCatchJingle(f.stars);
     if (f.id === 'calf') setTimeout(()=> { playSfx('whale', undefined, .8, 1.6); toast('Far away, the great whale hums back.'); }, 1200);
 }
+// a rising chime up an F major chord, in the key of the island's music
 function playCatchJingle(stars)
 {
     const notes = stars >= 3 ? [0, 4, 7, 12, 16] : [0, 4, 7, 12];
-    notes.forEach((n, i)=> setTimeout(()=> bell(n + 7, undefined, .55), i * 110));
+    notes.forEach((n, i)=> setTimeout(()=> bell(n + 5, undefined, .55), i * 110));
 }
 function resolveCatch(keep)
 {

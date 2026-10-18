@@ -112,6 +112,11 @@ body.touch .desk-only { display: none !important; }
 .zone.hit { background: rgba(127, 227, 224, .6); }
 .fishmark { position: absolute; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg); background: var(--rose); box-shadow: 0 0 10px var(--rose); }
+.track.race { height: 14px; overflow: visible; }
+.track.race .turn { position: absolute; left: 50%; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+.track.race b { position: absolute; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; transition: left .1s linear; }
+.track.race .me { background: var(--amber); box-shadow: 0 0 10px var(--amber); }
+.track.race .oswin { background: var(--teal); box-shadow: 0 0 10px var(--teal); }
 .progress { height: 6px; border-radius: 99px; background: rgba(255, 255, 255, .08); overflow: hidden; }
 .progress i { display: block; height: 100%; background: var(--teal); width: 0; }
 
@@ -183,7 +188,12 @@ body.touch .desk-only { display: none !important; }
 .k-hush .kc.on { animation: tremble .22s steps(2) infinite; animation-delay: calc(var(--i) * -.07s); }
 .k-big .kc { color: var(--rose); font-weight: 700; font-size: 1.3em; }
 .k-big .kc.on { animation: slam .55s cubic-bezier(.2, 1.3, .4, 1) both; }
+.k-joy .kc { color: var(--amber); font-weight: 700; text-shadow: 0 0 12px rgba(255, 205, 120, .5); }
+/* the bob waits for the hop to land (both move the letter), then runs as a wave along the word */
+.k-joy .kc.on { animation: hop .5s cubic-bezier(.3, 1.6, .5, 1) both, bob 1.4s ease-in-out infinite; animation-delay: 0s, calc(.5s + var(--i) * .1s); }
 @keyframes swell { to { transform: scale(1.07); } }
+@keyframes hop { 0% { transform: translateY(.5em) scale(.6) rotate(-8deg); opacity: 0; } 60% { transform: translateY(-.35em) scale(1.15) rotate(4deg); opacity: 1; } 100% { transform: none; } }
+@keyframes bob { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-.12em) rotate(var(--tilt, 3deg)); } }
 @keyframes drift { 0%, 100% { transform: translateY(.04em) rotate(-3deg); } 50% { transform: translateY(-.2em) rotate(3deg); } }
 @keyframes tremble { 0% { transform: translate(.02em, -.02em); } 50% { transform: translate(-.025em, .02em); } 100% { transform: translate(.01em, .025em); } }
 @keyframes slam { 0% { transform: scale(2.4); opacity: 0; filter: blur(3px); } 55% { transform: scale(.94); opacity: 1; filter: none; } 100% { transform: scale(1); } }
@@ -207,6 +217,7 @@ body.cine #hud, body.cine #prompt, body.cine #touch, body.cine #place, body.cine
   font-family: var(--font-display); font-style: italic; font-weight: 300; font-size: clamp(3rem, 11vw, 8rem); line-height: 1;
   text-shadow: 0 0 44px rgba(176, 151, 255, .85), 0 2px 18px rgba(3, 1, 16, .7); }
 .cine-big .k-big .kc { font-size: 1em; color: var(--ink); }
+.cine-big .k-joy .kc { color: var(--amber); }
 .cine-cap { position: absolute; left: clamp(16px, 5vw, 72px); top: calc(var(--bar) + 26px); opacity: 0; }
 .cine-cap.on { animation: capLife 5.4s ease forwards; }
 .cap-title { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.8rem, 4.6vw, 3.3rem); line-height: 1.05;

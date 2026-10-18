@@ -2,6 +2,7 @@
 import {
     EngineObject3D, Light3D, PI, abs, buildMatrix, hsl, min, rand, randInt, render3D, timeDelta, vec3,
 } from '../../platform/engine.js';
+import { addSoundPlace } from '../../audio/places.js';
 import { playSfx } from '../../audio/sfx.js';
 import { addStardust, core } from '../../game/progress.js';
 import { state } from '../../game/state.js';
@@ -79,6 +80,12 @@ class StarPillars extends EngineObject3D
         }
     }
 }
+function nearestStar()
+{
+    let best = null, d = Infinity;
+    for (const f of fallenStars) { const e = dist2(f.pos3D.x, f.pos3D.z, player.pos.x, player.pos.z); if (e < d) { d = e; best = f.pos3D; } }
+    return best;
+}
 function landFallenStar(pos)
 {
     playSfx('starfall', pos, .6);
@@ -110,7 +117,12 @@ function updateStarFall()
 }
 
 export const fallenStarsFeature = {
-    build() { addTodo(110, 'Collect a fallen star', ()=> core.stardust > 0); },
+    build()
+    {
+        addTodo(110, 'Collect a fallen star', ()=> core.stardust > 0);
+        // a choir in the music that swells as you near a fallen star
+        addSoundPlace({ name: 'beam', at: ()=> nearestStar(), near: 6, far: 55 });
+    },
     buildLate() { new StarPillars; },
     update: updateStarFall,
 };

@@ -1,6 +1,7 @@
 // The first arrival: down out of the sky onto the island, then a look at the mothling, its lantern, the pond and the
 // house, and back to the mothling as the camera hands over.
 import { vec3 } from '../../platform/engine.js';
+import { musicCue } from '../../audio/music.js';
 import { playSfx } from '../../audio/sfx.js';
 import { INTRO_CAPTION, INTRO_LINES } from './lines-data.js';
 import { moth } from '../../player/mothling.js';
@@ -22,6 +23,7 @@ export function playIntro()
     // around() at the mothling's own yaw sits behind it; add PI to stand in front
     const toHouse = Math.atan2(P.spawn.x - P.house.x, P.spawn.z - P.house.z);
     const toSpawn = Math.atan2(P.spawn.x - P.pond.x, P.spawn.z - P.pond.z);
+    const cue = musicCue('intro');     // the intro's own music, written to its length
     return playCutscene({
         name: 'intro', blendIn: 2.2, blendOut: 1.8,
         beats: [
@@ -77,6 +79,6 @@ export function playIntro()
                 },
             },
         ],
-        onEnd: ()=> { player.pose = 'free'; moth.reach = 0; setTimeout(()=> showPlace('Violet Isle', 'there is no hurry'), 900); },
+        onEnd: ()=> { cue.release(); player.pose = 'free'; moth.reach = 0; setTimeout(()=> showPlace('Violet Isle', 'there is no hurry'), 900); },
     });
 }

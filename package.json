@@ -35,6 +35,7 @@
       "index.html",
       "style.css",
       "fonts/**/*",
+      "music/**/*",
       "build/icon.png",
       "src/**/*",
       "electron/**/*",
