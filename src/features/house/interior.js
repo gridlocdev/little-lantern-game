@@ -9,7 +9,7 @@ import { goToSleep } from './bed.js';
 import { chooseBook } from './bookshelf.js';
 import { StarCat } from './cat.js';
 import { exitHouse } from './doors.js';
-import { HearthFire } from './hearth.js';
+import { HearthFire, HearthLogs } from './hearth.js';
 import { Kettle } from './kettle.js';
 import { Moonflower, waterFlower } from './moonflower.js';
 import { BED, CHAIR, ROOM, SHELF, hin } from './plan.js';
@@ -60,15 +60,23 @@ export function buildHouseInterior()
     addInteract({ pos: hin(-3.5, 0, 4), r: 1.6, zone: 'house', label: 'Go outside', act: exitHouse, priority: 1 });
     addSolid({ kind: 'box', x: HOUSE_IN.x - 3.5, z: HOUSE_IN.z + 4.85, hx: 1, hz: .3, top: HOUSE_IN.y + 9, zone: 'house' });
 
-    // fireplace with kettle
-    const fx = -2.6, fz = -4.05;
-    roomBox(fx, 1.1, fz, 2.8, 2.2, .9, WHITE, texStone, { uv: vec2(1.5, 1.2) });
+    // fireplace with kettle: a stone surround with an opening, soot-dark inside, and a stone hearth in front
+    const fx = -2.6, fz = -4.05, stone = (x, y, z, sx, sy, sz)=> roomBox(fx + x, y, fz + z, sx, sy, sz, WHITE, texStone, { uv: vec2(sx * .55, sy * .55), solid: false });
+    stone(0, 1.1, -.3, 2.8, 2.2, .3);                       // the back
+    for (const s of [-1, 1]) stone(s * 1.1, 1.1, .15, .6, 2.2, .6);     // the sides of the opening
+    stone(0, 1.775, .15, 1.6, .85, .6);                    // above it
+    addSolid({ kind: 'box', x: HOUSE_IN.x + fx, z: HOUSE_IN.z + fz, hx: 1.4, hz: .45, top: HOUSE_IN.y + 2.2, zone: 'house' });
+    const soot = hsl(.04, .18, .07);
+    roomBox(fx, .675, fz - .14, 1.6, 1.35, .02, soot, undefined, { solid: false });
+    for (const s of [-1, 1]) roomBox(fx + s * .79, .675, fz + .15, .02, 1.35, .6, soot, undefined, { solid: false });
+    roomBox(fx, 1.34, fz + .15, 1.6, .02, .6, soot, undefined, { solid: false });
+    roomBox(fx, .03, fz + .15, 1.6, .06, .6, hsl(.05, .15, .12), undefined, { solid: false });
+    stone(0, .06, .72, 2.4, .12, .55);                      // the hearth
     roomBox(fx, 2.35, fz + .1, 3.2, .25, 1.1, hsl(.75, .25, .25));
     roomBox(fx, 3.2, fz - .1, 1.4, 1.8, .6, WHITE, texStone, { solid: false });
-    obj3(hin(fx, .75, fz + .46), buildBox(vec3(1.6, 1.2, .05)), hsl(0, 0, .02), { castShadow: false });
-    new HearthFire(hin(fx, .25, fz + .2));
-    furniture.fireLight = new Light3D(hin(fx, 1, fz + 1.2), 13, hsl(.07, .9, .6), 2.2);
-    furniture.fireLight.glow = 1.2;
+    new HearthLogs(hin(fx, .06, fz + .12), hin(fx + .6, .55, fz + .6));
+    new HearthFire(hin(fx, .06, fz + .12));
+    furniture.fireLight = new Light3D(hin(fx, .7, fz + .5), 13, hsl(.07, .9, .6), 2.2);     // just inside the opening, no glow sprite
     addInteract({ pos: hin(fx - .8, 0, fz + 1.1), r: 1.7, zone: 'house', label: ()=> houseState.fire ? 'Let the fire burn low' : 'Stoke the fire', act: ()=>
     {
         houseState.fire = !houseState.fire;
