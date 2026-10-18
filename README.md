@@ -2,105 +2,41 @@
 
 ![The moth with its lantern at the lamplit crossroads, the crooked house and Amethyst Hill behind it under the moon and stars](docs/screenshot.jpg)
 
-A cozy LittleJS 3D game. You are a small moth with a lantern on an island that floats through the night. Fish for things that swim between stars, swing until you touch the moon, and find what the crystals are humming about.
+You are a small moth with a lantern, on an island that floats through the night.
 
-## Run
+There is no hurry here. Wander the lamplit roads of Violet Isle, fish for things that swim between the stars, swing until you touch the moon, and find out what the crystals on Amethyst Hill are humming about. Race Oswin, the self-styled fastest snail on the island. Brew tea in the crooked house, read the storybooks by the fire, pet the star cat, and cross the bridge of light to the Moonlet, where a quiet night heron has been waiting a long time for one particular fish.
+
+Everything you do is kept in your dream journal. When it is full, the night has one last thing to show you.
+
+## Playing
+
+Little Lantern runs in the browser, or as a desktop app for macOS, Windows and Linux.
 
 ```sh
-just play          # installs the engine if needed, serves on http://localhost:8000 and opens your browser
+just play     # serves the game on http://localhost:8000 and opens it
+just app      # runs it as a desktop app
 ```
 
-Other recipes:
-
-| Recipe | What it does |
-| --- | --- |
-| `just serve` | serve the game on http://localhost:8000 (`just port=9000 serve` for another port) |
-| `just install` | `npm install` the pinned engine |
-| `just check` | syntax-check every module in `src/`, then check the layer rules |
-| `just test` | run the unit tests for `src/lib/` and the content files |
-| `just types` | type-check the game against the engine's types |
-| `just music` | re-render the soundtrack from `tools/music/songs.js` with soundfont-player (needs a checkout beside this one, or `just music <path>`, and ffmpeg) |
-| `just app` | run the game as a desktop app (Electron) |
-| `just package` | build the desktop app for this computer's OS into `release/` |
-| `just package-for mac` | build one platform: `mac`, `win` or `linux` |
-
-Without just: `npm install && npm start`, then open http://localhost:8000.
+Without [just](https://github.com/casey/just): `npm install && npm start`, then open http://localhost:8000.
 
 ## Controls
 
-| Action | Keyboard | Gamepad / touch |
+| | Keyboard and mouse | Gamepad |
 | --- | --- | --- |
-| Walk, hold Shift to run | WASD | Left stick / left thumb |
-| Jump, hold in the air to glide | Space | Button 0 / Jump |
-| Use, talk, fish, sit | E | Button 2 / Use |
-| Turn the camera | Drag, Z and C, scroll to zoom | Right stick / drag |
-| Dream journal | J | Journal |
-| Leave an activity | Q | Button 1 |
+| Walk | W A S D | Left stick |
+| Run | hold Shift | hold RB or RT |
+| Jump, and glide | Space, held in the air | A, held in the air |
+| Use, talk, fish, sit | E | X |
+| Look around | move the mouse | Right stick |
+| Zoom | scroll | hold LB or LT with the right stick |
+| Dream journal | J | Y |
+| Leave an activity | Q | B |
+| Menu | Esc | Menu |
 
-## Files
+On a touch screen, the left thumb walks, dragging looks around, and the round buttons jump and use things. The on-screen prompts always show the buttons for whatever you last pressed.
 
-- `index.html` holds the HUD and menu markup, maps `littlejsengine` to the engine's module build, and loads `src/main.js`
-- `style.css` styles the HTML layer over the canvas
-- `src/` holds the game as ES modules, in layers that only import downward (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)):
-  - `lib/` pure helpers: math and curves
-  - `platform/` the engine and its settings, storage, input, the seeded world random, mesh and texture builders
-  - `game/` the loop, the game mode and save, shared progress, the current activity, interactables, events
-  - `world/` the island's layout, terrain, roads, collision and scenery
-  - `player/` the mothling: its state, body and animation, movement, sitting
-  - `render/` the camera, renderer setup, textures, particles, water, graphics quality
-  - `sky/` the sky dome, palettes, moon, shooting stars and the star whale
-  - `ui/` the title screen, HUD, prompt, dialog, journal, menu and places
-  - `audio/` sound effects and the night's crickets, water and frogs, synthesized at startup, and the music, which plays the tracks in `music/` and brings in a place's layer as you near it
-  - `features/` one folder per thing to do: house, bench, snail, swing, chimes, moonlet, mushrooms, overlook, telescope, fishing, sheep, fallen stars
-  - `main.js` lists the shared systems around the features and starts the engine
-- `test/` unit tests for `src/lib/` and the content files
-- `electron/` the desktop app: `main.js` opens the window and keeps the save in a file, `preload.cjs` hands the game that file save
-- `.github/workflows/release.yml` builds the desktop app for macOS, Windows and Linux when a `v*` tag is pushed
-- `prompts/` key and button glyphs from Kenney's Input Prompts (CC0), for the keyboard and Xbox, PlayStation and Switch pads
-- `music/` the soundtrack as mp3s, one per place or moment; `tools/music/` writes them (`just music`): the songs are specs for soundfont-player's composer, played through its sampler offline and encoded with ffmpeg
-- `tools/coupling-report.mjs` checks the layer rules (`just check`); `architecture.json` declares the layers
-- The engine is pinned to `littlejsengine@1.21.0` in `package.json`
+## Credits
 
-## Desktop app
+Made with [LittleJS](https://github.com/KilledByAPixel/LittleJS). The soundtrack is composed and played by soundfont-player, and the key and button glyphs are Kenney's [Input Prompts](https://kenney.nl/assets/input-prompts) (CC0).
 
-The game also runs as a desktop app through Electron, with no changes to the game itself. `electron/main.js` serves the game's files over an `app://` address (ES modules and the import map don't load from `file://`) and opens one window with Node.js kept out of the page. F11 toggles fullscreen. Links open in your browser, never in the game window.
-
-The desktop app saves to a file instead of `localStorage`, through the storage hook described under Saving:
-
-| OS | Save file |
-| --- | --- |
-| macOS | `~/Library/Application Support/Little Lantern/save.json` |
-| Windows | `%APPDATA%\Little Lantern\save.json` |
-| Linux | `~/.config/Little Lantern/save.json` |
-
-`just package` builds for the computer you're on, into `release/`:
-
-| Platform | Output |
-| --- | --- |
-| macOS | `Little Lantern-<version>-universal.dmg` and `-universal-mac.zip`, for Apple Silicon and Intel |
-| Windows | `Little Lantern Setup <version>.exe`, an installer that lets you pick the folder |
-| Linux | `Little Lantern-<version>.AppImage` |
-
-The packager's Windows and Linux tools are Intel programs, so building those on an Apple Silicon Mac needs Rosetta (`softwareupdate --install-rosetta`). Without it, push a tag instead: the release workflow builds each platform on its own OS and attaches all of them to a GitHub release. Set `version` in `package.json` to match the tag first; `npm version 1.1.0` does both.
-
-The builds aren't signed. On macOS, the first time, right-click the app and choose Open (or run `xattr -cr "/Applications/Little Lantern.app"` after copying it); Windows shows a SmartScreen warning with a "Run anyway" option. Signing needs an Apple Developer ID or a Windows code signing certificate, which electron-builder picks up from the environment when you have them.
-
-The fonts come from Google Fonts, so offline the title and HUD fall back to the system's serif and UI fonts.
-
-## Saving
-
-Storage lives in `src/platform/storage.js` and the save format in `src/game/state.js`. Each feature keeps its progress in its own slice of the save and calls `writeSave()` after each change; progress several features share lives in `src/game/progress.js`. The save is written as `{ "v": 2, "core": {…}, "fishing": {…}, … }`, and a save from before the slices is migrated when it loads. Volume and graphics settings live under their own keys, so starting a new dream keeps them.
-
-Those values sit in a small in-memory table of string keys. A storage backend fills that table once before the engine starts, and is told about every change. The default backend is the browser's `localStorage`, under the keys `violet-isle-dream-v1`, `violet-isle-dream-v1-vol` and `violet-isle-dream-v1-gfx` (from the game's old name, Violet Isle, and kept so saves carry over).
-
-To save to a file under Electron or Tauri, define `window.littleLanternStorage` before the scripts load, for example in a preload script:
-
-```js
-window.littleLanternStorage = {
-    load: async ()=> JSON.parse(await readSaveFile() || '{}'),   // the whole table, or {} on a first run
-    write: (key, value, all)=> writeSaveFile(JSON.stringify(all)),
-    remove: (key, all)=> writeSaveFile(JSON.stringify(all)),     // may return a promise; a reset waits for it
-};
-```
-
-`readSaveFile` and `writeSaveFile` stand in for whatever your shell provides: Electron IPC to `fs`, or Tauri's `fs` plugin. `load` can be async, and the engine only starts once it resolves. If the backend throws, the game logs a warning and keeps running.
+Working on the game? See [docs/DEVELOPING.md](docs/DEVELOPING.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
