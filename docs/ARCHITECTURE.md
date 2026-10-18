@@ -59,7 +59,7 @@ Features never import each other. They reach the rest of the game through:
 
 ## The camera and sound
 
-`render/camera.js` keeps one view and eases it toward whatever the current mode wants: the title orbit, the follow orbit, the house, an activity's camera or a cutscene's shot. When the mode changes it glides there along an arc instead of cutting, so starting or ending an activity, a cutscene or the dream itself never jumps. An activity can set `camBlend` and `camBlendOut` (seconds) to change how long those glides take.
+`render/camera.js` keeps one view and eases it toward whatever the current mode wants: the title orbit, the follow orbit, the house, an activity's camera or a cutscene's shot. When the mode changes it glides there along an arc instead of cutting, so starting or ending an activity, a cutscene or the dream itself never jumps. An activity can set `camBlend` and `camBlendOut` (seconds) to change how long those glides take. While you play with a mouse, `ui/cursor.js` captures it (pointer lock) so moving it turns the camera with no button held and the pointer never sits over the island; a dialog, a card or the title screen lets it go, and losing it to Escape opens the menu.
 
 Sound effects are not files. `audio/recipes.js` builds each one from the oscillators, filters and envelopes in `lib/synth.js` (both import no engine code and are tested), and `audio/sfx.js` turns them into engine sounds at startup.
 

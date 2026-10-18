@@ -2,7 +2,7 @@
 // the current activity (or cutscene) points it at. When what it follows changes, it glides from where it was instead
 // of jumping. Anything can briefly draw its eye to a point (focusCamera) or punch in on an impact (kickCamera).
 import {
-    PI, clamp, gamepadIsDown, gamepadStick, keyIsDown, min, mouseDeltaScreen, mouseIsDown, mouseWheel, render3D, time, timeDelta,
+    PI, clamp, gamepadIsDown, gamepadStick, keyIsDown, min, mouseDeltaScreen, mouseIsDown, mouseWheel, pointerLockIsActive, render3D, time, timeDelta,
     timeReal, vec3,
 } from '../platform/engine.js';
 import { activity } from '../game/activity.js';
@@ -45,7 +45,8 @@ function orbitInput(dt)
     // orbit by dragging on the world or the right stick; zoom with the wheel, or the right stick up and down while the
     // left bumper or trigger is held
     if (state.mode !== 'play' || activity.current?.lockCamera || uiOpen()) return;
-    if (mouseIsDown(0) && pointerOnCanvas && !activity.current?.mouseHold)
+    // with the mouse captured (ui/cursor.js) it turns the camera without a button held
+    if ((pointerLockIsActive() || (mouseIsDown(0) && pointerOnCanvas)) && !activity.current?.mouseHold)
     {
         const d = mouseDeltaScreen;
         cam.yaw -= d.x * .0055;
