@@ -1,13 +1,17 @@
 // Draws the app icon, build/icon.png (1024 x 1024), from shapes: the floating island under the moon, with the moth
 // and its lantern on top. electron-builder turns it into the .icns, .ico and Linux icons when packaging.
 // No dependencies: each pixel is shaded from 4 x 4 samples and the PNG is written by hand.
-//     node tools/make-icon.mjs [out.png] [size]
+//     node tools/make-icon.mjs [out.png] [size] [--bleed]
+// --bleed fills the whole square, opaque, for a phone's home screen: iOS and Android round the corners themselves,
+// and a transparent margin shows there as a shrunken icon on a plain plate (or no icon at all)
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { deflateSync } from 'node:zlib';
 
-const OUT = process.argv[2] || 'build/icon.png';
-const N = +(process.argv[3] || 1024);
+const args = process.argv.slice(2).filter((a)=> a !== '--bleed');
+const BLEED = process.argv.includes('--bleed');
+const OUT = args[0] || 'build/icon.png';
+const N = +(args[1] || 1024);
 const SS = 4;
 
 // ---------------------------------------------------------------- helpers, in a 0..1 square with y going down
@@ -22,7 +26,7 @@ function rng(seed) { return ()=> { seed = (seed * 1664525 + 1013904223) >>> 0; r
 
 // macOS keeps the artwork inside an 824 px rounded square on a 1024 canvas
 const M = 100 / 1024, S = 1 - 2 * M;
-const inSquircle = (x, y)=> { const u = Math.abs((x - .5) / (S / 2)), v = Math.abs((y - .5) / (S / 2)); return u ** 5 + v ** 5 <= 1; };
+const inSquircle = (x, y)=> { if (BLEED) return true; const u = Math.abs((x - .5) / (S / 2)), v = Math.abs((y - .5) / (S / 2)); return u ** 5 + v ** 5 <= 1; };
 
 const C = {
     skyTop: hex('#2b1765'), skyBottom: hex('#0a0522'), haze: hex('#7a5ae6'),
