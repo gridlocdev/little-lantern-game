@@ -1,6 +1,6 @@
 # Architecture
 
-Violet Isle is native ES modules served as static files, with no bundler. `src/main.js` lists the shared systems around the features and hands the list to `src/game/loop.js`, which builds and runs them in that order. The engine is imported only by `src/platform/engine.js`, under the bare name `littlejsengine` that `index.html`'s import map points at the engine's module build.
+Little Lantern is native ES modules served as static files, with no bundler. `src/main.js` lists the shared systems around the features and hands the list to `src/game/loop.js`, which builds and runs them in that order. The engine is imported only by `src/platform/engine.js`, under the bare name `littlejsengine` that `index.html`'s import map points at the engine's module build.
 
 ## Layout
 
@@ -14,7 +14,7 @@ Violet Isle is native ES modules served as static files, with no bundler. `src/m
 
 `architecture.json` declares these layers for `tools/coupling-report.mjs`.
 
-`electron/` wraps the game as a desktop app. It sits outside `src/` and the layers: the game knows nothing about it except two hooks, the storage hook in `platform/storage.js`, which the desktop app fills with a file-backed save, and `window.violetIsleApp.quit`, which the menu's "Save and exit" uses when it is there (in a browser it goes back to the title screen instead). The app icon, `build/icon.png`, is drawn by `tools/make-icon.mjs` (`just icon`); electron-builder makes the platform icons from it. The fonts ship in `fonts/` so the app looks the same offline.
+`electron/` wraps the game as a desktop app. It sits outside `src/` and the layers: the game knows nothing about it except two hooks, the storage hook in `platform/storage.js`, which the desktop app fills with a file-backed save, and `window.littleLanternApp.quit`, which the menu's "Save and exit" uses when it is there (in a browser it goes back to the title screen instead). The app icon, `build/icon.png`, is drawn by `tools/make-icon.mjs` (`just icon`); electron-builder makes the platform icons from it. The fonts ship in `fonts/` so the app looks the same offline.
 
 The features are `house`, `bench`, `snail`, `swing`, `chimes`, `moonlet`, `mushrooms`, `overlook`, `telescope`, `fishing`, `sheep`, `fallen-stars` and `intro`.
 
@@ -69,7 +69,7 @@ The music is files: one mp3 per place or moment in `music/`, listed with its tem
 
 Each feature owns one slice of the save, claimed with `state.slice('<name>', defaults)` in `game/state.js`, and nothing else writes it. Progress several features share (visits, palette, stardust, outfit, music) is the `core` slice in `game/progress.js`; features read it and change it through `addStardust`, `countVisit` and `setOutfit`, while the sky owns the palette (`setPalette`) and the music owns music (`setMusic`).
 
-The save is stored as `{ v: 2, core: {…}, fishing: {…}, … }` under the key `violet-isle-dream-v1`. The first format was one flat object with the same field names, so `loadSave` migrates it by giving each slice the old fields that match its defaults. Settings (volume, graphics) are kept under their own keys, apart from progress.
+The save is stored as `{ v: 2, core: {…}, fishing: {…}, … }` under the key `violet-isle-dream-v1` (the game's old name, kept so saves carry over). The first format was one flat object with the same field names, so `loadSave` migrates it by giving each slice the old fields that match its defaults. Settings (volume, graphics) are kept under their own keys, apart from progress.
 
 ## Checking
 

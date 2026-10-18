@@ -47,7 +47,7 @@ export function returnToTitle(note = '')
     $('title').hidden = false;
     $('startLabel').textContent = 'Return to the dream';
     if (note) $('titleNote').textContent = note;
-    nameLine = typeLine($('titleName'), '~Violet~ ~Isle~', { start: timeReal + .4, cps: 9 });
+    nameLine = typeLine($('titleName'), '~Little~ ~Lantern~', { start: timeReal + .4, cps: 9 });
 }
 
 let nameLine = null;
@@ -56,7 +56,7 @@ export const titleSystem = {
     buildLate()
     {
         $('startLabel').textContent = returning() ? 'Return to the dream' : 'Enter the dream';
-        nameLine = typeLine($('titleName'), '~Violet~ ~Isle~', { start: timeReal + .6, cps: 9 });
+        nameLine = typeLine($('titleName'), '~Little~ ~Lantern~', { start: timeReal + .6, cps: 9 });
     },
     update()
     {

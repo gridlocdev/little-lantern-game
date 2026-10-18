@@ -2,9 +2,9 @@
 // string values; a storage backend fills that table once before the engine starts and is told about every change.
 //
 // The default backend uses the browser's localStorage. To save somewhere else (a file, through Electron or Tauri),
-// define window.violetIsleStorage before this script loads, with this shape:
+// define window.littleLanternStorage before this script loads, with this shape:
 //
-//     window.violetIsleStorage = {
+//     window.littleLanternStorage = {
 //         load: async ()=> ({ ...key: string value }),   // everything saved so far, or {} on a first run
 //         write: (key, value, all)=> {},                // one key changed; `all` is the whole table, ready to write out
 //         remove: (key, all)=> {},                      // one key was deleted (may return a promise)
@@ -13,7 +13,7 @@
 // A file backend can ignore `key` and write `JSON.stringify(all)` to one file. Writes are fire and forget, and a
 // failing backend never stops the game.
 
-export const SAVE_KEY = 'violet-isle-dream-v1';
+export const SAVE_KEY = 'violet-isle-dream-v1';     // from when the game was called Violet Isle; kept so saves carry over
 export const SETTING_KEYS = { volume: SAVE_KEY + '-vol', graphics: SAVE_KEY + '-gfx' };
 
 const localStorageBackend = {
@@ -32,7 +32,7 @@ const localStorageBackend = {
 };
 
 export const storage = {
-    backend: /** @type {any} */ (window).violetIsleStorage || localStorageBackend,
+    backend: /** @type {any} */ (window).littleLanternStorage || localStorageBackend,
     table: {},
     async init()
     {

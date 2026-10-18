@@ -1,4 +1,4 @@
-# Violet Isle
+# Little Lantern
 
 ![The moth with its lantern at the lamplit crossroads, the crooked house and Amethyst Hill behind it under the moon and stars](docs/screenshot.jpg)
 
@@ -69,21 +69,21 @@ The desktop app saves to a file instead of `localStorage`, through the storage h
 
 | OS | Save file |
 | --- | --- |
-| macOS | `~/Library/Application Support/Violet Isle/save.json` |
-| Windows | `%APPDATA%\Violet Isle\save.json` |
-| Linux | `~/.config/Violet Isle/save.json` |
+| macOS | `~/Library/Application Support/Little Lantern/save.json` |
+| Windows | `%APPDATA%\Little Lantern\save.json` |
+| Linux | `~/.config/Little Lantern/save.json` |
 
 `just package` builds for the computer you're on, into `release/`:
 
 | Platform | Output |
 | --- | --- |
-| macOS | `Violet Isle-<version>-universal.dmg` and `-universal-mac.zip`, for Apple Silicon and Intel |
-| Windows | `Violet Isle Setup <version>.exe`, an installer that lets you pick the folder |
-| Linux | `Violet Isle-<version>.AppImage` |
+| macOS | `Little Lantern-<version>-universal.dmg` and `-universal-mac.zip`, for Apple Silicon and Intel |
+| Windows | `Little Lantern Setup <version>.exe`, an installer that lets you pick the folder |
+| Linux | `Little Lantern-<version>.AppImage` |
 
 The packager's Windows and Linux tools are Intel programs, so building those on an Apple Silicon Mac needs Rosetta (`softwareupdate --install-rosetta`). Without it, push a tag instead: the release workflow builds each platform on its own OS and attaches all of them to a GitHub release. Set `version` in `package.json` to match the tag first; `npm version 1.1.0` does both.
 
-The builds aren't signed. On macOS, the first time, right-click the app and choose Open (or run `xattr -cr "/Applications/Violet Isle.app"` after copying it); Windows shows a SmartScreen warning with a "Run anyway" option. Signing needs an Apple Developer ID or a Windows code signing certificate, which electron-builder picks up from the environment when you have them.
+The builds aren't signed. On macOS, the first time, right-click the app and choose Open (or run `xattr -cr "/Applications/Little Lantern.app"` after copying it); Windows shows a SmartScreen warning with a "Run anyway" option. Signing needs an Apple Developer ID or a Windows code signing certificate, which electron-builder picks up from the environment when you have them.
 
 The fonts come from Google Fonts, so offline the title and HUD fall back to the system's serif and UI fonts.
 
@@ -91,12 +91,12 @@ The fonts come from Google Fonts, so offline the title and HUD fall back to the 
 
 Storage lives in `src/platform/storage.js` and the save format in `src/game/state.js`. Each feature keeps its progress in its own slice of the save and calls `writeSave()` after each change; progress several features share lives in `src/game/progress.js`. The save is written as `{ "v": 2, "core": {…}, "fishing": {…}, … }`, and a save from before the slices is migrated when it loads. Volume and graphics settings live under their own keys, so starting a new dream keeps them.
 
-Those values sit in a small in-memory table of string keys. A storage backend fills that table once before the engine starts, and is told about every change. The default backend is the browser's `localStorage`, under the keys `violet-isle-dream-v1`, `violet-isle-dream-v1-vol` and `violet-isle-dream-v1-gfx`.
+Those values sit in a small in-memory table of string keys. A storage backend fills that table once before the engine starts, and is told about every change. The default backend is the browser's `localStorage`, under the keys `violet-isle-dream-v1`, `violet-isle-dream-v1-vol` and `violet-isle-dream-v1-gfx` (from the game's old name, Violet Isle, and kept so saves carry over).
 
-To save to a file under Electron or Tauri, define `window.violetIsleStorage` before the scripts load, for example in a preload script:
+To save to a file under Electron or Tauri, define `window.littleLanternStorage` before the scripts load, for example in a preload script:
 
 ```js
-window.violetIsleStorage = {
+window.littleLanternStorage = {
     load: async ()=> JSON.parse(await readSaveFile() || '{}'),   // the whole table, or {} on a first run
     write: (key, value, all)=> writeSaveFile(JSON.stringify(all)),
     remove: (key, all)=> writeSaveFile(JSON.stringify(all)),     // may return a promise; a reset waits for it
