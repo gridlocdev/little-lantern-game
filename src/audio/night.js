@@ -16,7 +16,7 @@ const FROG_GAP = [5, 16];   // seconds between frogs, when you are by the water
 const fromDb = (db)=> 10 ** (db / 20);
 const make = { crickets, water, crackle, frogs: ()=> [0, 1, 2].map((v)=> [frog(v)]) };
 const beds = {};            // name → { gain, scale } once built
-let frogs = null, nextFrog = 0, muffle = null, built = 0;
+let frogs = null, nextFrog = 0, muffle = null, muffleCut = 20000, built = 0;
 const todo = Object.keys(make);
 
 function toBuffer(chans)
@@ -63,11 +63,17 @@ function updateNight()
     if (built < todo.length) { try { buildNext(); } catch (e) { built = todo.length; } return; }
     const now = audioContext.currentTime, playing = state.mode === 'play';
     const indoors = player.zone === 'house', wet = nearness('water');
-    const set = (name, db)=> { const b = beds[name]; if (b) b.gain.gain.setTargetAtTime(playing && db > -99 ? fromDb(db) * b.scale : 0, now, EASE); };
+    // each parameter is scheduled only when its target changes, not every frame
+    const set = (name, db)=>
+    {
+        const b = beds[name], v = playing && db > -99 ? fromDb(db) * b?.scale : 0;
+        if (b && Math.abs(v - (b.target ?? -1)) > 1e-4) { b.target = v; b.gain.gain.setTargetAtTime(v, now, EASE); }
+    };
     set('crickets', indoors ? DB.cricketsIndoors : DB.crickets);
     set('water', wet > 0 ? DB.water + 20 * Math.log10(wet) : -100);
     set('crackle', music.on ? DB.crackle : -100);
-    muffle?.frequency.setTargetAtTime(indoors ? 900 : 20000, now, EASE);
+    const cut = indoors ? 900 : 20000;
+    if (muffle && cut !== muffleCut) { muffleCut = cut; muffle.frequency.setTargetAtTime(cut, now, EASE); }
     if (frogs && playing && wet > .3 && now > nextFrog)
     {
         if (nextFrog) playFrog(wet);

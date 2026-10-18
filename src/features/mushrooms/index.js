@@ -1,7 +1,7 @@
 // Mushroom Hollow: caps to bounce on.
 import {
     EngineObject3D, InstancedMesh3D, Light3D, Mesh, WHITE, buildCylinder, buildMatrix, buildSphere, hsl, max,
-    render3D, time, timeDelta, vec3,
+    frame, render3D, time, timeDelta, vec3,
 } from '../../platform/engine.js';
 import { state, writeSave } from '../../game/state.js';
 import { TAU } from '../../lib/math.js';
@@ -25,10 +25,13 @@ class MushroomCaps extends EngineObject3D
     render3D()
     {
         if (!camNear(this.pos3D, 150)) return;
+        // drawn twice a frame with shadows on (the shadow pass, then the view), so the bounce settles once per frame
+        const settle = this.settled !== frame;
+        this.settled = frame;
         for (const m of mushrooms)
         {
             const sq = m.solid.squash || 0;
-            m.solid.squash = max(0, sq - timeDelta * 3);
+            if (settle) m.solid.squash = max(0, sq - timeDelta * 3);
             const wob = Math.sin(time * 18) * sq;
             const sy = 1 - sq * .35 + wob * .1, sx = 1 + sq * .2;
             render3D.drawMesh(SPH, mtx(undefined, m.top, vec3(), vec3(m.r * 2 * sx, m.r * .95 * sy, m.r * 2 * sx)), undefined, m.color);

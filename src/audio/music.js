@@ -9,7 +9,7 @@
 // A track can have layers (the island's: the pond, the crystal hill, the cabin, a fallen star). Each is a short loop
 // that fits its track's loop a whole number of times; near its place (audio/places.js) it is started in step with the
 // track and swells in, and a while after the player leaves it is stopped and its decoded audio let go.
-import { audioContext, audioMasterGain } from '../platform/engine.js';
+import { MOBILE, audioContext, audioMasterGain } from '../platform/engine.js';
 import { core } from '../game/progress.js';
 import { writeSave } from '../game/state.js';
 import { player } from '../player/player.js';
@@ -22,7 +22,7 @@ const MAX_WAIT = 2.5;       // seconds; when a bar is longer than this, a change
 const FADE = [1.2, 3];      // seconds; an old track fades out over a bar, kept inside these
 const ONE_SHOT_IN = .3;     // seconds; a one-shot comes in quickly, it was written to start
 const LEAD = .06;           // seconds of scheduling headroom
-const KEEP_DECODED = 3;     // decoded tracks kept in memory (a long one is about 60 MB); layers are kept apart
+const KEEP_DECODED = MOBILE ? 1 : 3;     // decoded tracks kept (a long one is about 60 MB; a phone may reload the tab); layers apart
 const SWELL = 1.5;          // seconds (time constant) for a layer to follow the player's distance
 const LAYER_IDLE = 20;      // seconds a silent layer keeps playing before it is stopped and let go
 
@@ -32,7 +32,7 @@ export const music = {
     /** its layers that are playing, and how loud each is asked to be */ get layers() { return Object.fromEntries([...current?.layers.values() ?? []].map((l)=> [l.id, +l.level.toFixed(2)])); },
 };
 
-let bus = null, settleUntil = 0;
+let bus = null, busLevel = -1, settleUntil = 0;
 let current = null;         // { id, track, src, gain, when, at, shift, cue, layers }: the source starts at `when`, its first beat is `at`
 const fading = [];          // tracks on their way out
 const cues = [];
@@ -254,7 +254,8 @@ function musicUpdate()
 {
     if (!bus) return;
     const now = audioContext.currentTime;
-    bus.gain.setTargetAtTime(music.on ? LEVEL : 0, now, TOGGLE_EASE);
+    const level = music.on ? LEVEL : 0;
+    if (level !== busLevel) { busLevel = level; bus.gain.setTargetAtTime(level, now, TOGGLE_EASE); }
     if (now < settleUntil) return;      // a moment for a cue (the intro) to ask before the area starts
     // a one-shot played to its end: its cue is spent, and the area takes the music back
     if (current?.cue && !current.track.loop && position(current, now) >= current.track.end) current.cue.spent = true;
