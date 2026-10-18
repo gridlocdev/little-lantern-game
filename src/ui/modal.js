@@ -35,6 +35,10 @@ export function closeModal()
     modalHandlers[was]?.onClose?.();
 }
 document.querySelectorAll('.ui.modal').forEach(keyNav);
+// the engine cancels every touch on the page that is not on a control, so the page never scrolls under the game; a
+// card too long for a phone needs its touches to scroll it, so they stop here, short of the engine
+for (const el of [...Array.from(document.querySelectorAll('.ui.modal')), $('title')])
+    for (const type of ['touchstart', 'touchmove', 'touchend', 'touchcancel']) el.addEventListener(type, (e)=> e.stopPropagation(), { passive: true });
 export function updateModals()
 {
     if (ui.modal) modalHandlers[ui.modal]?.update?.();

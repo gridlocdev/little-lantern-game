@@ -2,13 +2,13 @@
 // the current activity (or cutscene) points it at. When what it follows changes, it glides from where it was instead
 // of jumping. Anything can briefly draw its eye to a point (focusCamera) or punch in on an impact (kickCamera).
 import {
-    PI, clamp, gamepadIsDown, gamepadStick, keyIsDown, min, mouseDeltaScreen, mouseIsDown, mouseWheel, pointerLockIsActive, render3D, time, timeDelta,
+    PI, clamp, gamepadIsDown, gamepadStick, keyIsDown, min, mouseDeltaScreen, mouseIsDown, pointerLockIsActive, render3D, time, timeDelta,
     timeReal, vec3,
 } from '../platform/engine.js';
 import { activity } from '../game/activity.js';
 import { loadSetting, state } from '../game/state.js';
 import { mix, wrapAngle } from '../lib/math.js';
-import { pointerOnCanvas } from '../platform/input.js';
+import { input, pointerOnCanvas } from '../platform/input.js';
 import { player } from '../player/player.js';
 import { uiOpen } from '../ui/dom.js';
 import { HOUSE_IN, insideIsland } from '../world/layout.js';
@@ -47,7 +47,7 @@ function orbitInput(dt)
     // left bumper or trigger is held
     if (state.mode !== 'play' || activity.current?.lockCamera || uiOpen()) return;
     // with the mouse captured (ui/cursor.js) it turns the camera without a button held
-    if ((pointerLockIsActive() || (mouseIsDown(0) && pointerOnCanvas)) && !activity.current?.mouseHold)
+    if ((pointerLockIsActive() || (mouseIsDown(0) && pointerOnCanvas && !input.pinching())) && !activity.current?.mouseHold)
     {
         const d = mouseDeltaScreen;
         cam.yaw -= d.x * .0055 * cam.sens;
@@ -65,7 +65,8 @@ function orbitInput(dt)
     }
     if (keyIsDown('KeyZ')) { cam.yaw += dt * 1.8; cam.manualT = time; }
     if (keyIsDown('KeyC')) { cam.yaw -= dt * 1.8; cam.manualT = time; }
-    if (mouseWheel) cam.distT = clamp(cam.distT + mouseWheel * .9, 3, 16);
+    const zoom = input.zoom();
+    if (zoom) cam.distT = clamp(cam.distT + zoom * .9, 3, 16);
 }
 function wanted(dt)
 {

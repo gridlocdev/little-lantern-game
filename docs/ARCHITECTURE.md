@@ -55,7 +55,8 @@ Features never import each other. They reach the rest of the game through:
 | name a place | `PLACE_NAMES` in `ui/places.js` |
 | add journal rows, things to do, HUD counters | `addJournalSection`, `addTodo` in `ui/journal.js`; `addHudCounter` in `ui/hud.js` |
 | tell the title screen the player has been here before | `addReturnCheck` in `ui/title.js` |
-| own a modal card | `registerModal` in `ui/modal.js` (fishing's catch card); its buttons, tabs and sliders work from the keyboard and the gamepad on their own (`ui/keynav.js`: the d-pad moves, A presses, the bumpers change tabs, the right stick scrolls), and B is the card's own way out, through `input.back()` |
+| own a modal card | `registerModal` in `ui/modal.js` (fishing's catch card); its buttons, tabs and sliders work from the keyboard and the gamepad on their own (`ui/keynav.js`: the d-pad moves, A presses, the bumpers change tabs, the right stick scrolls), and B is the card's own way out, through `input.back()`; on a touch screen a finger scrolls it |
+| read the player's input | the named actions in `platform/input.js` (`act`, `jump`, `back`, `zoom`...), never a key, button or touch: each one covers the keyboard and mouse, the gamepad and the touch screen. On a phone or tablet (`MOBILE`: a touch screen whose main pointer is a finger) the engine's stick walks, `ui/touch.js` adds Use and Jump, and Back while an activity with a hint runs, dragging the world looks and pinching zooms |
 
 ## The camera and sound
 

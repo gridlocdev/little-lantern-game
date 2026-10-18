@@ -1,7 +1,7 @@
 // The telescope on Observatory Hill, and the constellations and whale you can find with it.
 import {
     EngineObject3D, MOBILE, PI, WHITE, buildCylinder, clamp, gamepadStick, hsl, max, min, mouseDeltaScreen, mouseIsDown,
-    mouseWheel, render3D, time, timeDelta, vec3,
+    render3D, time, timeDelta, vec3,
 } from '../../platform/engine.js';
 import { bell, playSfx } from '../../audio/sfx.js';
 import { CONSTELLATIONS } from './constellations-data.js';
@@ -9,7 +9,7 @@ import { activity } from '../../game/activity.js';
 import { addInteract } from '../../game/interact.js';
 import { state, writeSave } from '../../game/state.js';
 import { TAU, mix, wrapAngle } from '../../lib/math.js';
-import { clearTouchPresses, input, pointerOnCanvas, touchState } from '../../platform/input.js';
+import { clearTouchPresses, input, pointerOnCanvas } from '../../platform/input.js';
 import { mtx, obj3 } from '../../platform/mesh.js';
 import { CYL, SPH_LO } from '../../player/part-meshes.js';
 import { player } from '../../player/player.js';
@@ -107,7 +107,7 @@ function startTelescope()
     player.yaw = Math.atan2(-(t.x - player.pos.x), -(t.z - player.pos.z));
     $('scope').hidden = false;
     buildMarks();
-    $('scopeHint').textContent = MOBILE ? 'Drag to look around. Gold arrows point to constellations. Tap Jump to step back.' : 'Drag, or use the arrow keys, to look around. Gold arrows point to constellations. Scroll to zoom. Q to step back.';
+    $('scopeHint').textContent = MOBILE ? 'Drag to look around and pinch to zoom. Gold arrows point to constellations. Tap Back to step away.' : 'Drag, or use the arrow keys, to look around. Gold arrows point to constellations. Scroll to zoom. Q to step back.';
     activity.start({
         name: 'telescope', ownsPhysics: false, lockCamera: true,
         update: updateTelescope,
@@ -201,11 +201,12 @@ function updateTelescope()
         updateMarks(scopeDir(scope.yaw, scope.pitch));
         return;
     }
-    if (mouseIsDown(0) && pointerOnCanvas) { scope.yaw += mouseDeltaScreen.x * .0016 * scope.fov; scope.pitch = clamp(scope.pitch + mouseDeltaScreen.y * .0016 * scope.fov, .05, 1.45); }
+    if (mouseIsDown(0) && pointerOnCanvas && !input.pinching()) { scope.yaw += mouseDeltaScreen.x * .0016 * scope.fov; scope.pitch = clamp(scope.pitch + mouseDeltaScreen.y * .0016 * scope.fov, .05, 1.45); }
     const k = input.move(), rs = gamepadStick(1);
     scope.yaw -= (k.x + rs.x) * dt * scope.fov * 1.2;
     scope.pitch = clamp(scope.pitch + (k.y + rs.y) * dt * scope.fov * 1.2, .05, 1.45);
-    if (mouseWheel) scope.fov = clamp(scope.fov * (1 + mouseWheel * .12), PI / 28, PI / 5);
+    const zoom = input.zoom();
+    if (zoom) scope.fov = clamp(scope.fov * (1 + zoom * .12), PI / 28, PI / 5);
     SCOPE.yaw = scope.yaw; SCOPE.pitch = scope.pitch;
     const dir = scopeDir(scope.yaw, scope.pitch);
     updateMarks(dir);
@@ -228,7 +229,7 @@ function updateTelescope()
             playSfx('whale', undefined, .9);
         }
     }
-    if (input.back() || input.act() || (MOBILE && touchState.jump)) { clearTouchPresses(); endTelescope(); }
+    if (input.back() || input.act()) { clearTouchPresses(); endTelescope(); }
 }
 
 export const telescopeFeature = {

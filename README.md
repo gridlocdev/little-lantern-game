@@ -21,19 +21,19 @@ Without [just](https://github.com/casey/just): `npm install && npm start`, then 
 
 ## Controls
 
-| | Keyboard and mouse | Gamepad |
-| --- | --- | --- |
-| Walk | W A S D | Left stick |
-| Run | hold Shift | hold RB or RT |
-| Jump, and glide | Space, held in the air | A, held in the air |
-| Use, talk, fish, sit | E | X |
-| Look around | move the mouse | Right stick |
-| Zoom | scroll | hold LB or LT with the right stick |
-| Dream journal | J | Y |
-| Leave an activity | Q | B |
-| Menu | Esc | Menu |
+| | Keyboard and mouse | Gamepad | Phone or tablet |
+| --- | --- | --- | --- |
+| Walk | W A S D | Left stick | left thumb on the stick |
+| Run | hold Shift | hold RB or RT | push the stick all the way out |
+| Jump, and glide | Space, held in the air | A, held in the air | Jump, held in the air |
+| Use, talk, fish, sit | E | X | Use |
+| Look around | move the mouse | Right stick | drag the world |
+| Zoom | scroll | hold LB or LT with the right stick | pinch |
+| Dream journal | J | Y | Journal, top right |
+| Leave an activity | Q | B | Back |
+| Menu | Esc | Menu | Menu, top right |
 
-On a touch screen, the left thumb walks, dragging looks around, and the round buttons jump and use things. The on-screen prompts always show the buttons for whatever you last pressed.
+Dialog lines, the storybook's pages and cards are tapped directly on a touch screen. The on-screen prompts always show the buttons for whatever you last pressed.
 
 ## Credits
 

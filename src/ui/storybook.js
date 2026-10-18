@@ -5,12 +5,18 @@ import { playSfx } from '../audio/sfx.js';
 import { $ } from './dom.js';
 import { typeLine } from './kinetic.js';
 
-let book = null, page = 0, line = null;
+let book = null, page = 0, line = null, tapped = null;
+// a tap on the page (style.css lets a touch screen tap it): its left third goes back a page, the rest turns forward
+$('storybook').addEventListener('pointerdown', (e)=>
+{
+    const r = $('storybook').querySelector('.sb-page').getBoundingClientRect();
+    if (book && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) tapped = e.clientX < r.left + r.width / 3 ? 'back' : 'next';
+});
 
 /** @param {{ title: string, pages: string[], cover?: number, motif?: string }} b */
 export function openStorybook(b)
 {
-    book = b; page = 0;
+    book = b; page = 0; tapped = null;
     const el = $('storybook');
     el.style.setProperty('--cover', String((b.cover ?? .75) * 360));
     $('sbTitle').textContent = b.title;
@@ -31,6 +37,8 @@ function showPage(i)
 }
 export const storybook = {
     get open() { return !!book; },
+    /** a tap on the page since last asked: 'next', 'back' or null */
+    takeTap() { const t = tapped; tapped = null; return t; },
     update() { line?.update(timeReal); $('storybook').classList.toggle('typed', !!line?.done); },
     // the next page, or finishes typing the current one first; returns false once there are no more pages
     next()
