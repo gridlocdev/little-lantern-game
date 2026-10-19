@@ -65,7 +65,8 @@ async function render(id)
     // give that object, so the master chain, the mixer and every voice are built on the offline context
     /** @type {any} */ (window).AudioContext = function () { return ctx; };
 
-    const { loadBand, playScore } = await import('/src/features/composer/song-player.js');
+    const { playScore } = await import('/src/features/composer/song-player.js');
+    const { loadBand } = await import('/src/features/composer/band-loader.js');
     let last = '';
     const band = await loadBand(score, (s)=> { if (s.replace(/\d+%/, '') !== last.replace(/\d+%/, '') || s.endsWith('100%')) host.log(`  ${s}`); last = s; });
     playScore(score, band);
