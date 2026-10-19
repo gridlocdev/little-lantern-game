@@ -11,9 +11,9 @@ export const TRACKS = {
         "tempo": 66,
         "beatsPerBar": 4,
         "offset": 0.05,
-        "end": 36.41364,
-        "seconds": 40.4137,
-        "frames": 1782242,
+        "end": 36.57495,
+        "seconds": 40.575,
+        "frames": 1789356,
         "rate": 44100,
         "loop": null
     },
