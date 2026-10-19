@@ -55,8 +55,10 @@ async function render(id)
     const track = TRACKS.find((t)=> t.id === id);
     if (!track) throw new Error(`no track ${id}`);
     const { compose } = await import('/src/features/composer/compose.js');
+    const { beatToSeconds } = await import('/src/lib/tempo-map.js');
     const score = compose(track.spec);
     track.shape?.(score);
+    if (track.loop) steadyGrid(id, score, track.loop);
     const length = Math.ceil((LEAD_IN + score.seconds + TAIL) * RATE);
     ctx = new OfflineAudioContext({ numberOfChannels: 2, length, sampleRate: RATE });
     // audio-engine.js makes its context with `new AudioContext()`; a constructor that returns an object makes `new`
@@ -83,8 +85,8 @@ async function render(id)
     runDue();
     const buffer = await ctx.startRendering();
 
-    const spb = 60 / score.tempo;
-    const at = (beat)=> +(KEEP + beat * spb).toFixed(5);
+    // the composer's tempo map, not one tempo: an ending's ritardando moves a cue's end
+    const at = (beat)=> +(KEEP + beatToSeconds(score.tempoMap, beat)).toFixed(5);
     if (track.loop && score.sections[track.loop[0]].type !== score.sections[track.loop[1]].type)
         throw new Error(`${id}: the loop ends on a ${score.sections[track.loop[1]].type}, but starts on a ${score.sections[track.loop[0]].type}`);
     let loop = track.loop && { start: at(score.sections[track.loop[0]].beat), end: at(score.sections[track.loop[1]].beat) };
@@ -116,6 +118,20 @@ async function render(id)
         frames, sampleRate: RATE, loop, gainDb,
     };
     return { info, wav: wav32(chans, gain) };
+}
+
+// The game finds bar lines from one tempo and one meter (tracks-data.js), so a looping track must keep both from its
+// start to its loop's end. The composer pushes the tempo a little from the climax on, and a section can set its own
+// tempo or meter; any of them before the loop's end would put the game's bars out of step with the music.
+function steadyGrid(id, score, loop)
+{
+    const until = score.sections[loop[1]].beat;
+    const change = score.tempoMap.find((m, i)=> m.beat < until - 1e-9 && (i > 0 || m.to !== undefined));
+    if (change)
+        throw new Error(`${id}: the tempo changes at beat ${change.beat}, before the loop's end at beat ${until}, and the game counts bars at one tempo. ` +
+            `Set push: 0 in the spec (the climax's push), or take the tempo off that section`);
+    const odd = score.sections.slice(0, loop[1]).find((s)=> s.beatsPerBar !== score.beatsPerBar);
+    if (odd) throw new Error(`${id}: ${odd.label} is in a meter of its own, before the loop's end, and the game counts bars in one meter`);
 }
 
 // interleaved 32-bit float WAV

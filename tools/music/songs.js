@@ -23,7 +23,8 @@ const MOTIF_RUN = '5:0.5 6:0.5 5 3:0.5 5:0.5 3 | 2 5 7 5 | 6:0.5 5:0.5 4 6:0.5 8
 // of major sevenths and ninths with suspended chords that never quite resolve, so the layers (sixteen bars long)
 // fit under any bar of it. The base loops forty-eight bars, about three minutes.
 const ISLAND = {
-    key: 'F', mode: 'major', emotion: 'tender', groove: 'ballad', tempo: 68, swing: 0.2, legato: 0.95, dynamics: 0.3,
+    // push: 0 holds one tempo through the loop: the game counts bars at one tempo (the composer would push it from the climax)
+    key: 'F', mode: 'major', emotion: 'tender', groove: 'ballad', tempo: 68, swing: 0.2, legato: 0.95, dynamics: 0.3, push: 0,
     progression: 'Imaj9 iii7 IVmaj7 ii9 vi9 iii7 IVmaj9 Vsus4 IVmaj7 Imaj9 vi9 iii7 ii9 IVmaj9 Isus2 Vsus4',
 };
 // wandering, with room to breathe; every strong beat on a chord tone
@@ -115,7 +116,7 @@ export const TRACKS = [
         id: 'house', loop: [1, 6],
         spec: {
             title: 'The Kettle Is Still Warm',
-            emotion: 'nostalgic', key: 'Bb', tempo: 70, legato: 1, dynamics: 0.45,
+            emotion: 'nostalgic', key: 'Bb', tempo: 70, push: 0, legato: 1, dynamics: 0.45,
             form: ['intro', 'verse', 'chorus', 'verse', 'chorus', 'bridge', 'verse', 'outro'],
             band: { lead: 10, counter: 73, arp: 24, chords: 4, pad: 89, bass: 32, drums: null },
             sections: {
@@ -149,7 +150,7 @@ export const TRACKS = [
         id: 'ending', loop: [1, 5],
         spec: {
             title: 'The Whole Sky Turns',
-            emotion: 'tender', key: 'F', tempo: 72, dynamics: 0.35,
+            emotion: 'tender', key: 'F', tempo: 72, push: 0, dynamics: 0.35,
             form: ['intro', 'verse', 'chorus', 'bridge', 'chorus', 'verse', 'outro'],
             band: { lead: 40, counter: 42, arp: 46, chords: 0, pad: 89, bass: 32, drums: 40 },
             sections: {
