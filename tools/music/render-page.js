@@ -1,5 +1,5 @@
-// Runs in render.mjs's hidden window, at the root of the soundfont-player folder. ?id=<track> composes that track
-// and plays it through soundfont-player's song player on an OfflineAudioContext, then hands back a WAV.
+// Runs in render.mjs's hidden window, at the root of the music-generator folder. ?id=<track> composes that track
+// and plays it through music-generator's song player on an OfflineAudioContext, then hands back a WAV.
 //
 // The song player was written for a live AudioContext: it schedules notes a little ahead on a timer, and voices
 // tidy up on timers and when they end. Here those timers run on a virtual clock in audio time. The context renders
@@ -15,6 +15,7 @@ const LOOP_SPARE = 0.25;   // seconds a looping track's file runs past its loop'
 const SEAM = 0.04;          // seconds crossfaded at a loop's end (no more than KEEP, which is all there is before it)
 const STEP = 0.025;         // song-player.js schedules every 25 ms
 const RATE = 44100;
+const LIBRARY = 'generaluser';    // music-generator's SoundFont library: GeneralUser GS, licensed for use in games
 const TARGET_RMS_DB = -20;  // every track is brought to the same loudness...
 const PEAK_DB = -1;         // ...unless that would push a peak past this
 
@@ -67,6 +68,8 @@ async function render(id)
 
     const { playScore } = await import('/src/features/composer/song-player.js');
     const { loadBand } = await import('/src/features/composer/band-loader.js');
+    const { soundfontLibrary } = await import('/src/audio/soundfont-library.js');
+    if (soundfontLibrary.select(LIBRARY).id !== LIBRARY) throw new Error(`music-generator has no ${LIBRARY} library`);
     let last = '';
     const band = await loadBand(score, (s)=> { if (s.replace(/\d+%/, '') !== last.replace(/\d+%/, '') || s.endsWith('100%')) host.log(`  ${s}`); last = s; });
     playScore(score, band);
@@ -150,15 +153,12 @@ function wav32(chans, gain)
     return buf;
 }
 
-// how a file decodes, the way the game decodes it: its length, and the first frame that isn't silent
-/** @type {any} */ (window).checkLength = async (url, rate)=>
+// how a file decodes, the way the game decodes it: its length, and its left channel from frame from, count frames long
+/** @type {any} */ (window).checkLength = async (url, rate, from, count)=>
 {
     const data = await (await fetch(url)).arrayBuffer();
     const decoded = await new OfflineAudioContext(2, 1, rate).decodeAudioData(data);
-    const d = decoded.getChannelData(0);
-    let onset = 0;
-    while (onset < d.length && Math.abs(d[onset]) < 1e-3) onset++;
-    return { frames: decoded.length, onset };
+    return { frames: decoded.length, part: Array.from(decoded.getChannelData(0).subarray(from, from + count)) };
 };
 
 const id = params.get('id');

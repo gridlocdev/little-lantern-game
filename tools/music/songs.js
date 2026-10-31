@@ -1,4 +1,4 @@
-// Violet Isle's soundtrack as song specs for soundfont-player's composer (its docs/COMPOSING.md, "The song spec").
+// Violet Isle's soundtrack as song specs for music-generator's composer (its docs/COMPOSING.md, "The song spec").
 // tools/music/render.mjs composes and renders each one to music/<id>.mp3; `just music` runs it.
 //
 // The tracks share one home, F major and its relative D, and one tune: the lantern motif, four bars that rise,

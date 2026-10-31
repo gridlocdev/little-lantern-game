@@ -1,5 +1,5 @@
 port := "8000"
-soundfonts := "../soundfont-player"
+music_generator := "../music-generator"
 
 # list recipes
 default:
@@ -55,9 +55,9 @@ icon:
     node tools/make-icon.mjs icons/icon-192.png 192 --bleed
     node tools/make-icon.mjs icons/icon-512.png 512 --bleed
 
-# render the soundtrack (tools/music/songs.js) with soundfont-player into music/ and src/audio/tracks-data.js
-# needs ffmpeg and a soundfont-player checkout; e.g. just music ~/src/games/soundfont-player intro race
-music path=soundfonts *tracks: _deps
+# render the soundtrack (tools/music/songs.js) with music-generator into music/ and src/audio/tracks-data.js
+# needs ffmpeg and a music-generator checkout; e.g. just music ~/src/games/music-generator intro race
+music path=music_generator *tracks: _deps
     npx electron tools/music/render.mjs {{path}} {{tracks}}
 
 # play the game as a phone would (a 390 x 844 touch screen) through tools/phone-tour.mjs, or another scenario; prints

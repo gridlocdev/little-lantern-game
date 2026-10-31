@@ -37,6 +37,6 @@ Dialog lines, the storybook's pages and cards are tapped directly on a touch scr
 
 ## Credits
 
-Made with [LittleJS](https://github.com/KilledByAPixel/LittleJS). The soundtrack is composed and played by soundfont-player, and the key and button glyphs are Kenney's [Input Prompts](https://kenney.nl/assets/input-prompts) (CC0).
+Made with [LittleJS](https://github.com/KilledByAPixel/LittleJS). The soundtrack is composed by [music-generator](https://github.com/gridlocdev/music-generator) and played with the [GeneralUser GS](https://github.com/mrbumpy409/GeneralUser-GS) SoundFont by S. Christian Collins, and the key and button glyphs are Kenney's [Input Prompts](https://kenney.nl/assets/input-prompts) (CC0).
 
 Working on the game? See [docs/DEVELOPING.md](docs/DEVELOPING.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
