@@ -1,5 +1,5 @@
 port := "8000"
-music_generator := "../music-generator"
+music_generator := "../../apps/music-generator"
 
 # list recipes
 default:
@@ -56,7 +56,7 @@ icon:
     node tools/make-icon.mjs icons/icon-512.png 512 --bleed
 
 # render the soundtrack (tools/music/songs.js) with music-generator into music/ and src/audio/tracks-data.js
-# needs ffmpeg and a music-generator checkout; e.g. just music ~/src/games/music-generator intro race
+# needs ffmpeg and a music-generator checkout; e.g. just music ~/src/apps/music-generator intro race
 music path=music_generator *tracks: _deps
     npx electron tools/music/render.mjs {{path}} {{tracks}}
 

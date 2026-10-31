@@ -18,7 +18,7 @@ const ROOT = path.resolve(HERE, '..', '..');
 const OUT = path.join(ROOT, 'music');
 const DATA = path.join(ROOT, 'src', 'audio', 'tracks-data.js');
 const args = process.argv.slice(process.defaultApp ? 2 : 1);
-const SFP = path.resolve(args[0] ?? path.join(ROOT, '..', 'music-generator'));
+const SFP = path.resolve(args[0] ?? path.join(ROOT, '..', '..', 'apps', 'music-generator'));
 const only = args.slice(1);
 const FFMPEG = process.env.FFMPEG || 'ffmpeg';
 const WINDOW = 65536, LAG = 4096;   // frames of the render the check matches, and how far either way it looks
